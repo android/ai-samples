@@ -1,0 +1,18 @@
+<resources>
+  <string name="app_name" translatable="false">Gemini Nano demo</string>
+  <string name="kotlin_entry_title" translatable="false">Run the AICore SDK demo written in Kotlin</string>
+  <string name="java_entry_title" translatable="false">Run the AICore SDK demo written in Java</string>
+  <string name="send" translatable="false">Send</string>
+  <string name="generating" translatable="false">Generating...</string>
+  <string name="streaming_switch" translatable="false">Streaming</string>
+  <string name="hint_temperature" translatable="false">Temperature</string>
+  <string name="hint_top_k" translatable="false">TopK</string>
+  <string name="hint_max_output_tokens" translatable="false">MaxOutputTokens</string>
+  <string name="pref_key_temperature" translatable="false">pk_temp</string>
+  <string name="pref_key_top_k" translatable="false">pk_topk</string>
+  <string name="pref_key_max_output_tokens" translatable="false">pk_mot</string>
+  <string name="button_change_config" translatable="false">Change config</string>
+  <string name="button_save" translatable="false">Save</string>
+  <string name="button_cancel" translatable="false">Cancel</string>
+  <string name="empty" translatable="false"/>
+</resources>

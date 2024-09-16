@@ -1,0 +1,2 @@
+rootProject.name = "Gemini Nano demo"
+include ':app'
