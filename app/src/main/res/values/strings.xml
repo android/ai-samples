@@ -16,8 +16,8 @@
 -->
 <resources>
   <string name="app_name" translatable="false">Gemini Nano demo</string>
-  <string name="kotlin_entry_title" translatable="false">Run the AICore SDK demo written in Kotlin</string>
-  <string name="java_entry_title" translatable="false">Run the AICore SDK demo written in Java</string>
+  <string name="kotlin_entry_title" translatable="false">Run the demo written in Kotlin</string>
+  <string name="java_entry_title" translatable="false">Run the demo written in Java</string>
   <string name="button_send" translatable="false">Send</string>
   <string name="generating" translatable="false">Generating...</string>
   <string name="streaming_switch" translatable="false">Streaming</string>
