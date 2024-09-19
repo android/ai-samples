@@ -2,8 +2,6 @@
 
 *   [Read more about Google AI Edge SDK](https://developer.android.com/ai/gemini-nano-experimental)
 
-## Introduction
-
 This sample app demonstrates how to use the Google AI Edge SDK to access Gemini
 Nano on Android.
 
