@@ -18,6 +18,8 @@ package com.google.ai.edge.aicore.demo.java;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -67,6 +69,11 @@ public class MainActivity extends AppCompatActivity implements OnConfigUpdateLis
     sendButton.setOnClickListener(
         view -> {
           String request = requestEditText.getText().toString();
+          if (TextUtils.isEmpty(request)) {
+            Toast.makeText(this, R.string.prompt_is_empty, Toast.LENGTH_SHORT).show();
+            return;
+          }
+
           contentAdapter.addContent(ContentAdapter.VIEW_TYPE_REQUEST, request);
           startGeneratingUi();
           generateContent(request);

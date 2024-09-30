@@ -17,13 +17,15 @@
 package com.google.ai.edge.aicore.demo.kotlin
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import android.text.TextUtils
 import android.widget.Button
 import android.widget.CompoundButton
 import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.ai.edge.aicore.GenerativeAIException
 import com.google.ai.edge.aicore.GenerativeModel
 import com.google.ai.edge.aicore.demo.ContentAdapter
@@ -62,6 +64,11 @@ class MainActivity : AppCompatActivity(), GenerationConfigDialog.OnConfigUpdateL
         endGeneratingUi()
       } else {
         val request = requestEditText?.text.toString()
+        if (TextUtils.isEmpty(request)) {
+          Toast.makeText(this, R.string.prompt_is_empty, Toast.LENGTH_SHORT).show()
+          return@setOnClickListener
+        }
+
         contentAdapter.addContent(ContentAdapter.VIEW_TYPE_REQUEST, request)
         startGeneratingUi()
         generateContent(request)

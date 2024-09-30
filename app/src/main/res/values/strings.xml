@@ -31,5 +31,6 @@
   <string name="button_save" translatable="false">Save</string>
   <string name="button_cancel" translatable="false">Cancel</string>
   <string name="model_unavailable" translatable="false">Model is unavailable yet and downloading in background</string>
+  <string name="prompt_is_empty" translatable="false">Please enter an non empty prompt</string>
   <string name="empty" translatable="false"/>
 </resources>
