@@ -30,5 +30,6 @@
   <string name="button_change_config" translatable="false">Change config</string>
   <string name="button_save" translatable="false">Save</string>
   <string name="button_cancel" translatable="false">Cancel</string>
+  <string name="model_unavailable" translatable="false">Model is unavailable yet and downloading in background</string>
   <string name="empty" translatable="false"/>
 </resources>
