@@ -20,6 +20,6 @@ technologies: [Android]
 categories:   [Artificial Intelligence]
 languages:    [Java, Kotlin]
 solutions:    [Mobile]
-github:       Gemini Nano Sample
+github:       android/ai-samples
 license: apache2
 
