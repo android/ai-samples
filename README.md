@@ -7,7 +7,7 @@ Nano on Android.
 
 ## Getting Started
 
-*   Please follow the [instructions to set up experimental access to Gemini Nano](https://developer.android.com/ai/gemini-nano/experimental).
+*   Please follow the [instructions to set up experimental access to Gemini Nano](https://developer.android.com/ai/gemini-nano/experimental), specifically the [prerequisites](https://developer.android.com/ai/gemini-nano/experimental#prerequisites) and [updates APKs](https://developer.android.com/ai/gemini-nano/experimental#update-apks) sections.
 *   Run the sample code on your Pixel 9 device after following the setup instructions.
 
 ## License
