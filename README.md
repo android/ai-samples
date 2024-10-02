@@ -8,7 +8,7 @@ Nano on Android.
 ## Getting Started
 
 *   Please follow the [instructions to set up experimental access to Gemini Nano](https://developer.android.com/ai/gemini-nano/experimental).
-*   Run the sample code on your Android device with AICore installed.
+*   Run the sample code on your Pixel 9 device after following the setup instructions.
 
 ## License
 
