@@ -141,6 +141,7 @@ class MainActivity : AppCompatActivity(), GenerationConfigDialog.OnConfigUpdateL
           contentAdapter.addContent(ContentAdapter.VIEW_TYPE_RESPONSE_ERROR, e.message!!)
           endGeneratingUi()
         }
+        inGenerating = false
       }
   }
 
