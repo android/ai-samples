@@ -1,6 +1,5 @@
 /build
 /.gradle
-/gradle
 /.idea
 /.kotlin
 app/google-services.json
