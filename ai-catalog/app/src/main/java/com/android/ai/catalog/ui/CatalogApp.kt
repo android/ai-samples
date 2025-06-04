@@ -88,7 +88,7 @@ fun CatalogApp(modifier: Modifier = Modifier) {
                 },
             ) { innerPadding ->
                 LazyColumn(
-                    modifier = Modifier.padding(innerPadding)
+                    contentPadding = innerPadding
                 ) {
                     items(sampleCatalog) {
                         CatalogListItem(catalogItem = it) {
