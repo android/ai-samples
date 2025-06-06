@@ -125,7 +125,7 @@ fun GeminiMultimodalScreen(
                     Image(
                         bitmap = it.asImageBitmap(),
                         contentDescription = "Picture",
-                        contentScale = ContentScale.Fit,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
