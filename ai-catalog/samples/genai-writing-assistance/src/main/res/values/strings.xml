@@ -6,8 +6,8 @@
     <string name="genai_writing_assistance_rewrite_btn">Rewrite</string>
     <string name="genai_writing_assistance_dismiss_btn">Dismiss</string>
     <string name="genai_writing_assistance_confirm_btn">Confirm</string>
-    <string name="genai_writing_assistance_proofread_sample_text_btn">Add text to \n proofread</string>
-    <string name="genai_writing_assistance_rewrite_sample_text_btn">Add text \nto rewrite</string>
+    <string name="genai_writing_assistance_proofread_sample_text_btn">Add text to proofread</string>
+    <string name="genai_writing_assistance_rewrite_sample_text_btn">Add text to rewrite</string>
     <string-array name="proofread_sample_text">
         <item>@string/genai_proofread_sample_text_1</item>
         <item>@string/genai_proofread_sample_text_2</item>

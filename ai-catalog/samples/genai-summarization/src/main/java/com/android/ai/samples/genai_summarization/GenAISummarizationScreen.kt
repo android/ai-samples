@@ -30,6 +30,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -101,8 +102,7 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
                     }, modifier = Modifier.padding(10.dp)
                 ) {
                     Text(
-                        text = stringResource(id = R.string.genai_summarization_summarize_btn),
-                        fontSize = 24.sp
+                        text = stringResource(id = R.string.genai_summarization_summarize_btn)
                     )
                 }
             }
@@ -112,15 +112,22 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
                 modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center
             ) {
                 Row {
-                    SecondaryButton(
-                        buttonText = stringResource(id = R.string.genai_summarization_add_text_btn),
-                        onClick = { textInput = sampleTextOptions.random() }
-                    )
-
-                    SecondaryButton(
-                        buttonText = stringResource(id = R.string.genai_summarization_reset_btn),
-                        onClick = { textInput = "" }
-                    )
+                    OutlinedButton(
+                        onClick = { textInput = sampleTextOptions.random() },
+                        Modifier.padding(5.dp)
+                    ) {
+                        Text(
+                            stringResource(id = R.string.genai_summarization_add_text_btn)
+                        )
+                    }
+                    OutlinedButton(
+                        onClick = { textInput = "" },
+                        Modifier.padding(5.dp)
+                    ) {
+                        Text(
+                            stringResource(id = R.string.genai_summarization_reset_btn)
+                        )
+                    }
                 }
             }
         }
@@ -134,24 +141,14 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
             ) {
                 Text(
                     text = summarizationResult.value,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp)
+                    modifier = Modifier.padding(
+                        top = 8.dp,
+                        bottom = 24.dp,
+                        start = 24.dp,
+                        end = 24.dp
+                    )
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun SecondaryButton(buttonText: String, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-        modifier = Modifier.padding(10.dp)
-    ) {
-        Text(
-            text = buttonText,
-            fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSecondaryContainer
-        )
     }
 }

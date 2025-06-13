@@ -36,6 +36,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -109,19 +110,27 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 // Proofread button
-                MainButton(
-                    buttonText = stringResource(id = R.string.genai_writing_assistance_proofread_btn),
+                Button(
                     onClick = {
                         showBottomSheet = true
                         viewModel.proofread(textInput, context)
-                    })
-
-                // Rewrite button
-                MainButton(
-                    buttonText = stringResource(id = R.string.genai_writing_assistance_rewrite_btn),
+                    },
+                    Modifier.padding(10.dp)
+                ) {
+                    Text(
+                        stringResource(id = R.string.genai_writing_assistance_proofread_btn)
+                    )
+                }
+                Button(
                     onClick = {
                         showRewriteOptionsDialog = true
-                    })
+                    },
+                    Modifier.padding(10.dp)
+                ) {
+                    Text(
+                        stringResource(id = R.string.genai_writing_assistance_rewrite_btn)
+                    )
+                }
             }
 
             // Extra options buttons
@@ -130,20 +139,35 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                SecondaryButton(
-                    buttonText = stringResource(id = R.string.genai_writing_assistance_proofread_sample_text_btn),
+                OutlinedButton(
                     onClick = { textInput = proofreadSampleTextOptions.random() },
-                )
+                    Modifier.padding(5.dp).weight(1f)
+                ) {
+                    Text(
+                        stringResource(id = R.string.genai_writing_assistance_proofread_sample_text_btn),
+                        textAlign = TextAlign.Center
+                    )
+                }
 
-                SecondaryButton(
-                    buttonText = stringResource(id = R.string.genai_writing_assistance_rewrite_sample_text_btn),
-                    onClick = { textInput = rewriteSampleTextOptions.random() }
-                )
+                OutlinedButton(
+                    onClick = { textInput = rewriteSampleTextOptions.random() },
+                    Modifier.padding(5.dp).weight(1f)
+                ) {
+                    Text(
+                        stringResource(id = R.string.genai_writing_assistance_rewrite_sample_text_btn),
+                        textAlign = TextAlign.Center
+                    )
+                }
 
-                SecondaryButton(
-                    buttonText = stringResource(id = R.string.genai_writing_assistance_reset_btn),
-                    onClick = { textInput = "" }
-                )
+                OutlinedButton(
+                    onClick = { textInput = "" },
+                    Modifier.padding(5.dp).weight(1f)
+                ) {
+                    Text(
+                        stringResource(id = R.string.genai_writing_assistance_reset_btn),
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
 
@@ -157,7 +181,12 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
             ) {
                 Text(
                     text = resultGenerated.value,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp)
+                    modifier = Modifier.padding(
+                        top = 8.dp,
+                        bottom = 24.dp,
+                        start = 24.dp,
+                        end = 24.dp
+                    )
                 )
             }
         }
@@ -177,35 +206,6 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                     showRewriteOptionsDialog = false
                 })
         }
-    }
-}
-
-@Composable
-private fun MainButton(buttonText: String, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier.padding(10.dp)
-    ) {
-        Text(
-            text = buttonText,
-            fontSize = 24.sp
-        )
-    }
-}
-
-@Composable
-private fun SecondaryButton(buttonText: String, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-        modifier = Modifier.padding(10.dp)
-    ) {
-        Text(
-            text = buttonText,
-            textAlign = TextAlign.Center,
-            fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSecondaryContainer
-        )
     }
 }
 
