@@ -141,7 +141,7 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
             ) {
                 OutlinedButton(
                     onClick = { textInput = proofreadSampleTextOptions.random() },
-                    Modifier.padding(5.dp).weight(1f)
+                    Modifier.weight(1f).padding(5.dp)
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_proofread_sample_text_btn),
@@ -151,7 +151,7 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
 
                 OutlinedButton(
                     onClick = { textInput = rewriteSampleTextOptions.random() },
-                    Modifier.padding(5.dp).weight(1f)
+                    Modifier.weight(1f).padding(5.dp)
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_rewrite_sample_text_btn),
@@ -161,7 +161,7 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
 
                 OutlinedButton(
                     onClick = { textInput = "" },
-                    Modifier.padding(5.dp).weight(1f)
+                    Modifier.weight(1f).padding(5.dp)
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_reset_btn),
