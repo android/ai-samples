@@ -5,22 +5,19 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package com.android.ai.samples.imagen
 
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,11 +35,9 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -65,14 +60,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.firebase.annotations.PreviewApi
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ImagenScreen (
-    viewModel: ImagenViewModel = hiltViewModel()
-) {
+fun ImagenScreen(viewModel: ImagenViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val isGenerating by viewModel.isGenerating.observeAsState(false)
     val generatedBitmap by viewModel.imageGenerated.collectAsState()
@@ -93,36 +84,37 @@ fun ImagenScreen (
                 },
                 actions = {
                     SeeCodeButton(context)
-                }
+                },
             )
-        }
+        },
     ) { innerPadding ->
-        Column (
+        Column(
             Modifier
                 .padding(12.dp)
                 .verticalScroll(rememberScrollState())
-                .padding(innerPadding)
+                .padding(innerPadding),
         ) {
             Card(
                 modifier = Modifier.size(
-                        width = 400.dp,
-                        height = 400.dp
-                    ).align(Alignment.CenterHorizontally)
+                    width = 400.dp,
+                    height = 400.dp,
+                ).align(Alignment.CenterHorizontally),
             ) {
                 generatedBitmap?.let {
-                    Image(bitmap = it.asImageBitmap(),
+                    Image(
+                        bitmap = it.asImageBitmap(),
                         contentDescription = "Picture",
                         contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
-                if (isGenerating){
+                if (isGenerating) {
                     Text(
                         text = stringResource(R.string.generating_label),
                         modifier = Modifier
                             .fillMaxSize()
-                            .wrapContentSize(Alignment.Center) ,
-                        textAlign = TextAlign.Center
+                            .wrapContentSize(Alignment.Center),
+                        textAlign = TextAlign.Center,
                     )
                 }
             }
@@ -131,15 +123,15 @@ fun ImagenScreen (
                 value = editTextValue,
                 onValueChange = { editTextValue = it },
                 label = { Text(stringResource(R.string.prompt_label)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
             Row {
-                Button (
+                Button(
                     modifier = Modifier.padding(vertical = 8.dp),
                     onClick = {
                         viewModel.generateImage(editTextValue)
                     },
-                    enabled = !isGenerating
+                    enabled = !isGenerating,
                 ) {
                     Icon(Icons.Default.SmartToy, contentDescription = "Robot")
                     Text(modifier = Modifier.padding(start = 8.dp), text = stringResource(R.string.generate_button))
@@ -157,13 +149,13 @@ fun SeeCodeButton(context: Context) {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(githubLink))
             context.startActivity(intent)
         },
-        modifier = Modifier.padding(end = 8.dp)
+        modifier = Modifier.padding(end = 8.dp),
     ) {
         Icon(Icons.Filled.Code, contentDescription = "See code")
         Text(
             modifier = Modifier.padding(start = 8.dp),
             fontSize = 12.sp,
-            text = stringResource(R.string.see_code)
+            text = stringResource(R.string.see_code),
         )
     }
 }

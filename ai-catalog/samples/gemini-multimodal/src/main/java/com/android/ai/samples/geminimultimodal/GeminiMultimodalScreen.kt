@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.ai.samples.geminimultimodal
 
 import android.annotation.SuppressLint
@@ -41,11 +40,9 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -70,9 +67,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun GeminiMultimodalScreen(
-    viewModel: GeminiMultimodalViewModel = hiltViewModel(),
-) {
+fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel()) {
     val context = LocalContext.current
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     val textResponse by viewModel.textGenerated.collectAsState()
@@ -92,7 +87,7 @@ fun GeminiMultimodalScreen(
         }
     }
 
-    Scaffold (
+    Scaffold(
         topBar = {
             TopAppBar(
                 colors = topAppBarColors(
@@ -104,35 +99,35 @@ fun GeminiMultimodalScreen(
                 },
                 actions = {
                     SeeCodeButton(context)
-                }
+                },
             )
-        }
-    ){ innerPadding ->
-        Column (
+        },
+    ) { innerPadding ->
+        Column(
             Modifier
                 .padding(12.dp)
                 .verticalScroll(rememberScrollState())
-                .padding(innerPadding)
+                .padding(innerPadding),
         ) {
             Card(
                 modifier = Modifier
                     .size(
                         width = 450.dp,
-                        height = 450.dp
-                    )
+                        height = 450.dp,
+                    ),
             ) {
                 bitmap?.let {
                     Image(
                         bitmap = it.asImageBitmap(),
                         contentDescription = "Picture",
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
             }
             Spacer(modifier = Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                Button (
+                Button(
                     onClick = {
                         cameraLauncher.launch(null)
                     },
@@ -144,30 +139,32 @@ fun GeminiMultimodalScreen(
             TextField(
                 value = editTextValue,
                 onValueChange = { editTextValue = it },
-                label = { Text("Prompt") }
+                label = { Text("Prompt") },
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Button (
+            Button(
                 onClick = {
-                    if (bitmap!=null) {
+                    if (bitmap != null) {
                         viewModel.generate(bitmap!!, editTextValue)
                     }
                 },
-                enabled = !isGenerating && pictureAvailable
+                enabled = !isGenerating && pictureAvailable,
             ) {
                 Icon(Icons.Default.SmartToy, contentDescription = "Robot")
                 Text(modifier = Modifier.padding(start = 8.dp), text = "Generate")
             }
-            Spacer(modifier = Modifier
-                .height(24.dp))
+            Spacer(
+                modifier = Modifier
+                    .height(24.dp),
+            )
 
-            if (isGenerating){
+            if (isGenerating) {
                 Text(
-                    text = stringResource(R.string.geminimultimodal_generating)
+                    text = stringResource(R.string.geminimultimodal_generating),
                 )
             } else {
                 Text(
-                    text = textResponse
+                    text = textResponse,
                 )
             }
         }
@@ -182,13 +179,13 @@ fun SeeCodeButton(context: Context) {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(githubLink))
             context.startActivity(intent)
         },
-        modifier = Modifier.padding(end = 8.dp)
+        modifier = Modifier.padding(end = 8.dp),
     ) {
         Icon(Icons.Filled.Code, contentDescription = "See code")
         Text(
             modifier = Modifier.padding(start = 8.dp),
             fontSize = 12.sp,
-            text = stringResource(R.string.see_code)
+            text = stringResource(R.string.see_code),
         )
     }
 }

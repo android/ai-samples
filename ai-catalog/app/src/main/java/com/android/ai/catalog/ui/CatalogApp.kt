@@ -5,20 +5,17 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package com.android.ai.catalog.ui
 
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -51,15 +48,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.android.ai.catalog.R
 import com.android.ai.catalog.ui.domain.SampleCatalogItem
+import com.android.ai.catalog.ui.domain.sampleCatalog
 import com.google.firebase.FirebaseApp
 import kotlinx.serialization.Serializable
-import androidx.core.net.toUri
-import com.android.ai.catalog.ui.domain.sampleCatalog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,12 +80,12 @@ fun CatalogApp(modifier: Modifier = Modifier) {
                         ),
                         title = {
                             Text(text = stringResource(id = R.string.top_bar_title))
-                        }
+                        },
                     )
                 },
             ) { innerPadding ->
                 LazyColumn(
-                    contentPadding = innerPadding
+                    contentPadding = innerPadding,
                 ) {
                     items(sampleCatalog) {
                         CatalogListItem(catalogItem = it) {
@@ -111,34 +108,32 @@ fun CatalogApp(modifier: Modifier = Modifier) {
         }
     }
 
-
     if (isDialogOpened) {
         FirebaseRequiredAlert(
             onDismiss = { isDialogOpened = false },
             onOpenFirebaseDocClick = {
                 isDialogOpened = false
-                val intent = Intent(Intent.ACTION_VIEW,
-                    "https://firebase.google.com/docs/vertex-ai/get-started#no-existing-firebase".toUri())
+                val intent = Intent(
+                    Intent.ACTION_VIEW,
+                    "https://firebase.google.com/docs/vertex-ai/get-started#no-existing-firebase".toUri(),
+                )
                 context.startActivity(intent)
-            }
+            },
         )
     }
 }
 
 @Composable
-fun CatalogListItem(
-    catalogItem: SampleCatalogItem,
-    onButtonClick: () -> Unit
-) {
+fun CatalogListItem(catalogItem: SampleCatalogItem, onButtonClick: () -> Unit) {
     val context = LocalContext.current
     ElevatedCard(
         modifier = Modifier.padding(18.dp),
         onClick = {
             onButtonClick()
-        }
+        },
     ) {
         Column(
-            Modifier.padding(15.dp)
+            Modifier.padding(15.dp),
         ) {
             Text(
                 modifier = Modifier
@@ -146,7 +141,7 @@ fun CatalogListItem(
                     .padding(bottom = 8.dp),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                text =  context.getString(catalogItem.title)
+                text = context.getString(catalogItem.title),
             )
             Text(
                 modifier = Modifier.padding(bottom = 8.dp),
@@ -161,10 +156,10 @@ fun CatalogListItem(
                             .background(
                                 color = it.backgroundColor,
                                 shape = RoundedCornerShape(
-                                    8.dp
-                                )
+                                    8.dp,
+                                ),
                             )
-                            .padding(start = 4.dp, end = 4.dp)
+                            .padding(start = 4.dp, end = 4.dp),
                     ) {
                         Text(
                             fontSize = 9.sp,
@@ -182,41 +177,37 @@ fun CatalogListItem(
 object HomeScreen
 
 @Composable
-fun FirebaseRequiredAlert(
-    onDismiss: () -> Unit = {},
-    onOpenFirebaseDocClick: () -> Unit = {}
-) {
+fun FirebaseRequiredAlert(onDismiss: () -> Unit = {}, onOpenFirebaseDocClick: () -> Unit = {}) {
     AlertDialog(
-            onDismissRequest = {
-                onDismiss()
-            },
-            title = {
-                Text(text = stringResource(R.string.firebase_required))
-            },
-            text = {
-                Text(stringResource(R.string.firebase_required_description))
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        onDismiss()
-                    }
-                ) {
-                    Text(stringResource(R.string.close))
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onOpenFirebaseDocClick()
-                    }
-                ) {
-                    Text(stringResource(R.string.firebase_doc_button))
-                }
+        onDismissRequest = {
+            onDismiss()
+        },
+        title = {
+            Text(text = stringResource(R.string.firebase_required))
+        },
+        text = {
+            Text(stringResource(R.string.firebase_required_description))
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onDismiss()
+                },
+            ) {
+                Text(stringResource(R.string.close))
             }
-        )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onOpenFirebaseDocClick()
+                },
+            ) {
+                Text(stringResource(R.string.firebase_doc_button))
+            }
+        },
+    )
 }
-
 
 fun isFirebaseInitialized(): Boolean {
     return try {

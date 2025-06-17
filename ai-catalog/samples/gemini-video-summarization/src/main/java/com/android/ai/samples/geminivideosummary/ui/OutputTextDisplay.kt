@@ -1,3 +1,18 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.android.ai.samples.geminivideosummary.ui
 
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,8 +46,9 @@ fun OutputTextDisplay(outputText: OutputTextState, modifier: Modifier = Modifier
                 text = stringResource(
                     R.string.output_text_combined,
                     stringResource(R.string.output_text_generated_placeholder),
-                    stringResource(R.string.output_text_initial)
-                ), fontStyle = FontStyle.Italic, modifier = Modifier.fillMaxWidth()
+                    stringResource(R.string.output_text_initial),
+                ),
+                fontStyle = FontStyle.Italic, modifier = Modifier.fillMaxWidth(),
             )
         }
 
@@ -41,8 +57,9 @@ fun OutputTextDisplay(outputText: OutputTextState, modifier: Modifier = Modifier
                 text = stringResource(
                     R.string.output_text_combined,
                     stringResource(R.string.output_text_generated_placeholder),
-                    stringResource(R.string.output_text_loading)
-                ), fontStyle = FontStyle.Italic, modifier = Modifier.fillMaxWidth()
+                    stringResource(R.string.output_text_loading),
+                ),
+                fontStyle = FontStyle.Italic, modifier = Modifier.fillMaxWidth(),
             )
         }
 
@@ -51,13 +68,13 @@ fun OutputTextDisplay(outputText: OutputTextState, modifier: Modifier = Modifier
                 text = stringResource(
                     R.string.output_text_combined,
                     stringResource(R.string.output_text_generated_placeholder),
-                    outputText.text
+                    outputText.text,
                 ),
                 fontStyle = FontStyle.Italic,
                 modifier = Modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState()),
-                    style = MaterialTheme.typography.labelLarge
+                style = MaterialTheme.typography.labelLarge,
             )
         }
 
@@ -66,8 +83,9 @@ fun OutputTextDisplay(outputText: OutputTextState, modifier: Modifier = Modifier
                 text = stringResource(
                     R.string.output_text_combined,
                     stringResource(R.string.output_text_generated_placeholder),
-                    outputText.errorMessage
-                ), fontStyle = FontStyle.Italic, modifier = Modifier.fillMaxWidth()
+                    outputText.errorMessage,
+                ),
+                fontStyle = FontStyle.Italic, modifier = Modifier.fillMaxWidth(),
             )
         }
     }

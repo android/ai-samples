@@ -5,27 +5,22 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package com.android.ai.samples.genai_image_description
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -50,7 +45,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.android.ai.samples.geminimultimodal.R
@@ -79,24 +73,27 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
                 colors = topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.primary,
-                ), title = {
+                ),
+                title = {
                     Text(text = stringResource(id = R.string.genai_image_description_title_bar))
-                })
-        }) { innerPadding ->
+                },
+            )
+        },
+    ) { innerPadding ->
         Column(
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
         ) {
             // Displayed image
             Card(
                 modifier = Modifier
                     .size(width = 450.dp, height = 450.dp)
-                    .padding(20.dp)
+                    .padding(20.dp),
             ) {
                 AsyncImage(
                     model = imageUri,
                     contentDescription = null,
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
 
@@ -105,7 +102,7 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
                 onClick = {
                     photoPickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
                 },
-                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally)
+                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
             ) {
                 Text(
                     text = stringResource(id = R.string.genai_image_description_add_image),
@@ -117,7 +114,7 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
                 onClick = {
                     showBottomSheet = true
                     viewModel.getImageDescription(imageUri, context)
-                }, modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally)
+                }, modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
             ) {
                 Text(
                     text = stringResource(id = R.string.genai_image_description_run_inference),
@@ -130,11 +127,11 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
                 onDismissRequest = {
                     showBottomSheet = false
                     viewModel.clearGeneratedText()
-                }, sheetState = sheetState
+                }, sheetState = sheetState,
             ) {
                 Text(
                     text = imageDescriptionResult.value,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp)
+                    modifier = Modifier.padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp),
                 )
             }
         }

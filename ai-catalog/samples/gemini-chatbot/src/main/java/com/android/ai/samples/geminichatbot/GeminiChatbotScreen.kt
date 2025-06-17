@@ -5,19 +5,16 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package com.android.ai.samples.geminichatbot
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
@@ -66,15 +63,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GeminiChatbotScreen (
-    viewModel: GeminiChatbotViewModel = hiltViewModel()
-) {
+fun GeminiChatbotScreen(viewModel: GeminiChatbotViewModel = hiltViewModel()) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
     val messages by viewModel.messageList.collectAsState()
     var message by rememberSaveable { mutableStateOf("") }
 
-    Scaffold (
+    Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -89,10 +84,10 @@ fun GeminiChatbotScreen (
                 },
                 actions = {
                     SeeCodeButton()
-                }
+                },
             )
-        }
-    ){ innerPadding ->
+        },
+    ) { innerPadding ->
         Column {
             val layoutDirection = LocalLayoutDirection.current
             MessageList(
@@ -119,46 +114,37 @@ fun GeminiChatbotScreen (
     }
 }
 
-private fun PaddingValues.copy(
-    layoutDirection: LayoutDirection,
-    start: Dp? = null,
-    top: Dp? = null,
-    end: Dp? = null,
-    bottom: Dp? = null,
-) = PaddingValues(
-    start = start ?: calculateStartPadding(layoutDirection),
-    top = top ?: calculateTopPadding(),
-    end = end ?: calculateEndPadding(layoutDirection),
-    bottom = bottom ?: calculateBottomPadding(),
-)
+private fun PaddingValues.copy(layoutDirection: LayoutDirection, start: Dp? = null, top: Dp? = null, end: Dp? = null, bottom: Dp? = null) =
+    PaddingValues(
+        start = start ?: calculateStartPadding(layoutDirection),
+        top = top ?: calculateTopPadding(),
+        end = end ?: calculateEndPadding(layoutDirection),
+        bottom = bottom ?: calculateBottomPadding(),
+    )
 
 @Composable
-fun MessageList(
-    modifier: Modifier = Modifier,
-    messages: List<ChatMessage>,
-    contentPadding: PaddingValues,
-) {
-    LazyColumn (
+fun MessageList(modifier: Modifier = Modifier, messages: List<ChatMessage>, contentPadding: PaddingValues) {
+    LazyColumn(
         modifier = modifier,
         contentPadding = contentPadding,
         reverseLayout = true,
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
-    ){
+    ) {
         items(items = messages) { message ->
-            Row (
+            Row(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(
                     16.dp,
-                    if (message.isIncoming) Alignment.Start else Alignment.End
+                    if (message.isIncoming) Alignment.Start else Alignment.End,
                 ),
-                verticalAlignment = Alignment.CenterVertically
-            ){
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 val iconSize = 48.dp
                 Spacer(modifier = Modifier.size(iconSize))
                 MessageBubble(
-                    message = message
+                    message = message,
                 )
             }
         }
@@ -166,10 +152,7 @@ fun MessageList(
 }
 
 @Composable
-fun MessageBubble(
-    modifier: Modifier = Modifier,
-    message: ChatMessage,
-) {
+fun MessageBubble(modifier: Modifier = Modifier, message: ChatMessage) {
     Surface(
         modifier = modifier,
         color = if (message.isIncoming) {
@@ -177,11 +160,11 @@ fun MessageBubble(
         } else {
             MaterialTheme.colorScheme.primary
         },
-        shape = MaterialTheme.shapes.large
+        shape = MaterialTheme.shapes.large,
     ) {
         Text(
             modifier = Modifier.padding(16.dp),
-            text = message.text
+            text = message.text,
         )
     }
 }
@@ -196,13 +179,13 @@ fun SeeCodeButton() {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(githubLink))
             context.startActivity(intent)
         },
-        modifier = Modifier.padding(end = 8.dp)
+        modifier = Modifier.padding(end = 8.dp),
     ) {
         Icon(Icons.Filled.Code, contentDescription = "See code")
         Text(
             modifier = Modifier.padding(start = 8.dp),
             fontSize = 12.sp,
-            text = stringResource(R.string.see_code)
+            text = stringResource(R.string.see_code),
         )
     }
 }

@@ -5,16 +5,14 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package com.android.ai.samples.geminivideosummary
 
 import android.content.Context
@@ -53,13 +51,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
-import com.google.com.android.ai.samples.geminivideosummary.R
 import com.android.ai.samples.geminivideosummary.player.VideoPlayer
 import com.android.ai.samples.geminivideosummary.player.VideoSelectionDropdown
 import com.android.ai.samples.geminivideosummary.ui.OutputTextDisplay
 import com.android.ai.samples.geminivideosummary.ui.TextToSpeechControls
 import com.android.ai.samples.geminivideosummary.util.VideoList
 import com.android.ai.samples.geminivideosummary.viewmodel.VideoSummarizationViewModel
+import com.google.com.android.ai.samples.geminivideosummary.R
 import java.util.Locale
 
 /**
@@ -93,13 +91,15 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
     }
 
     LaunchedEffect(selectedVideoUri) {
-        onSelectedVideoChange(selectedVideoUri,
+        onSelectedVideoChange(
+            selectedVideoUri,
             exoPlayer,
             textToSpeech,
             onSpeakingStateChange = { speaking, paused ->
                 isSpeaking = speaking
                 isPaused = paused
-            })
+            },
+        )
     }
 
     DisposableEffect(key1 = true) {
@@ -124,22 +124,27 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
 
     Scaffold(
         topBar = {
-            TopAppBar(colors = topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                titleContentColor = MaterialTheme.colorScheme.primary,
-            ), title = {
-                Text(text = stringResource(R.string.video_summarization_title))
-            }, actions = {
-                SeeCodeButton(context)
-            })
-        }) { innerPadding ->
+            TopAppBar(
+                colors = topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                ),
+                title = {
+                    Text(text = stringResource(R.string.video_summarization_title))
+                }, actions = {
+                    SeeCodeButton(context)
+                },
+            )
+        },
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(12.dp)
-                .padding(innerPadding)
+                .padding(innerPadding),
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            VideoSelectionDropdown(selectedVideoUri = selectedVideoUri,
+            VideoSelectionDropdown(
+                selectedVideoUri = selectedVideoUri,
                 isDropdownExpanded = isDropdownExpanded,
                 videoOptions = videoOptions,
                 onVideoUriSelected = { uri ->
@@ -153,7 +158,8 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
                 },
                 onDropdownExpanded = { expanded ->
                     isDropdownExpanded = expanded
-                })
+                },
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -166,7 +172,7 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
                     selectedVideoUri, textToSpeech, onSpeakingStateChange = { speaking, paused ->
                         isSpeaking = speaking
                         isPaused = paused
-                    }, viewModel
+                    }, viewModel,
                 )
             }) {
                 Text(stringResource(R.string.summarize_video_button))
@@ -178,7 +184,8 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                TextToSpeechControls(isInitialized = isInitialized,
+                TextToSpeechControls(
+                    isInitialized = isInitialized,
                     isSpeaking = isSpeaking,
                     isPaused = isPaused,
                     textToSpeech = textToSpeech,
@@ -195,13 +202,13 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
                     },
                     onAccentDropdownExpanded = { expanded ->
                         isAccentDropdownExpanded = expanded
-                    })
+                    },
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            OutputTextDisplay(outputText = outputText
-                , modifier = Modifier.weight(1f))
+            OutputTextDisplay(outputText = outputText, modifier = Modifier.weight(1f))
 
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -218,11 +225,11 @@ fun onSelectedVideoChange(
     selectedVideoUri: Uri?,
     exoPlayer: ExoPlayer,
     textToSpeech: TextToSpeech?,
-    onSpeakingStateChange: (speaking: Boolean, paused: Boolean) -> Unit
+    onSpeakingStateChange: (speaking: Boolean, paused: Boolean) -> Unit,
 ) {
     if (selectedVideoUri != null) {
         if (selectedVideoUri == Uri.parse("")) {
-            //do nothing
+            // do nothing
         } else {
             exoPlayer.setMediaItem(MediaItem.fromUri(selectedVideoUri))
             exoPlayer.prepare()
@@ -236,7 +243,7 @@ fun onSummarizeButtonClick(
     selectedVideoUri: Uri?,
     textToSpeech: TextToSpeech?,
     onSpeakingStateChange: (speaking: Boolean, paused: Boolean) -> Unit,
-    viewModel: VideoSummarizationViewModel
+    viewModel: VideoSummarizationViewModel,
 ) {
     if (selectedVideoUri != null) {
         viewModel.getVideoSummary(selectedVideoUri)
@@ -245,9 +252,7 @@ fun onSummarizeButtonClick(
     }
 }
 
-fun initializeTextToSpeech(
-    context: Context, onInitialized: (Boolean) -> Unit
-): TextToSpeech {
+fun initializeTextToSpeech(context: Context, onInitialized: (Boolean) -> Unit): TextToSpeech {
     var textToSpeech: TextToSpeech? = null
     textToSpeech = TextToSpeech(context) { status ->
         if (status == TextToSpeech.SUCCESS) {
@@ -272,7 +277,7 @@ fun SeeCodeButton(context: Context) {
         Text(
             modifier = Modifier.padding(start = 8.dp),
             fontSize = 12.sp,
-            text = stringResource(R.string.see_code)
+            text = stringResource(R.string.see_code),
         )
     }
 }

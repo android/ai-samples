@@ -5,16 +5,14 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package com.android.ai.samples.magicselfie
 
 import android.annotation.SuppressLint
@@ -79,9 +77,7 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MagicSelfieScreen(
-    viewModel: MagicSelfieViewModel = hiltViewModel(),
-) {
+fun MagicSelfieScreen(viewModel: MagicSelfieViewModel = hiltViewModel()) {
     val context = LocalContext.current
 
     val topAppBarState = rememberTopAppBarState()
@@ -92,8 +88,8 @@ fun MagicSelfieScreen(
     cameraIntent.putExtra("android.intent.extras.LENS_FACING_FRONT", 1)
     cameraIntent.putExtra("android.intent.extra.USE_FRONT_CAMERA", true)
     val currentContext = LocalContext.current
-    val tempSelfiePhoto = File.createTempFile("tmp_selfie_picture", ".jpg",  currentContext.cacheDir)
-    val tempSelfiePhotoUri = FileProvider.getUriForFile(currentContext, currentContext.packageName+".provider", tempSelfiePhoto)
+    val tempSelfiePhoto = File.createTempFile("tmp_selfie_picture", ".jpg", currentContext.cacheDir)
+    val tempSelfiePhotoUri = FileProvider.getUriForFile(currentContext, currentContext.packageName + ".provider", tempSelfiePhoto)
 
     cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempSelfiePhotoUri)
     cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -106,11 +102,14 @@ fun MagicSelfieScreen(
     val resultLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == Activity.RESULT_OK) {
-                selfieBitmap = rotateImageIfRequired(tempSelfiePhoto, MediaStore.Images.Media.getBitmap(currentContext.contentResolver, tempSelfiePhotoUri))
+                selfieBitmap = rotateImageIfRequired(
+                    tempSelfiePhoto,
+                    MediaStore.Images.Media.getBitmap(currentContext.contentResolver, tempSelfiePhotoUri),
+                )
             }
         }
 
-    Scaffold (
+    Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -125,43 +124,43 @@ fun MagicSelfieScreen(
                 },
                 actions = {
                     SeeCodeButton(context)
-                }
+                },
             )
-        }
-    ) {innerPadding ->
-        Column (
+        },
+    ) { innerPadding ->
+        Column(
             Modifier
                 .padding(12.dp)
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
         ) {
             Card(
                 modifier = Modifier
                     .size(
                         width = 450.dp,
-                        height = 450.dp
-                    )
+                        height = 450.dp,
+                    ),
             ) {
 
-                if (generatedBitmap!=null ) {
-                    Image(bitmap = generatedBitmap!!.asImageBitmap(),
+                if (generatedBitmap != null) {
+                    Image(
+                        bitmap = generatedBitmap!!.asImageBitmap(),
                         contentDescription = "Picture",
                         contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     )
-                } else if (selfieBitmap!=null) {
+                } else if (selfieBitmap != null) {
                     Image(
                         bitmap = selfieBitmap!!.asImageBitmap(),
                         contentDescription = "Picture",
                         contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
-
             }
             Spacer(modifier = Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                Button (
+                Button(
                     onClick = {
                         resultLauncher.launch(cameraIntent)
                     },
@@ -174,32 +173,33 @@ fun MagicSelfieScreen(
             TextField(
                 value = editTextValue,
                 onValueChange = { editTextValue = it },
-                label = { Text("Prompt") }
+                label = { Text("Prompt") },
             )
 
-            Button (
+            Button(
                 modifier = Modifier.padding(vertical = 8.dp),
                 onClick = {
-                    if (selfieBitmap!=null) {
+                    if (selfieBitmap != null) {
                         viewModel.createMagicSelfie(selfieBitmap!!, editTextValue)
                     }
                 },
-                enabled = progress==null
+                enabled = progress == null,
             ) {
                 Icon(Icons.Default.SmartToy, contentDescription = "Robot")
                 Text(modifier = Modifier.padding(start = 8.dp), text = "Generate")
             }
 
-            if (progress!=null){
-                Spacer(modifier = Modifier
-                    .height(30.dp)
-                    .padding(12.dp))
+            if (progress != null) {
+                Spacer(
+                    modifier = Modifier
+                        .height(30.dp)
+                        .padding(12.dp),
+                )
                 Text(
-                    text = progress!!
+                    text = progress!!,
                 )
             }
         }
-
     }
 }
 
@@ -207,7 +207,7 @@ fun rotateImageIfRequired(imageFile: File, bitmap: Bitmap): Bitmap {
     val ei = ExifInterface(imageFile.absolutePath)
     val orientation = ei.getAttributeInt(
         ExifInterface.TAG_ORIENTATION,
-        ExifInterface.ORIENTATION_NORMAL
+        ExifInterface.ORIENTATION_NORMAL,
     )
 
     return when (orientation) {
@@ -244,13 +244,13 @@ fun SeeCodeButton(context: Context) {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(githubLink))
             context.startActivity(intent)
         },
-        modifier = Modifier.padding(end = 8.dp)
+        modifier = Modifier.padding(end = 8.dp),
     ) {
         Icon(Icons.Filled.Code, contentDescription = "See code")
         Text(
             modifier = Modifier.padding(start = 8.dp),
             fontSize = 12.sp,
-            text = stringResource(R.string.see_code)
+            text = stringResource(R.string.see_code),
         )
     }
 }

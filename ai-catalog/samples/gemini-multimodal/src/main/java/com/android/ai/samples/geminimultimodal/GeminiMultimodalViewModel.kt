@@ -28,12 +28,12 @@ import com.google.firebase.ai.type.HarmCategory
 import com.google.firebase.ai.type.SafetySetting
 import com.google.firebase.ai.type.content
 import com.google.firebase.ai.type.generationConfig
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-class GeminiMultimodalViewModel @Inject constructor(): ViewModel() {
+class GeminiMultimodalViewModel @Inject constructor() : ViewModel() {
 
     private val _textGenerated = MutableStateFlow("")
     val textGenerated: StateFlow<String> = _textGenerated
@@ -54,14 +54,12 @@ class GeminiMultimodalViewModel @Inject constructor(): ViewModel() {
                 SafetySetting(HarmCategory.HARASSMENT, HarmBlockThreshold.MEDIUM_AND_ABOVE),
                 SafetySetting(HarmCategory.HATE_SPEECH, HarmBlockThreshold.MEDIUM_AND_ABOVE),
                 SafetySetting(HarmCategory.SEXUALLY_EXPLICIT, HarmBlockThreshold.MEDIUM_AND_ABOVE),
-                SafetySetting(HarmCategory.DANGEROUS_CONTENT, HarmBlockThreshold.MEDIUM_AND_ABOVE))
+                SafetySetting(HarmCategory.DANGEROUS_CONTENT, HarmBlockThreshold.MEDIUM_AND_ABOVE),
+            ),
         )
     }
 
-    fun generate(
-        bitmap: Bitmap,
-        prompt: String
-    ) {
+    fun generate(bitmap: Bitmap, prompt: String) {
         _isGenerating.value = true
 
         val multimodalPrompt = content {

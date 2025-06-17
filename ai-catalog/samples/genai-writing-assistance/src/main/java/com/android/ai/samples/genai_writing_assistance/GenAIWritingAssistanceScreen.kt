@@ -5,33 +5,27 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package com.android.ai.samples.genai_writing_assistance
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -59,7 +53,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.android.ai.samples.geminimultimodal.R
@@ -79,7 +72,6 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
     val proofreadSampleTextOptions = stringArrayResource(R.array.proofread_sample_text)
     val rewriteSampleTextOptions = stringArrayResource(R.array.rewrite_sample_text)
 
-
     var textInput by remember { mutableStateOf("") }
 
     Scaffold(
@@ -88,15 +80,18 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                 colors = topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.primary,
-                ), title = {
+                ),
+                title = {
                     Text(text = stringResource(id = R.string.genai_writing_assistance_title_bar))
-                })
-        }) { innerPadding ->
+                },
+            )
+        },
+    ) { innerPadding ->
 
         Column(
             Modifier
                 .padding(12.dp)
-                .padding(innerPadding)
+                .padding(innerPadding),
         ) {
             // Text input box
             TextField(
@@ -105,7 +100,7 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                 label = { Text(stringResource(id = R.string.genai_writing_assistance_text_input_label)) },
                 modifier = Modifier
                     .fillMaxSize()
-                    .weight(.8f)
+                    .weight(.8f),
             )
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
@@ -115,20 +110,20 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                         showBottomSheet = true
                         viewModel.proofread(textInput, context)
                     },
-                    Modifier.padding(10.dp)
+                    Modifier.padding(10.dp),
                 ) {
                     Text(
-                        stringResource(id = R.string.genai_writing_assistance_proofread_btn)
+                        stringResource(id = R.string.genai_writing_assistance_proofread_btn),
                     )
                 }
                 Button(
                     onClick = {
                         showRewriteOptionsDialog = true
                     },
-                    Modifier.padding(10.dp)
+                    Modifier.padding(10.dp),
                 ) {
                     Text(
-                        stringResource(id = R.string.genai_writing_assistance_rewrite_btn)
+                        stringResource(id = R.string.genai_writing_assistance_rewrite_btn),
                     )
                 }
             }
@@ -141,31 +136,31 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
             ) {
                 OutlinedButton(
                     onClick = { textInput = proofreadSampleTextOptions.random() },
-                    Modifier.weight(1f).padding(5.dp)
+                    Modifier.weight(1f).padding(5.dp),
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_proofread_sample_text_btn),
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
                     )
                 }
 
                 OutlinedButton(
                     onClick = { textInput = rewriteSampleTextOptions.random() },
-                    Modifier.weight(1f).padding(5.dp)
+                    Modifier.weight(1f).padding(5.dp),
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_rewrite_sample_text_btn),
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
                     )
                 }
 
                 OutlinedButton(
                     onClick = { textInput = "" },
-                    Modifier.weight(1f).padding(5.dp)
+                    Modifier.weight(1f).padding(5.dp),
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_reset_btn),
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
                     )
                 }
             }
@@ -177,7 +172,7 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                     showBottomSheet = false
                     viewModel.clearGeneratedText()
                 },
-                sheetState = sheetState
+                sheetState = sheetState,
             ) {
                 Text(
                     text = resultGenerated.value,
@@ -185,8 +180,8 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                         top = 8.dp,
                         bottom = 24.dp,
                         start = 24.dp,
-                        end = 24.dp
-                    )
+                        end = 24.dp,
+                    ),
                 )
             }
         }
@@ -199,22 +194,19 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                     viewModel.rewrite(
                         textInput,
                         rewriteStyleSelected.rewriteStyle,
-                        context
+                        context,
                     )
                 },
                 onDismissRequest = {
                     showRewriteOptionsDialog = false
-                })
+                },
+            )
         }
     }
 }
 
 @Composable
-fun RewriteOptionsDialog(
-    onConfirm: (rewriteStyle: RewriteStyle) -> Unit,
-    onDismissRequest: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun RewriteOptionsDialog(onConfirm: (rewriteStyle: RewriteStyle) -> Unit, onDismissRequest: () -> Unit, modifier: Modifier = Modifier) {
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
             modifier = Modifier
@@ -233,19 +225,19 @@ fun RewriteOptionsDialog(
                             .selectable(
                                 selected = (option == selectedOption),
                                 onClick = { onOptionSelected(option) },
-                                role = Role.RadioButton
+                                role = Role.RadioButton,
                             )
                             .padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         RadioButton(
                             selected = (option == selectedOption),
-                            onClick = null // null recommended for accessibility with screen readers
+                            onClick = null, // null recommended for accessibility with screen readers
                         )
                         Text(
                             text = option.displayName,
                             style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 16.dp)
+                            modifier = Modifier.padding(start = 16.dp),
                         )
                     }
                 }
@@ -275,7 +267,10 @@ fun RewriteOptionsDialog(
     }
 }
 
-enum class RewriteStyle(val rewriteStyle: Int, val displayName: String) {
+enum class RewriteStyle(
+    val rewriteStyle: Int,
+    val displayName: String,
+) {
     ELABORATE(RewriterOptions.OutputType.ELABORATE, "Elaborate"),
     EMOJIFY(RewriterOptions.OutputType.EMOJIFY, "Emojify"),
     SHORTEN(RewriterOptions.OutputType.SHORTEN, "Shorten"),

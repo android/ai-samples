@@ -1,3 +1,18 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.android.ai.samples.geminivideosummary.ui
 
 import android.speech.tts.TextToSpeech
@@ -22,7 +37,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.com.android.ai.samples.geminivideosummary.R
 import java.util.Locale
-
 
 /**
  * Composable function that provides controls for Text-to-Speech functionality.
@@ -50,20 +64,24 @@ fun TextToSpeechControls(
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        OutlinedTextField(value = selectedAccent.displayLanguage,
+        OutlinedTextField(
+            value = selectedAccent.displayLanguage,
             onValueChange = { },
             readOnly = true,
             trailingIcon = {
-                Icon(imageVector = Icons.Filled.ArrowDropDown,
+                Icon(
+                    imageVector = Icons.Filled.ArrowDropDown,
                     contentDescription = "Dropdown",
-                    modifier = Modifier.clickable { onAccentDropdownExpanded(!isAccentDropdownExpanded) })
+                    modifier = Modifier.clickable { onAccentDropdownExpanded(!isAccentDropdownExpanded) },
+                )
             },
             modifier = Modifier
                 .clickable { onAccentDropdownExpanded(!isAccentDropdownExpanded) }
                 .padding(end = 8.dp)
-                .weight(1f))
+                .weight(1f),
+        )
         DropdownMenu(
             expanded = isAccentDropdownExpanded,
             onDismissRequest = { onAccentDropdownExpanded(false) },
@@ -79,7 +97,7 @@ fun TextToSpeechControls(
         if (isInitialized && !isSpeaking) {
             Button(onClick = {
                 handleSpeakButtonClick(
-                    textToSpeech, speechText, selectedAccent, onSpeakingStateChange
+                    textToSpeech, speechText, selectedAccent, onSpeakingStateChange,
                 )
             }) {
                 Text(text = stringResource(R.string.text_listen_to_ai_output))
@@ -101,7 +119,7 @@ private fun handleSpeakButtonClick(
     textToSpeech: TextToSpeech?,
     textForSpeech: String,
     selectedAccent: Locale,
-    onSpeakingStateChange: (speaking: Boolean, paused: Boolean) -> Unit
+    onSpeakingStateChange: (speaking: Boolean, paused: Boolean) -> Unit,
 ) {
     // Check if the voice and language is supported
     val result = textToSpeech?.language?.let {
@@ -112,7 +130,7 @@ private fun handleSpeakButtonClick(
     } else {
         // Start speaking
         textToSpeech?.speak(
-            textForSpeech, TextToSpeech.QUEUE_FLUSH, null, null
+            textForSpeech, TextToSpeech.QUEUE_FLUSH, null, null,
         )
         onSpeakingStateChange(true, false)
     }

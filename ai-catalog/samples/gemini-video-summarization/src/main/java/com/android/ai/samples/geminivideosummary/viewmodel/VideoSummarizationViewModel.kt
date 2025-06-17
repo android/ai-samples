@@ -5,16 +5,14 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package com.android.ai.samples.geminivideosummary.viewmodel
 
 import android.net.Uri
@@ -25,10 +23,10 @@ import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.content
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * ViewModel class responsible for handling video summarization using Gemini API.
@@ -62,7 +60,6 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
                     outputStringBuilder.append(response.text)
                 }
                 _outputText.value = OutputTextState.Success(outputStringBuilder.toString())
-
             } catch (error: Exception) {
                 _outputText.value = error.localizedMessage?.let { OutputTextState.Error(it) }!!
                 Log.e(tag, "Error processing prompt : $error")
