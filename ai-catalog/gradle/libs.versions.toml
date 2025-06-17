@@ -25,6 +25,7 @@ material3Android = "1.3.1"
 media3 = "1.6.1"
 firebaseCommonKtx = "21.0.0"
 uiToolingPreviewAndroid = "1.8.1"
+spotless = "7.0.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -73,3 +74,4 @@ google-gms-google-services = { id = "com.google.gms.google-services", version.re
 hilt-plugin = { id = "com.google.dagger.hilt.android", version.ref = "hilt"}
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
