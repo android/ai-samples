@@ -101,40 +101,27 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
             }
 
             // Select image button
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Button(
-                    onClick = {
-                        photoPickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
-                    },
-                    modifier = Modifier.padding(10.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.genai_image_description_add_image),
-                        fontSize = 16.sp
-                    )
-                }
+            Button(
+                onClick = {
+                    photoPickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+                },
+                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.genai_image_description_add_image),
+                )
             }
 
-            Spacer(modifier = Modifier.weight(1f))
-
             // Generate image description button
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                contentAlignment = Alignment.Center
+            Button(
+                onClick = {
+                    showBottomSheet = true
+                    viewModel.getImageDescription(imageUri, context)
+                }, modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally)
             ) {
-                Button(
-                    onClick = {
-                        showBottomSheet = true
-                        viewModel.getImageDescription(imageUri, context)
-                    }, modifier = Modifier.padding(10.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.genai_image_description_run_inference),
-                        fontSize = 20.sp
-                    )
-                }
+                Text(
+                    text = stringResource(id = R.string.genai_image_description_run_inference),
+                )
             }
         }
 

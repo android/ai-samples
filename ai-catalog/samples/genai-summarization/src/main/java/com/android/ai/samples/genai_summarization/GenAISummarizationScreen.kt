@@ -92,42 +92,36 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
             )
 
             // Summarize button
-            Box(
-                modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center
+            Button(
+                onClick = {
+                    showBottomSheet = true
+                    viewModel.summarize(textInput, context)
+                }, modifier = Modifier
+                    .padding(10.dp)
+                    .align(Alignment.CenterHorizontally)
             ) {
-                Button(
-                    onClick = {
-                        showBottomSheet = true
-                        viewModel.summarize(textInput, context)
-                    }, modifier = Modifier.padding(10.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.genai_summarization_summarize_btn)
-                    )
-                }
+                Text(
+                    text = stringResource(id = R.string.genai_summarization_summarize_btn)
+                )
             }
 
             // Extra options buttons
-            Box(
-                modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center
-            ) {
-                Row {
-                    OutlinedButton(
-                        onClick = { textInput = sampleTextOptions.random() },
-                        Modifier.padding(5.dp)
-                    ) {
-                        Text(
-                            stringResource(id = R.string.genai_summarization_add_text_btn)
-                        )
-                    }
-                    OutlinedButton(
-                        onClick = { textInput = "" },
-                        Modifier.padding(5.dp)
-                    ) {
-                        Text(
-                            stringResource(id = R.string.genai_summarization_reset_btn)
-                        )
-                    }
+            Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                OutlinedButton(
+                    onClick = { textInput = sampleTextOptions.random() },
+                    Modifier.padding(5.dp)
+                ) {
+                    Text(
+                        stringResource(id = R.string.genai_summarization_add_text_btn)
+                    )
+                }
+                OutlinedButton(
+                    onClick = { textInput = "" },
+                    Modifier.padding(5.dp)
+                ) {
+                    Text(
+                        stringResource(id = R.string.genai_summarization_reset_btn)
+                    )
                 }
             }
         }
