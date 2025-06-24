@@ -20,6 +20,7 @@ jobs:
     permissions:
       contents: write # Needed for git-auto-commit-action
     strategy:
+      fail-fast: false
       matrix:
         project-dir: [ai-catalog, gemini-nano]
     defaults:
@@ -46,9 +47,11 @@ jobs:
         run: chmod +x gradlew
 
       - name: Apply Spotless
+        if: matrix.project-dir != 'gemini-nano'
         run: ./gradlew spotlessApply
 
       - name: Commit Spotless changes
+        if: matrix.project-dir != 'gemini-nano'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 🤖 Apply Spotless formatting
@@ -92,6 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
+      fail-fast: false
       matrix:
         project-dir: [ai-catalog, gemini-nano]
         api-level: [26]
