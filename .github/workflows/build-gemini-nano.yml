@@ -3,12 +3,8 @@ name: Build and Test
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - 'ai-catalog/**'
   pull_request:
     branches: [ "main" ]
-    paths:
-      - 'ai-catalog/**'
   workflow_dispatch:
 
 # Ensure that only the latest commit is tested for PRs
