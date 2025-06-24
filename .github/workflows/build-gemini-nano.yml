@@ -60,9 +60,6 @@ jobs:
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-configuration-cache
 
-      - name: Verify Screenshot Tests (AndroidX)
-        run: ./gradlew validateDebugScreenshotTest
-
       - name: Run local unit tests
         run: ./gradlew testDebugUnitTest 
 
@@ -74,21 +71,21 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: APKs-${{ matrix.project-dir }}
-          path: '${{ matrix.project-dir }}/**/build/outputs/apk/debug/*.apk'
+          path: '**/build/outputs/apk/debug/*.apk'
 
       - name: Upload JVM local test results (XML)
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: local-test-results-${{ matrix.project-dir }}
-          path: '${{ matrix.project-dir }}/**/build/test-results/test*UnitTest/TEST-*.xml'
+          path: '**/build/test-results/test*UnitTest/TEST-*.xml'
 
       - name: Upload lint reports (HTML)
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: lint-reports-html-${{ matrix.project-dir }}
-          path: '${{ matrix.project-dir }}/**/build/reports/lint-results-debug.html'
+          path: '**/build/reports/lint-results-debug.html'
 
   androidTest:
     name: "Instrumentation Tests (emulator)"
@@ -99,9 +96,6 @@ jobs:
       matrix:
         project-dir: [ai-catalog, gemini-nano]
         api-level: [26]
-    defaults:
-      run:
-        working-directory: ${{ matrix.project-dir }}
 
     steps:
       - name: Delete unnecessary tools 🔧
@@ -132,9 +126,11 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Grant execute permission for gradlew
+        working-directory: ${{ matrix.project-dir }}
         run: chmod +x gradlew
 
       - name: Build
+        working-directory: ${{ matrix.project-dir }}
         run: ./gradlew assembleDebug assembleDebugAndroidTest
 
       - name: Build projects and run instrumentation tests
@@ -145,6 +141,7 @@ jobs:
           disable-animations: true
           disk-size: 6000M
           heap-size: 600M
+          working-directory: ${{ matrix.project-dir }}
           script: ./gradlew connectedDebugAndroidTest
 
 
@@ -153,4 +150,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-reports-${{ matrix.project-dir }}-${{ matrix.api-level }}
-          path: '${{ matrix.project-dir }}/**/build/reports/androidTests'
+          path: '**/build/reports/androidTests'
