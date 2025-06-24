@@ -19,15 +19,21 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: write # Needed for git-auto-commit-action
+    strategy:
+      matrix:
+        project-dir: [ai-catalog, gemini-nano]
+    defaults:
+      run:
+        working-directory: ${{ matrix.project-dir }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '17'
           distribution: 'temurin'
 
       - name: Setup Gradle
@@ -64,22 +70,22 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: APKs
-          path: '**/build/outputs/apk/debug/*.apk'
+          name: APKs-${{ matrix.project-dir }}
+          path: '${{ matrix.project-dir }}/**/build/outputs/apk/debug/*.apk'
 
       - name: Upload JVM local test results (XML)
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: local-test-results
-          path: '**/build/test-results/test*UnitTest/TEST-*.xml'
+          name: local-test-results-${{ matrix.project-dir }}
+          path: '${{ matrix.project-dir }}/**/build/test-results/test*UnitTest/TEST-*.xml'
 
       - name: Upload lint reports (HTML)
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: lint-reports-html
-          path: '**/build/reports/lint-results-debug.html'
+          name: lint-reports-html-${{ matrix.project-dir }}
+          path: '${{ matrix.project-dir }}/**/build/reports/lint-results-debug.html'
 
   androidTest:
     name: "Instrumentation Tests (emulator)"
@@ -87,7 +93,11 @@ jobs:
     timeout-minutes: 60
     strategy:
       matrix:
+        project-dir: [ai-catalog, gemini-nano]
         api-level: [26]
+    defaults:
+      run:
+        working-directory: ${{ matrix.project-dir }}
 
     steps:
       - name: Delete unnecessary tools 🔧
@@ -108,13 +118,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Copy CI gradle.properties
-        run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
-
-      - name: Set up JDK 21
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '17'
           distribution: 'temurin'
 
       - name: Setup Gradle
@@ -141,5 +148,5 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports-${{ matrix.api-level }}
-          path: '**/build/reports/androidTests'
+          name: test-reports-${{ matrix.project-dir }}-${{ matrix.api-level }}
+          path: '${{ matrix.project-dir }}/**/build/reports/androidTests'
