@@ -129,10 +129,6 @@ jobs:
         working-directory: ${{ matrix.project-dir }}
         run: chmod +x gradlew
 
-      - name: Build
-        working-directory: ${{ matrix.project-dir }}
-        run: ./gradlew assembleDebug assembleDebugAndroidTest
-
       - name: Build projects and run instrumentation tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
