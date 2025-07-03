@@ -21,6 +21,7 @@ Browse the samples inside the `/samples` folder:
 - **imagen**: an image generation sample using Imagen
 - **magic-selfie**: an sample using ML Kit subject segmentation and Imagen for image generation
 - **gemini-video-summarization**: a video summarization sample using Gemini 2.0 Flash
+- **gemini-live-todo**: a todo list app using Gemini Live
 - More to come...
 
 > **Requires Firebase setup** the samples relying on Google Cloud models (Gemini Pro, Gemini Flash, etc...) 
