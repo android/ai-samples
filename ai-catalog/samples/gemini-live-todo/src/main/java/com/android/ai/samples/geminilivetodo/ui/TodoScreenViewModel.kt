@@ -57,27 +57,24 @@ class TodoScreenViewModel @Inject constructor(
 ) : ViewModel() {
     private val TAG = "TodoScreenViewModel"
 
-    private var isLiveSessionReady = false
     private var isLiveSessionRunning = false
 
     private var session: LiveSession? = null
 
-    private val _uiState = MutableStateFlow(TodoScreenUiState())
+    private val _uiState = MutableStateFlow<TodoScreenUiState>(TodoScreenUiState.Initial)
     val uiState: StateFlow<TodoScreenUiState> = _uiState.asStateFlow()
-
-
 
     init {
         viewModelScope.launch {
             todoRepository.todos.collect { todos ->
-                _uiState.update { currentState ->
-                    currentState.copy(todos = todos)
+                _uiState.update {
+                    if (it is TodoScreenUiState.Success) {
+                        it.copy(todos = todos)
+                    } else {
+                        TodoScreenUiState.Success(todos = todos)
+                    }
                 }
             }
-        }
-
-        viewModelScope.launch {
-            initializeGeminiLive()
         }
     }
 
@@ -99,29 +96,41 @@ class TodoScreenViewModel @Inject constructor(
             session?.let {
                 if (!isLiveSessionRunning) {
                     it.startAudioConversation(::handleFunctionCall)
-                    isLiveSessionRunning= true
-                    _uiState.update { currentState -> currentState.copy(isLiveSessionRunning = true)
+                    isLiveSessionRunning = true
+                    _uiState.update {
+                        if (it is TodoScreenUiState.Success) {
+                            it.copy(isLiveSessionRunning = true)
+                        } else {
+                            it
+                        }
                     }
 
                 } else {
                     it.stopAudioConversation()
                     isLiveSessionRunning = false
-                    _uiState.update { currentState -> currentState.copy(isLiveSessionRunning = false) }
+                    _uiState.update {
+                        if (it is TodoScreenUiState.Success) {
+                            it.copy(isLiveSessionRunning = false)
+                        } else {
+                            it
+                        }
+                    }
                 }
             }
         }
     }
 
-    private suspend fun initializeGeminiLive() {
-        Log.d(TAG, "Start Gemini Live initialization")
-        val liveGenerationConfig = liveGenerationConfig {
-            speechConfig = SpeechConfig(voice = Voice("FENRIR"))
-            responseModality = ResponseModality.AUDIO
-        }
+    fun initializeGeminiLive() {
+        viewModelScope.launch {
+            Log.d(TAG, "Start Gemini Live initialization")
+            val liveGenerationConfig = liveGenerationConfig {
+                speechConfig = SpeechConfig(voice = Voice("FENRIR"))
+                responseModality = ResponseModality.AUDIO
+            }
 
-        val systemInstruction = content {
-            text(
-                """
+            val systemInstruction = content {
+                text(
+                    """
                 **Your Role:** You are a friendly and helpful voice assistant in this app. 
                 Your main job is to change update the tasks in the todo list based on user requests.
     
@@ -136,48 +145,54 @@ class TodoScreenViewModel @Inject constructor(
     
                 **If Unsure:** If you can't determine the update from the request, politely ask the user to rephrase or try something else.
                 """.trimIndent()
+                )
+            }
+
+            val addTodo = FunctionDeclaration(
+                "addTodo",
+                "Add a task to the todo list",
+                mapOf("taskDescription" to Schema.string("A succinct string describing the task"))
             )
-        }
 
-        val addTodo = FunctionDeclaration(
-            "addTodo",
-            "Add a task to the todo list",
-            mapOf("taskDescription" to Schema.string("A succinct string describing the task"))
-        )
+            val removeTodo = FunctionDeclaration(
+                "removeTodo",
+                "Remove a task from the todo list",
+                mapOf("todoId" to Schema.string("The id of the task to remove from the todo list"))
+            )
 
-        val removeTodo = FunctionDeclaration(
-            "removeTodo",
-            "Remove a task from the todo list",
-            mapOf("todoId" to Schema.string("The id of the task to remove from the todo list"))
-        )
+            val toggleTodoStatus = FunctionDeclaration(
+                "toggleTodoStatus",
+                "Change the status of the task",
+                mapOf("todoId" to Schema.string("The id of the task to remove from the todo list"))
+            )
 
-        val toggleTodoStatus = FunctionDeclaration(
-            "toggleTodoStatus",
-            "Change the status of the task",
-            mapOf("todoId" to Schema.string("The id of the task to remove from the todo list"))
-        )
+            val getTodoList = FunctionDeclaration(
+                "getTodoList",
+                "Get the list of all the tasks in the todo list",
+                emptyMap()
+            )
 
-        val getTodoList = FunctionDeclaration(
-            "getTodoList",
-            "Get the list of all the tasks in the todo list",
-            emptyMap()
-        )
-
-        val generativeModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).liveModel(
-            "gemini-2.0-flash-live-preview-04-09",
-            generationConfig = liveGenerationConfig,
-            systemInstruction = systemInstruction,
-            tools = listOf(
-                Tool.functionDeclarations(
-                    listOf(getTodoList, addTodo, removeTodo, toggleTodoStatus)
+            val generativeModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).liveModel(
+                "gemini-2.0-flash-live-preview-04-09",
+                generationConfig = liveGenerationConfig,
+                systemInstruction = systemInstruction,
+                tools = listOf(
+                    Tool.functionDeclarations(
+                        listOf(getTodoList, addTodo, removeTodo, toggleTodoStatus)
+                    )
                 )
             )
-        )
 
-        session = generativeModel.connect()
-        Log.d(TAG, "Gemini Live session initialized")
-        isLiveSessionReady = true
-        _uiState.update { currentState -> currentState.copy(isLiveSessionReady = true) }
+            session = generativeModel.connect()
+            Log.d(TAG, "Gemini Live session initialized")
+            _uiState.update {
+                if (it is TodoScreenUiState.Success) {
+                    it.copy(isLiveSessionReady = true)
+                } else {
+                    it
+                }
+            }
+        }
     }
 
     private fun handleFunctionCall(functionCall: FunctionCallPart): FunctionResponsePart {

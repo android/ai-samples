@@ -19,8 +19,12 @@ package com.android.ai.samples.geminilivetodo.ui
 
 import com.android.ai.samples.geminilivetodo.data.Todo
 
-data class TodoScreenUiState(
-    val todos: List<Todo> = emptyList(),
-    val isLiveSessionReady: Boolean = false,
-    val isLiveSessionRunning: Boolean = false
-)
+sealed interface TodoScreenUiState {
+    data object Initial : TodoScreenUiState
+
+    data class Success(
+        val todos: List<Todo> = emptyList(),
+        val isLiveSessionReady: Boolean = false,
+        val isLiveSessionRunning: Boolean = false
+    ) : TodoScreenUiState
+}

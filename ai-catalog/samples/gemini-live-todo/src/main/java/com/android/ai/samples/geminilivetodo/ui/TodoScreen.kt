@@ -40,7 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,6 +54,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.geminilive.ui.TodoScreenViewModel
 import com.android.ai.samples.geminilivetodo.R
 import com.android.ai.samples.geminilivetodo.data.Todo
@@ -69,8 +70,12 @@ import kotlin.collections.reversed
 fun TodoScreen(
     viewModel: TodoScreenViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var text by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        viewModel.initializeGeminiLive()
+    }
 
     Scaffold(
         topBar = {
@@ -83,32 +88,36 @@ fun TodoScreen(
             )
         },
         floatingActionButton = {
-            val micIcon = when {
-                !uiState.isLiveSessionReady -> Icons.Filled.MicOff
-                uiState.isLiveSessionRunning -> Icons.Filled.Mic
-                else -> Icons.Filled.MicNone
-            }
+            if (uiState is TodoScreenUiState.Success) {
+                val successState = uiState as TodoScreenUiState.Success
+                val micIcon = when {
+                    !successState.isLiveSessionReady -> Icons.Filled.MicOff
+                    successState.isLiveSessionRunning -> Icons.Filled.Mic
+                    else -> Icons.Filled.MicNone
+                }
 
-            val containerColor = if (uiState.isLiveSessionRunning) {
-                val infiniteTransition = rememberInfiniteTransition(label = "mic_color_transition")
-                infiniteTransition.animateColor(
-                    initialValue = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                    targetValue = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(1000, easing = LinearEasing),
-                        repeatMode = RepeatMode.Reverse
-                    ),
-                    label = "mic_color"
-                ).value
-            } else {
-                MaterialTheme.colorScheme.primaryContainer
-            }
+                val containerColor = if (successState.isLiveSessionRunning) {
+                    val infiniteTransition =
+                        rememberInfiniteTransition(label = "mic_color_transition")
+                    infiniteTransition.animateColor(
+                        initialValue = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                        targetValue = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(1000, easing = LinearEasing),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "mic_color"
+                    ).value
+                } else {
+                    MaterialTheme.colorScheme.primaryContainer
+                }
 
-            FloatingActionButton(
-                onClick = { if (uiState.isLiveSessionReady) viewModel.toggleLiveSession() },
-                containerColor = containerColor
-            ) {
-                Icon(micIcon, "Interact with todolist by voice")
+                FloatingActionButton(
+                    onClick = { if (successState.isLiveSessionReady) viewModel.toggleLiveSession() },
+                    containerColor = containerColor
+                ) {
+                    Icon(micIcon, "Interact with todolist by voice")
+                }
             }
         },
         floatingActionButtonPosition = FabPosition.Center,
@@ -147,14 +156,22 @@ fun TodoScreen(
                 }
             }
 
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(uiState.todos.reversed(), key = { it.id }) { todo ->
-                    TodoItem(
-                        task = todo,
-                        onToggle = { viewModel.toggleTodoStatus(todo.id) },
-                        onDelete = { viewModel.removeTodo(todo.id) }
-                    )
-                    HorizontalDivider()
+            when (uiState) {
+                is TodoScreenUiState.Initial -> {
+                    // Show a loading indicator or initial state
+                }
+                is TodoScreenUiState.Success -> {
+                    val todos = (uiState as TodoScreenUiState.Success).todos
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(todos.reversed(), key = { it.id }) { todo ->
+                            TodoItem(
+                                task = todo,
+                                onToggle = { viewModel.toggleTodoStatus(todo.id) },
+                                onDelete = { viewModel.removeTodo(todo.id) }
+                            )
+                            HorizontalDivider()
+                        }
+                    }
                 }
             }
         }
