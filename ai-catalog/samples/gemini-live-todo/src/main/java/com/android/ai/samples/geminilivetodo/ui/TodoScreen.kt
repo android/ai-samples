@@ -70,7 +70,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.android.ai.samples.geminilive.ui.TodoScreenViewModel
 import com.android.ai.samples.geminilivetodo.R
 import com.android.ai.samples.geminilivetodo.data.Todo
 import kotlin.collections.reversed
@@ -129,7 +128,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                     onClick = { if (successState.isLiveSessionReady) viewModel.toggleLiveSession() },
                     containerColor = containerColor,
                 ) {
-                    Icon(micIcon, "Interact with todolist by voice")
+                    Icon(micIcon, stringResource(R.string.interact_with_todolist_by_voice))
                 }
             }
         },
@@ -194,30 +193,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
 @Composable
 fun TodoItem(task: Todo, onToggle: () -> Unit, onDelete: () -> Unit) {
     val defaultBackgroundColor = Color.Transparent
-    val highlightColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
     val backgroundColor = remember { Animatable(defaultBackgroundColor) }
-
-//    // Animate background on completion change
-//    LaunchedEffect(task.isCompleted) {
-//        if (backgroundColor.value == defaultBackgroundColor) {
-//            launch {
-//                backgroundColor.animateTo(highlightColor, animationSpec = tween(durationMillis = 150))
-//                delay(150)
-//                backgroundColor.animateTo(defaultBackgroundColor, animationSpec = tween(durationMillis = 150))
-//                delay(150)
-//                backgroundColor.animateTo(highlightColor, animationSpec = tween(durationMillis = 150))
-//                delay(150)
-//                backgroundColor.animateTo(defaultBackgroundColor, animationSpec = tween(durationMillis = 150))
-//            }
-//        }
-//    }
-//
-//    // Ensure background is reset for item reuse
-//    LaunchedEffect(task.id) {
-//        if (!backgroundColor.isRunning) {
-//            backgroundColor.snapTo(defaultBackgroundColor)
-//        }
-//    }
 
     Row(
         modifier = Modifier

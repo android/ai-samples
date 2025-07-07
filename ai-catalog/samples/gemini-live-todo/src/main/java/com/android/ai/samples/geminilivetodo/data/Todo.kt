@@ -15,8 +15,10 @@
  */
 package com.android.ai.samples.geminilivetodo.data
 
+import java.util.UUID.randomUUID
+
 data class Todo(
-    val id: Long = System.currentTimeMillis(),
+    val id: Long = randomUUID().mostSignificantBits,
     val task: String,
     val isCompleted: Boolean = false,
 )

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ai.samples.geminilive.ui
+
+package com.android.ai.samples.geminilivetodo.ui
 
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.geminilivetodo.data.TodoRepository
-import com.android.ai.samples.geminilivetodo.ui.TodoScreenUiState
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.FunctionCallPart
@@ -52,9 +52,7 @@ import kotlinx.serialization.json.long
 @HiltViewModel
 class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRepository) : ViewModel() {
     private val TAG = "TodoScreenViewModel"
-
-    private var isLiveSessionRunning = false
-
+    
     private var session: LiveSession? = null
 
     private val _uiState = MutableStateFlow<TodoScreenUiState>(TodoScreenUiState.Initial)
@@ -89,10 +87,12 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
     @RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
     fun toggleLiveSession() {
         viewModelScope.launch {
+            val currentState = _uiState.value
+            if (currentState !is TodoScreenUiState.Success) return@launch
+
             session?.let {
-                if (!isLiveSessionRunning) {
+                if (currentState.isLiveSessionRunning) {
                     it.startAudioConversation(::handleFunctionCall)
-                    isLiveSessionRunning = true
                     _uiState.update {
                         if (it is TodoScreenUiState.Success) {
                             it.copy(isLiveSessionRunning = true)
@@ -102,7 +102,6 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                     }
                 } else {
                     it.stopAudioConversation()
-                    isLiveSessionRunning = false
                     _uiState.update {
                         if (it is TodoScreenUiState.Success) {
                             it.copy(isLiveSessionRunning = false)
