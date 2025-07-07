@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.ai.samples.geminilivetodo.ui
 
 import android.util.Log
@@ -52,7 +51,7 @@ import kotlinx.serialization.json.long
 @HiltViewModel
 class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRepository) : ViewModel() {
     private val TAG = "TodoScreenViewModel"
-    
+
     private var session: LiveSession? = null
 
     private val _uiState = MutableStateFlow<TodoScreenUiState>(TodoScreenUiState.Initial)
