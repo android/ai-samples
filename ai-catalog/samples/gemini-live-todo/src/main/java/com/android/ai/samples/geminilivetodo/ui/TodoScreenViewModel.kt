@@ -5,16 +5,14 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package com.android.ai.samples.geminilive.ui
 
 import android.util.Log
@@ -39,6 +37,7 @@ import com.google.firebase.ai.type.Voice
 import com.google.firebase.ai.type.content
 import com.google.firebase.ai.type.liveGenerationConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -48,13 +47,10 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
-import javax.inject.Inject
 
 @OptIn(PublicPreviewAPI::class)
 @HiltViewModel
-class TodoScreenViewModel @Inject constructor(
-    private val todoRepository: TodoRepository
-) : ViewModel() {
+class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRepository) : ViewModel() {
     private val TAG = "TodoScreenViewModel"
 
     private var isLiveSessionRunning = false
@@ -104,7 +100,6 @@ class TodoScreenViewModel @Inject constructor(
                             it
                         }
                     }
-
                 } else {
                     it.stopAudioConversation()
                     isLiveSessionRunning = false
@@ -144,32 +139,32 @@ class TodoScreenViewModel @Inject constructor(
                     just here to help you perform the check/uncheck and remove operations to the list.
     
                 **If Unsure:** If you can't determine the update from the request, politely ask the user to rephrase or try something else.
-                """.trimIndent()
+                    """.trimIndent(),
                 )
             }
 
             val addTodo = FunctionDeclaration(
                 "addTodo",
                 "Add a task to the todo list",
-                mapOf("taskDescription" to Schema.string("A succinct string describing the task"))
+                mapOf("taskDescription" to Schema.string("A succinct string describing the task")),
             )
 
             val removeTodo = FunctionDeclaration(
                 "removeTodo",
                 "Remove a task from the todo list",
-                mapOf("todoId" to Schema.string("The id of the task to remove from the todo list"))
+                mapOf("todoId" to Schema.string("The id of the task to remove from the todo list")),
             )
 
             val toggleTodoStatus = FunctionDeclaration(
                 "toggleTodoStatus",
                 "Change the status of the task",
-                mapOf("todoId" to Schema.string("The id of the task to remove from the todo list"))
+                mapOf("todoId" to Schema.string("The id of the task to remove from the todo list")),
             )
 
             val getTodoList = FunctionDeclaration(
                 "getTodoList",
                 "Get the list of all the tasks in the todo list",
-                emptyMap()
+                emptyMap(),
             )
 
             val generativeModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).liveModel(
@@ -178,9 +173,9 @@ class TodoScreenViewModel @Inject constructor(
                 systemInstruction = systemInstruction,
                 tools = listOf(
                     Tool.functionDeclarations(
-                        listOf(getTodoList, addTodo, removeTodo, toggleTodoStatus)
-                    )
-                )
+                        listOf(getTodoList, addTodo, removeTodo, toggleTodoStatus),
+                    ),
+                ),
             )
 
             session = generativeModel.connect()
@@ -202,8 +197,8 @@ class TodoScreenViewModel @Inject constructor(
                 val response = JsonObject(
                     mapOf(
                         "success" to JsonPrimitive(true),
-                        "message" to JsonPrimitive("List of tasks in the todo list: $todoList")
-                    )
+                        "message" to JsonPrimitive("List of tasks in the todo list: $todoList"),
+                    ),
                 )
                 FunctionResponsePart(functionCall.name, response)
             }
@@ -213,8 +208,8 @@ class TodoScreenViewModel @Inject constructor(
                 val response = JsonObject(
                     mapOf(
                         "success" to JsonPrimitive(true),
-                        "message" to JsonPrimitive("Task $taskDescription added to the todo list")
-                    )
+                        "message" to JsonPrimitive("Task $taskDescription added to the todo list"),
+                    ),
                 )
                 FunctionResponsePart(functionCall.name, response)
             }
@@ -224,8 +219,8 @@ class TodoScreenViewModel @Inject constructor(
                 val response = JsonObject(
                     mapOf(
                         "success" to JsonPrimitive(true),
-                        "message" to JsonPrimitive("Task was removed from the todo list")
-                    )
+                        "message" to JsonPrimitive("Task was removed from the todo list"),
+                    ),
                 )
                 FunctionResponsePart(functionCall.name, response)
             }
@@ -235,14 +230,14 @@ class TodoScreenViewModel @Inject constructor(
                 val response = JsonObject(
                     mapOf(
                         "success" to JsonPrimitive(true),
-                        "message" to JsonPrimitive("Task was toggled in the todo list")
-                    )
+                        "message" to JsonPrimitive("Task was toggled in the todo list"),
+                    ),
                 )
                 FunctionResponsePart(functionCall.name, response)
             }
             else -> {
                 val response = JsonObject(
-                    mapOf("error" to JsonPrimitive("Unknown function: ${functionCall.name}"))
+                    mapOf("error" to JsonPrimitive("Unknown function: ${functionCall.name}")),
                 )
                 FunctionResponsePart(functionCall.name, response)
             }

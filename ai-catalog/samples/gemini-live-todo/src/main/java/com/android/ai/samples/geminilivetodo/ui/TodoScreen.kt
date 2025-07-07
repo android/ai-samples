@@ -1,3 +1,18 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.android.ai.samples.geminilivetodo.ui
 
 import android.Manifest
@@ -67,9 +82,7 @@ import kotlin.collections.reversed
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresPermission(Manifest.permission.RECORD_AUDIO)
 @Composable
-fun TodoScreen(
-    viewModel: TodoScreenViewModel = hiltViewModel()
-) {
+fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var text by remember { mutableStateOf("") }
 
@@ -84,7 +97,7 @@ fun TodoScreen(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
-                title = { Text(stringResource(R.string.gemini_live_title)) }
+                title = { Text(stringResource(R.string.gemini_live_title)) },
             )
         },
         floatingActionButton = {
@@ -104,9 +117,9 @@ fun TodoScreen(
                         targetValue = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
                         animationSpec = infiniteRepeatable(
                             animation = tween(1000, easing = LinearEasing),
-                            repeatMode = RepeatMode.Reverse
+                            repeatMode = RepeatMode.Reverse,
                         ),
-                        label = "mic_color"
+                        label = "mic_color",
                     ).value
                 } else {
                     MaterialTheme.colorScheme.primaryContainer
@@ -114,34 +127,34 @@ fun TodoScreen(
 
                 FloatingActionButton(
                     onClick = { if (successState.isLiveSessionReady) viewModel.toggleLiveSession() },
-                    containerColor = containerColor
+                    containerColor = containerColor,
                 ) {
                     Icon(micIcon, "Interact with todolist by voice")
                 }
             }
         },
         floatingActionButtonPosition = FabPosition.Center,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
                 .padding(16.dp)
                 .imePadding()
-                .fillMaxSize()
+                .fillMaxSize(),
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
                     label = { Text(stringResource(R.string.new_task_placeholder)) },
                     modifier = Modifier.weight(1f),
-                    singleLine = true
+                    singleLine = true,
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
@@ -150,7 +163,7 @@ fun TodoScreen(
                             viewModel.addTodo(text)
                             text = ""
                         }
-                    }
+                    },
                 ) {
                     Text(stringResource(R.string.add_button))
                 }
@@ -167,7 +180,7 @@ fun TodoScreen(
                             TodoItem(
                                 task = todo,
                                 onToggle = { viewModel.toggleTodoStatus(todo.id) },
-                                onDelete = { viewModel.removeTodo(todo.id) }
+                                onDelete = { viewModel.removeTodo(todo.id) },
                             )
                             HorizontalDivider()
                         }
@@ -178,13 +191,8 @@ fun TodoScreen(
     }
 }
 
-
 @Composable
-fun TodoItem(
-    task: Todo,
-    onToggle: () -> Unit,
-    onDelete: () -> Unit
-) {
+fun TodoItem(task: Todo, onToggle: () -> Unit, onDelete: () -> Unit) {
     val defaultBackgroundColor = Color.Transparent
     val highlightColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
     val backgroundColor = remember { Animatable(defaultBackgroundColor) }
@@ -216,11 +224,11 @@ fun TodoItem(
             .fillMaxWidth()
             .padding(vertical = 12.dp, horizontal = 8.dp)
             .background(backgroundColor.value),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(
             checked = task.isCompleted,
-            onCheckedChange = { onToggle() }
+            onCheckedChange = { onToggle() },
         )
         Text(
             text = task.task,
@@ -229,7 +237,7 @@ fun TodoItem(
             } else {
                 TextStyle(fontSize = 16.sp, textDecoration = TextDecoration.None)
             },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         IconButton(onClick = onDelete) {
             Icon(

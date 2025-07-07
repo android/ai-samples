@@ -98,8 +98,8 @@ val sampleCatalog = listOf(
         route = "GeminiLiveTodoScreen",
         sampleEntryScreen = { TodoScreen() },
         tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE),
-        needsFirebase = true
-    )
+        needsFirebase = true,
+    ),
 
     // To create a new sample entry, add a new SampleCatalogItem here.
 )
