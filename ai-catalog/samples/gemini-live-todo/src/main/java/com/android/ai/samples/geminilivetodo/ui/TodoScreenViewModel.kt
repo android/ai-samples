@@ -113,7 +113,7 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
         }
     }
 
-    fun initializeGeminiLive(){
+    fun initializeGeminiLive() {
         viewModelScope.launch {
             Log.d(TAG, "Start Gemini Live initialization")
             val liveGenerationConfig = liveGenerationConfig {
@@ -181,10 +181,10 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
             } catch (e: Exception) {
                 Log.e(TAG, "Error connecting to the model", e)
                 _uiState.update {
-                        TodoScreenUiState.Error(
-                            isLiveSessionReady = false,
-                            isLiveSessionRunning = false,
-                        )
+                    TodoScreenUiState.Error(
+                        isLiveSessionReady = false,
+                        isLiveSessionRunning = false,
+                    )
                 }
             }
 
