@@ -19,5 +19,8 @@
     <string name="gemini_live_title">Gemini Live Todo</string>
     <string name="new_task_placeholder">New Task</string>
     <string name="add_button">Add</string>
+    <string name="error_title">Error</string>
+    <string name="error_message">The live session model could not be initialized.</string>
+    <string name="dismiss_button">Dismiss</string>
     <string name="interact_with_todolist_by_voice">Button to start the live session and interact with the todo list by voice</string>
 </resources>

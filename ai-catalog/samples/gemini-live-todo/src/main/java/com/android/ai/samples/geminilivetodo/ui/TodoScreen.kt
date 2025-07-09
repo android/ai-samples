@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicNone
 import androidx.compose.material.icons.filled.MicOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -130,6 +131,20 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                 ) {
                     Icon(micIcon, stringResource(R.string.interact_with_todolist_by_voice))
                 }
+            } else if (uiState is TodoScreenUiState.Error) {
+                val isDialogDisplayed = remember { mutableStateOf(true) }
+                if (isDialogDisplayed.value) {
+                    AlertDialog(
+                        onDismissRequest = { isDialogDisplayed.value = false },
+                        title = { Text(text = stringResource(R.string.error_title)) },
+                        text = { Text(text = stringResource(R.string.error_message)) },
+                        confirmButton = {
+                            Button(onClick = { isDialogDisplayed.value = false }) {
+                                Text(text = stringResource(R.string.dismiss_button))
+                            }
+                        },
+                    )
+                }
             }
         },
         floatingActionButtonPosition = FabPosition.Center,
@@ -174,6 +189,19 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                 }
                 is TodoScreenUiState.Success -> {
                     val todos = (uiState as TodoScreenUiState.Success).todos
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(todos.reversed(), key = { it.id }) { todo ->
+                            TodoItem(
+                                task = todo,
+                                onToggle = { viewModel.toggleTodoStatus(todo.id) },
+                                onDelete = { viewModel.removeTodo(todo.id) },
+                            )
+                            HorizontalDivider()
+                        }
+                    }
+                }
+                is TodoScreenUiState.Error -> {
+                    val todos = (uiState as TodoScreenUiState.Error).todos
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(todos.reversed(), key = { it.id }) { todo ->
                             TodoItem(

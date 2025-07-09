@@ -25,4 +25,10 @@ sealed interface TodoScreenUiState {
         val isLiveSessionReady: Boolean = false,
         val isLiveSessionRunning: Boolean = false,
     ) : TodoScreenUiState
+
+    data class Error(
+        val todos: List<Todo> = emptyList(),
+        val isLiveSessionReady: Boolean = false,
+        val isLiveSessionRunning: Boolean = false,
+    ) : TodoScreenUiState
 }
