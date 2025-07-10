@@ -103,7 +103,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
         floatingActionButton = {
             MicButton(
                 uiState = uiState,
-                onToggle = { viewModel.toggleLiveSession() }
+                onToggle = { viewModel.toggleLiveSession() },
             )
         },
         floatingActionButtonPosition = FabPosition.Center,
@@ -122,7 +122,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                 onAddClick = {
                     viewModel.addTodo(text)
                     text = ""
-                }
+                },
             )
 
             when (uiState) {
@@ -163,11 +163,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
 }
 
 @Composable
-fun TodoInput(
-    text: String,
-    onTextChange: (String) -> Unit,
-    onAddClick: () -> Unit
-) {
+fun TodoInput(text: String, onTextChange: (String) -> Unit, onAddClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -192,10 +188,7 @@ fun TodoInput(
 }
 
 @Composable
-fun MicButton(
-    uiState: TodoScreenUiState,
-    onToggle: () -> Unit
-) {
+fun MicButton(uiState: TodoScreenUiState, onToggle: () -> Unit) {
     if (uiState is TodoScreenUiState.Success) {
         val successState = uiState as TodoScreenUiState.Success
         val micIcon = when {
@@ -244,11 +237,7 @@ fun MicButton(
 }
 
 @Composable
-fun TodoItem(
-    modifier: Modifier,
-    task: Todo,
-    onToggle: () -> Unit,
-    onDelete: () -> Unit) {
+fun TodoItem(modifier: Modifier, task: Todo, onToggle: () -> Unit, onDelete: () -> Unit) {
     val defaultBackgroundColor = Color.Transparent
     val backgroundColor = remember { Animatable(defaultBackgroundColor) }
 
