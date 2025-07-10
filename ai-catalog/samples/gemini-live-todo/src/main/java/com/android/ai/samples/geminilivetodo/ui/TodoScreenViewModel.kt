@@ -17,7 +17,6 @@ package com.android.ai.samples.geminilivetodo.ui
 
 import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.annotation.RequiresPermission
@@ -188,10 +187,10 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
             } catch (e: Exception) {
                 Log.e(TAG, "Error connecting to the model", e)
                 _uiState.update {
-                        TodoScreenUiState.Error(
-                            isLiveSessionReady = false,
-                            isLiveSessionRunning = false,
-                        )
+                    TodoScreenUiState.Error(
+                        isLiveSessionReady = false,
+                        isLiveSessionRunning = false,
+                    )
                 }
             }
 
@@ -259,10 +258,10 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
         }
     }
 
-    fun requestAudioPermissionIfNeeded(activity: Activity){
+    fun requestAudioPermissionIfNeeded(activity: Activity) {
         if (ContextCompat.checkSelfPermission(
                 activity,
-                Manifest.permission.RECORD_AUDIO
+                Manifest.permission.RECORD_AUDIO,
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.RECORD_AUDIO), 1)

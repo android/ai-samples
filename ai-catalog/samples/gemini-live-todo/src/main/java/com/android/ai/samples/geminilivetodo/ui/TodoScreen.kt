@@ -68,7 +68,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
@@ -176,11 +175,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
 }
 
 @Composable
-fun TodoInput(
-    text: String,
-    onTextChange: (String) -> Unit,
-    onAddClick: () -> Unit,
-) {
+fun TodoInput(text: String, onTextChange: (String) -> Unit, onAddClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -205,10 +200,7 @@ fun TodoInput(
 }
 
 @Composable
-fun MicButton(
-    uiState: TodoScreenUiState,
-    onToggle: () -> Unit,
-) {
+fun MicButton(uiState: TodoScreenUiState, onToggle: () -> Unit) {
     if (uiState is TodoScreenUiState.Success) {
         val successState = uiState as TodoScreenUiState.Success
         val micIcon = when {
@@ -257,12 +249,7 @@ fun MicButton(
 }
 
 @Composable
-fun TodoItem(
-    modifier: Modifier,
-    task: Todo,
-    onToggle: () -> Unit,
-    onDelete: () -> Unit,
-) {
+fun TodoItem(modifier: Modifier, task: Todo, onToggle: () -> Unit, onDelete: () -> Unit) {
     val defaultBackgroundColor = Color.Transparent
     val backgroundColor = remember { Animatable(defaultBackgroundColor) }
 
