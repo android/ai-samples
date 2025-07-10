@@ -16,6 +16,8 @@
 package com.android.ai.samples.geminilivetodo.ui
 
 import android.Manifest
+import android.app.Activity
+import androidx.activity.compose.LocalActivity
 import androidx.annotation.RequiresPermission
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.animateColor
@@ -25,6 +27,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -43,6 +46,7 @@ import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -64,6 +68,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
@@ -86,8 +91,10 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var text by remember { mutableStateOf("") }
 
+    val activity = LocalActivity.current as Activity
+
     LaunchedEffect(Unit) {
-        viewModel.initializeGeminiLive()
+        viewModel.initializeGeminiLive(activity)
     }
 
     Scaffold(
@@ -95,7 +102,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = { Text(stringResource(R.string.gemini_live_title)) },
             )
@@ -127,7 +134,13 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
 
             when (uiState) {
                 is TodoScreenUiState.Initial -> {
-                    // Show a loading indicator or initial state
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
                 is TodoScreenUiState.Success -> {
                     val todos = (uiState as TodoScreenUiState.Success).todos
@@ -163,7 +176,11 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
 }
 
 @Composable
-fun TodoInput(text: String, onTextChange: (String) -> Unit, onAddClick: () -> Unit) {
+fun TodoInput(
+    text: String,
+    onTextChange: (String) -> Unit,
+    onAddClick: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -188,7 +205,10 @@ fun TodoInput(text: String, onTextChange: (String) -> Unit, onAddClick: () -> Un
 }
 
 @Composable
-fun MicButton(uiState: TodoScreenUiState, onToggle: () -> Unit) {
+fun MicButton(
+    uiState: TodoScreenUiState,
+    onToggle: () -> Unit,
+) {
     if (uiState is TodoScreenUiState.Success) {
         val successState = uiState as TodoScreenUiState.Success
         val micIcon = when {
@@ -237,7 +257,12 @@ fun MicButton(uiState: TodoScreenUiState, onToggle: () -> Unit) {
 }
 
 @Composable
-fun TodoItem(modifier: Modifier, task: Todo, onToggle: () -> Unit, onDelete: () -> Unit) {
+fun TodoItem(
+    modifier: Modifier,
+    task: Todo,
+    onToggle: () -> Unit,
+    onDelete: () -> Unit,
+) {
     val defaultBackgroundColor = Color.Transparent
     val backgroundColor = remember { Animatable(defaultBackgroundColor) }
 

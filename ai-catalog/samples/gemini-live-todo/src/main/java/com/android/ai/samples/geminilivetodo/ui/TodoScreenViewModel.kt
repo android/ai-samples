@@ -15,8 +15,14 @@
  */
 package com.android.ai.samples.geminilivetodo.ui
 
+import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.pm.PackageManager
 import android.util.Log
 import androidx.annotation.RequiresPermission
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.geminilivetodo.data.TodoRepository
@@ -90,7 +96,7 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
             if (currentState !is TodoScreenUiState.Success) return@launch
 
             session?.let {
-                if (currentState.isLiveSessionRunning) {
+                if (!currentState.isLiveSessionRunning) {
                     it.startAudioConversation(::handleFunctionCall)
                     _uiState.update {
                         if (it is TodoScreenUiState.Success) {
@@ -113,7 +119,8 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
         }
     }
 
-    fun initializeGeminiLive() {
+    fun initializeGeminiLive(activity: Activity) {
+        requestAudioPermissionIfNeeded(activity)
         viewModelScope.launch {
             Log.d(TAG, "Start Gemini Live initialization")
             val liveGenerationConfig = liveGenerationConfig {
@@ -181,10 +188,10 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
             } catch (e: Exception) {
                 Log.e(TAG, "Error connecting to the model", e)
                 _uiState.update {
-                    TodoScreenUiState.Error(
-                        isLiveSessionReady = false,
-                        isLiveSessionRunning = false,
-                    )
+                        TodoScreenUiState.Error(
+                            isLiveSessionReady = false,
+                            isLiveSessionRunning = false,
+                        )
                 }
             }
 
@@ -249,6 +256,16 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                 )
                 FunctionResponsePart(functionCall.name, response)
             }
+        }
+    }
+
+    fun requestAudioPermissionIfNeeded(activity: Activity){
+        if (ContextCompat.checkSelfPermission(
+                activity,
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.RECORD_AUDIO), 1)
         }
     }
 }
