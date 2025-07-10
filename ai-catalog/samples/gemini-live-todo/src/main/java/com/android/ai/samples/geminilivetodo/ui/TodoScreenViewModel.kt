@@ -16,9 +16,11 @@
 package com.android.ai.samples.geminilivetodo.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
@@ -87,6 +89,7 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
         todoRepository.toggleTodoStatus(todoId)
     }
 
+    @SuppressLint("MissingPermission")
     fun toggleLiveSession(activity: Activity) {
         viewModelScope.launch {
             val currentState = _uiState.value
