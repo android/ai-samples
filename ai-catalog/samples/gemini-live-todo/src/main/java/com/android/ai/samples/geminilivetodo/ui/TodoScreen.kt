@@ -95,57 +95,16 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
                 title = { Text(stringResource(R.string.gemini_live_title)) },
             )
         },
         floatingActionButton = {
-            if (uiState is TodoScreenUiState.Success) {
-                val successState = uiState as TodoScreenUiState.Success
-                val micIcon = when {
-                    !successState.isLiveSessionReady -> Icons.Filled.MicOff
-                    successState.isLiveSessionRunning -> Icons.Filled.Mic
-                    else -> Icons.Filled.MicNone
-                }
-
-                val containerColor = if (successState.isLiveSessionRunning) {
-                    val infiniteTransition =
-                        rememberInfiniteTransition(label = "mic_color_transition")
-                    infiniteTransition.animateColor(
-                        initialValue = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                        targetValue = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(1000, easing = LinearEasing),
-                            repeatMode = RepeatMode.Reverse,
-                        ),
-                        label = "mic_color",
-                    ).value
-                } else {
-                    MaterialTheme.colorScheme.primaryContainer
-                }
-
-                FloatingActionButton(
-                    onClick = { if (successState.isLiveSessionReady) viewModel.toggleLiveSession() },
-                    containerColor = containerColor,
-                ) {
-                    Icon(micIcon, stringResource(R.string.interact_with_todolist_by_voice))
-                }
-            } else if (uiState is TodoScreenUiState.Error) {
-                val isDialogDisplayed = remember { mutableStateOf(true) }
-                if (isDialogDisplayed.value) {
-                    AlertDialog(
-                        onDismissRequest = { isDialogDisplayed.value = false },
-                        title = { Text(text = stringResource(R.string.error_title)) },
-                        text = { Text(text = stringResource(R.string.error_message)) },
-                        confirmButton = {
-                            Button(onClick = { isDialogDisplayed.value = false }) {
-                                Text(text = stringResource(R.string.dismiss_button))
-                            }
-                        },
-                    )
-                }
-            }
+            MicButton(
+                uiState = uiState,
+                onToggle = { viewModel.toggleLiveSession() }
+            )
         },
         floatingActionButtonPosition = FabPosition.Center,
         modifier = Modifier.fillMaxSize(),
@@ -157,31 +116,14 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                 .imePadding()
                 .fillMaxSize(),
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                OutlinedTextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    label = { Text(stringResource(R.string.new_task_placeholder)) },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(
-                    onClick = {
-                        if (text.isNotBlank()) {
-                            viewModel.addTodo(text)
-                            text = ""
-                        }
-                    },
-                ) {
-                    Text(stringResource(R.string.add_button))
+            TodoInput(
+                text = text,
+                onTextChange = { text = it },
+                onAddClick = {
+                    viewModel.addTodo(text)
+                    text = ""
                 }
-            }
+            )
 
             when (uiState) {
                 is TodoScreenUiState.Initial -> {
@@ -192,6 +134,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(todos.reversed(), key = { it.id }) { todo ->
                             TodoItem(
+                                modifier = Modifier,
                                 task = todo,
                                 onToggle = { viewModel.toggleTodoStatus(todo.id) },
                                 onDelete = { viewModel.removeTodo(todo.id) },
@@ -205,6 +148,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(todos.reversed(), key = { it.id }) { todo ->
                             TodoItem(
+                                modifier = Modifier,
                                 task = todo,
                                 onToggle = { viewModel.toggleTodoStatus(todo.id) },
                                 onDelete = { viewModel.removeTodo(todo.id) },
@@ -219,7 +163,92 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
 }
 
 @Composable
-fun TodoItem(task: Todo, onToggle: () -> Unit, onDelete: () -> Unit) {
+fun TodoInput(
+    text: String,
+    onTextChange: (String) -> Unit,
+    onAddClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OutlinedTextField(
+            value = text,
+            onValueChange = onTextChange,
+            label = { Text(stringResource(R.string.new_task_placeholder)) },
+            modifier = Modifier.weight(1f),
+            singleLine = true,
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Button(
+            enabled = text.isNotBlank(),
+            onClick = onAddClick,
+        ) {
+            Text(stringResource(R.string.add_button))
+        }
+    }
+}
+
+@Composable
+fun MicButton(
+    uiState: TodoScreenUiState,
+    onToggle: () -> Unit
+) {
+    if (uiState is TodoScreenUiState.Success) {
+        val successState = uiState as TodoScreenUiState.Success
+        val micIcon = when {
+            !successState.isLiveSessionReady -> Icons.Filled.MicOff
+            successState.isLiveSessionRunning -> Icons.Filled.Mic
+            else -> Icons.Filled.MicNone
+        }
+
+        val containerColor = if (successState.isLiveSessionRunning) {
+            val infiniteTransition =
+                rememberInfiniteTransition(label = "mic_color_transition")
+            infiniteTransition.animateColor(
+                initialValue = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                targetValue = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse,
+                ),
+                label = "mic_color",
+            ).value
+        } else {
+            MaterialTheme.colorScheme.primaryContainer
+        }
+
+        FloatingActionButton(
+            onClick = { if (successState.isLiveSessionReady) onToggle() },
+            containerColor = containerColor,
+        ) {
+            Icon(micIcon, stringResource(R.string.interact_with_todolist_by_voice))
+        }
+    } else if (uiState is TodoScreenUiState.Error) {
+        val isDialogDisplayed = remember { mutableStateOf(true) }
+        if (isDialogDisplayed.value) {
+            AlertDialog(
+                onDismissRequest = { isDialogDisplayed.value = false },
+                title = { Text(text = stringResource(R.string.error_title)) },
+                text = { Text(text = stringResource(R.string.error_message)) },
+                confirmButton = {
+                    Button(onClick = { isDialogDisplayed.value = false }) {
+                        Text(text = stringResource(R.string.dismiss_button))
+                    }
+                },
+            )
+        }
+    }
+}
+
+@Composable
+fun TodoItem(
+    modifier: Modifier,
+    task: Todo,
+    onToggle: () -> Unit,
+    onDelete: () -> Unit) {
     val defaultBackgroundColor = Color.Transparent
     val backgroundColor = remember { Animatable(defaultBackgroundColor) }
 
