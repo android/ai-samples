@@ -19,7 +19,6 @@ import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.util.Log
-import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
@@ -88,34 +87,39 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
         todoRepository.toggleTodoStatus(todoId)
     }
 
-    @RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
-    fun toggleLiveSession() {
-        viewModelScope.launch {
-            val currentState = _uiState.value
-            if (currentState !is TodoScreenUiState.Success) return@launch
+    fun toggleLiveSession(activity: Activity) {
+            viewModelScope.launch {
+                val currentState = _uiState.value
+                if (currentState !is TodoScreenUiState.Success) return@launch
 
-            session?.let {
-                if (!currentState.isLiveSessionRunning) {
-                    it.startAudioConversation(::handleFunctionCall)
-                    _uiState.update {
-                        if (it is TodoScreenUiState.Success) {
-                            it.copy(isLiveSessionRunning = true)
-                        } else {
-                            it
+                session?.let {
+                    if (!currentState.isLiveSessionRunning) {
+                        if (ContextCompat.checkSelfPermission(
+                                activity,
+                                Manifest.permission.RECORD_AUDIO
+                            ) == PackageManager.PERMISSION_GRANTED
+                        ) {
+                            it.startAudioConversation(::handleFunctionCall)
+                            _uiState.update {
+                                if (it is TodoScreenUiState.Success) {
+                                    it.copy(isLiveSessionRunning = true)
+                                } else {
+                                    it
+                                }
+                            }
                         }
-                    }
-                } else {
-                    it.stopAudioConversation()
-                    _uiState.update {
-                        if (it is TodoScreenUiState.Success) {
-                            it.copy(isLiveSessionRunning = false)
-                        } else {
-                            it
+                    } else {
+                        it.stopAudioConversation()
+                        _uiState.update {
+                            if (it is TodoScreenUiState.Success) {
+                                it.copy(isLiveSessionRunning = false)
+                            } else {
+                                it
+                            }
                         }
                     }
                 }
             }
-        }
     }
 
     fun initializeGeminiLive(activity: Activity) {

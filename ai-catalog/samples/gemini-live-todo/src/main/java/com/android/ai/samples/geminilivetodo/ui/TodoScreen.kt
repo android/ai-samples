@@ -84,7 +84,6 @@ import kotlin.collections.reversed
  * This composable is stateful, connecting to the ViewModel to manage UI state and events.
  */
 @OptIn(ExperimentalMaterial3Api::class)
-@RequiresPermission(Manifest.permission.RECORD_AUDIO)
 @Composable
 fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -109,7 +108,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
         floatingActionButton = {
             MicButton(
                 uiState = uiState,
-                onToggle = { viewModel.toggleLiveSession() },
+                onToggle = { viewModel.toggleLiveSession(activity) },
             )
         },
         floatingActionButtonPosition = FabPosition.Center,
