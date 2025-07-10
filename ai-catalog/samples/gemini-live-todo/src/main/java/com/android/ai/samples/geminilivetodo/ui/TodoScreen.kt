@@ -15,10 +15,8 @@
  */
 package com.android.ai.samples.geminilivetodo.ui
 
-import android.Manifest
 import android.app.Activity
 import androidx.activity.compose.LocalActivity
-import androidx.annotation.RequiresPermission
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.LinearEasing
