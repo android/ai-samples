@@ -35,7 +35,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -149,7 +148,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                                 onToggle = { viewModel.toggleTodoStatus(todo.id) },
                                 onDelete = { viewModel.removeTodo(todo.id) },
                             )
-                            if (index!=todos.size-1) {
+                            if (index != todos.size - 1) {
                                 HorizontalDivider()
                             }
                         }
@@ -165,7 +164,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                                 onToggle = { viewModel.toggleTodoStatus(todo.id) },
                                 onDelete = { viewModel.removeTodo(todo.id) },
                             )
-                            if (index!=todos.size-1) {
+                            if (index != todos.size - 1) {
                                 HorizontalDivider()
                             }
                         }
