@@ -68,7 +68,7 @@ fun GeneratedContent(uiState: ImagenUIState, modifier: Modifier = Modifier) {
 
             is ImagenUIState.Error -> {
                 Text(
-                    text = uiState.message?: stringResource(R.string.error_message_unknown),
+                    text = uiState.message ?: stringResource(R.string.error_message_unknown),
                     modifier = Modifier
                         .fillMaxSize()
                         .wrapContentSize(Alignment.Center),

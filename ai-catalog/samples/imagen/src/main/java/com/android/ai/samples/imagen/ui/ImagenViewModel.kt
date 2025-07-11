@@ -19,15 +19,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.imagen.data.ImagenDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
-class ImagenViewModel @Inject constructor(
-    private val imagenDataSource: ImagenDataSource
-) : ViewModel() {
+class ImagenViewModel @Inject constructor(private val imagenDataSource: ImagenDataSource) : ViewModel() {
 
     private val _uiState: MutableStateFlow<ImagenUIState> = MutableStateFlow(ImagenUIState.Initial)
     val uiState: StateFlow<ImagenUIState> = _uiState
