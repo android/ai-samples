@@ -26,9 +26,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
-class MagicSelfieViewModel @Inject constructor(
-    private val magicSelfieRepository: MagicSelfieRepository
-) : ViewModel() {
+class MagicSelfieViewModel @Inject constructor(private val magicSelfieRepository: MagicSelfieRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MagicSelfieUiState>(MagicSelfieUiState.Initial)
     val uiState: StateFlow<MagicSelfieUiState> = _uiState

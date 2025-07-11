@@ -66,7 +66,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.magicselfie.R
 import java.io.File
 
@@ -179,14 +178,14 @@ fun MagicSelfieScreen(viewModel: MagicSelfieViewModel = hiltViewModel()) {
                         viewModel.createMagicSelfie(selfieBitmap!!, editTextValue)
                     }
                 },
-                enabled = (uiState !is MagicSelfieUiState.RemovingBackground)
-                        || (uiState !is MagicSelfieUiState.GeneratingBackground) ,
+                enabled = (uiState !is MagicSelfieUiState.RemovingBackground) ||
+                    (uiState !is MagicSelfieUiState.GeneratingBackground),
             ) {
                 Icon(Icons.Default.SmartToy, contentDescription = "Robot")
                 Text(modifier = Modifier.padding(start = 8.dp), text = "Generate")
             }
 
-            if(uiState is MagicSelfieUiState.RemovingBackground) {
+            if (uiState is MagicSelfieUiState.RemovingBackground) {
                 Spacer(
                     modifier = Modifier
                         .height(30.dp)
@@ -212,7 +211,7 @@ fun MagicSelfieScreen(viewModel: MagicSelfieViewModel = hiltViewModel()) {
                         .padding(12.dp),
                 )
                 Text(
-                    text = errorState.message?: stringResource(R.string.unknown_error),
+                    text = errorState.message ?: stringResource(R.string.unknown_error),
                     color = MaterialTheme.colorScheme.error,
                 )
             }
