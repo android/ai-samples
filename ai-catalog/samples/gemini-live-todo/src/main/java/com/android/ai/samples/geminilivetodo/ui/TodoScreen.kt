@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Mic
@@ -98,7 +99,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 ),
                 title = { Text(stringResource(R.string.gemini_live_title)) },
             )
@@ -141,28 +142,32 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                 is TodoScreenUiState.Success -> {
                     val todos = (uiState as TodoScreenUiState.Success).todos
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        items(todos.reversed(), key = { it.id }) { todo ->
+                        itemsIndexed(todos.reversed(), key = { index: Int, item: Todo -> item.id }) { index, todo ->
                             TodoItem(
                                 modifier = Modifier,
                                 task = todo,
                                 onToggle = { viewModel.toggleTodoStatus(todo.id) },
                                 onDelete = { viewModel.removeTodo(todo.id) },
                             )
-                            HorizontalDivider()
+                            if (index!=todos.size-1) {
+                                HorizontalDivider()
+                            }
                         }
                     }
                 }
                 is TodoScreenUiState.Error -> {
                     val todos = (uiState as TodoScreenUiState.Error).todos
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        items(todos.reversed(), key = { it.id }) { todo ->
+                        itemsIndexed(todos.reversed(), key = { index: Int, item: Todo -> item.id }) { index, todo ->
                             TodoItem(
                                 modifier = Modifier,
                                 task = todo,
                                 onToggle = { viewModel.toggleTodoStatus(todo.id) },
                                 onDelete = { viewModel.removeTodo(todo.id) },
                             )
-                            HorizontalDivider()
+                            if (index!=todos.size-1) {
+                                HorizontalDivider()
+                            }
                         }
                     }
                 }
