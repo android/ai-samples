@@ -26,7 +26,7 @@ import com.android.ai.samples.genai_image_description.GenAIImageDescriptionScree
 import com.android.ai.samples.genai_summarization.GenAISummarizationScreen
 import com.android.ai.samples.genai_writing_assistance.GenAIWritingAssistanceScreen
 import com.android.ai.samples.imagen.ui.ImagenScreen
-import com.android.ai.samples.magicselfie.MagicSelfieScreen
+import com.android.ai.samples.magicselfie.ui.MagicSelfieScreen
 
 val sampleCatalog = listOf<SampleCatalogItem>(
     SampleCatalogItem(

@@ -3,4 +3,7 @@
     <string name="magic_selfie">Magic Selfie</string>
     <string name="see_code">See code</string>
     <string name="share_image">Share image</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="removing_background">Removing background...</string>
+    <string name="generating_new_background">Generating new background...</string>
 </resources>

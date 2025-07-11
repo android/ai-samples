@@ -13,15 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ai.samples.magicselfie
+package com.android.ai.samples.magicselfie.data
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
@@ -33,19 +29,13 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.segmentation.subject.SubjectSegmentation
 import com.google.mlkit.vision.segmentation.subject.SubjectSegmenterOptions
 import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.coroutines.suspendCoroutine
 import kotlin.math.roundToInt
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 
-@OptIn(PublicPreviewAPI::class)
-class MagicSelfieViewModel @Inject constructor() : ViewModel() {
-
-    private val _foregroundBitmap = MutableStateFlow<Bitmap?>(null)
-    val foregroundBitmap: MutableStateFlow<Bitmap?> = _foregroundBitmap
-
-    private val _progress = MutableLiveData<String?>(null)
-    val progress: LiveData<String?> = _progress
-
+@Singleton
+class MagicSelfieRepository @Inject constructor() {
+    @OptIn(PublicPreviewAPI::class)
     private val imagenModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).imagenModel(
         modelName = "imagen-4.0-generate-preview-06-06",
         generationConfig = ImagenGenerationConfig(
@@ -61,36 +51,28 @@ class MagicSelfieViewModel @Inject constructor() : ViewModel() {
             .build(),
     )
 
-    fun createMagicSelfie(bitmap: Bitmap, prompt: String) {
+    suspend fun generateForegroundBitmap(bitmap: Bitmap): Bitmap {
         val image = InputImage.fromBitmap(bitmap, 0)
-
-        _progress.value = "Removing selfie background..."
-
-        subjectSegmenter.process(image)
-            .addOnSuccessListener {
-                it.foregroundBitmap?.let {
-                    _foregroundBitmap.value = it
-                    generateBackground(prompt)
+        return suspendCoroutine { continuation ->
+            subjectSegmenter.process(image)
+                .addOnSuccessListener {
+                    it.foregroundBitmap?.let { foregroundBitmap ->
+                        continuation.resumeWith(Result.success(foregroundBitmap))
+                    }
                 }
-            }.addOnFailureListener {
-                _progress.postValue("Something went wrong :(")
-            }
+                .addOnFailureListener {
+                    continuation.resumeWith(Result.failure(it))
+                }
+        }
     }
 
-    private fun generateBackground(prompt: String) {
-        _progress.value = "Generating new background..."
-
-        viewModelScope.launch {
-            val imageResponse = imagenModel.generateImages(
-                prompt = prompt,
-            )
-            val image = imageResponse.images.first()
-
-            val bitmapImage = image.asBitmap()
-
-            _foregroundBitmap.value = combineBitmaps(_foregroundBitmap.value!!, bitmapImage)
-            _progress.postValue(null)
-        }
+    @OptIn(PublicPreviewAPI::class)
+    suspend fun generateBackground(prompt: String): Bitmap {
+        val imageResponse = imagenModel.generateImages(
+            prompt = prompt,
+        )
+        val image = imageResponse.images.first()
+        return image.asBitmap()
     }
 
     fun combineBitmaps(foreground: Bitmap, background: Bitmap): Bitmap {
