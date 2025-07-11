@@ -178,7 +178,7 @@ fun MagicSelfieScreen(viewModel: MagicSelfieViewModel = hiltViewModel()) {
                         viewModel.createMagicSelfie(selfieBitmap!!, editTextValue)
                     }
                 },
-                enabled = (uiState !is MagicSelfieUiState.RemovingBackground) ||
+                enabled = (uiState !is MagicSelfieUiState.RemovingBackground) &&
                     (uiState !is MagicSelfieUiState.GeneratingBackground),
             ) {
                 Icon(Icons.Default.SmartToy, contentDescription = "Robot")
