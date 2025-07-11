@@ -22,4 +22,6 @@
     <string name="generate_button">Generate</string>
     <string name="generating_label">Generating…</string>
     <string name="prompt_label">Prompt</string>
+    <string name="imagen_placeholder">Enter a prompt and tap \"Generate\" to generate an image</string>
+    <string name="error_message_unknown">Unknown error</string>
 </resources>

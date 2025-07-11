@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ai.samples.imagen
+package com.android.ai.samples.imagen.data
 
 import android.graphics.Bitmap
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
@@ -26,25 +24,10 @@ import com.google.firebase.ai.type.ImagenGenerationConfig
 import com.google.firebase.ai.type.ImagenImageFormat
 import com.google.firebase.ai.type.PublicPreviewAPI
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import javax.inject.Singleton
 
-sealed interface ImagenUIState {
-    data object Initial : ImagenUIState
-    data object Loading : ImagenUIState
-    data class ImageGenerated(
-        val bitmap: Bitmap,
-        val contentDescription: String,
-    ) : ImagenUIState
-    data class Error(val message: String) : ImagenUIState
-}
-
-class ImagenViewModel @Inject constructor() : ViewModel() {
-
-    private val _uiState: MutableStateFlow<ImagenUIState> = MutableStateFlow(ImagenUIState.Initial)
-    val uiState: StateFlow<ImagenUIState> = _uiState
-
+@Singleton
+class ImagenDataSource @Inject constructor() {
     @OptIn(PublicPreviewAPI::class)
     private val imagenModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).imagenModel(
         modelName = "imagen-4.0-generate-preview-06-06",
@@ -56,21 +39,11 @@ class ImagenViewModel @Inject constructor() : ViewModel() {
     )
 
     @OptIn(PublicPreviewAPI::class)
-    fun generateImage(prompt: String) {
-        _uiState.value = ImagenUIState.Loading
-
-        viewModelScope.launch {
-            try {
-                val imageResponse = imagenModel.generateImages(
-                    prompt = prompt,
-                )
-                val image = imageResponse.images.first()
-
-                val bitmapImage = image.asBitmap()
-                _uiState.value = ImagenUIState.ImageGenerated(bitmapImage, contentDescription = prompt)
-            } catch (e: Exception) {
-                _uiState.value = ImagenUIState.Error(e.message ?: "Unknown error")
-            }
-        }
+    suspend fun generateImage(prompt: String): Bitmap {
+        val imageResponse = imagenModel.generateImages(
+            prompt = prompt,
+        )
+        val image = imageResponse.images.first()
+        return image.asBitmap()
     }
 }
