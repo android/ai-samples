@@ -47,7 +47,7 @@ class ImagenViewModel @Inject constructor() : ViewModel() {
 
     @OptIn(PublicPreviewAPI::class)
     private val imagenModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).imagenModel(
-        modelName = "imagen-4.0-generate-preview-05-20",
+        modelName = "imagen-4.0-generate-preview-06-06",
         generationConfig = ImagenGenerationConfig(
             numberOfImages = 1,
             aspectRatio = ImagenAspectRatio.SQUARE_1x1,
