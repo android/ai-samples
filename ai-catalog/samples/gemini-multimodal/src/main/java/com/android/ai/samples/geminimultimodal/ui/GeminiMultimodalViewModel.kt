@@ -38,7 +38,7 @@ class GeminiMultimodalViewModel @Inject constructor(private val geminiDataSource
                 val result = geminiDataSource.generateText(bitmap, prompt)
                 _uiState.value = GeminiMultimodalUiState.Success(result)
             } catch (e: Exception) {
-                _uiState.value = GeminiMultimodalUiState.Error(e.message ?: "Unknown error")
+                _uiState.value = GeminiMultimodalUiState.Error(e.message)
             }
         }
     }

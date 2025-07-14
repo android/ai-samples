@@ -19,5 +19,5 @@ sealed interface GeminiMultimodalUiState {
     data object Initial : GeminiMultimodalUiState
     data object Loading : GeminiMultimodalUiState
     data class Success(val generatedText: String) : GeminiMultimodalUiState
-    data class Error(val errorMessage: String) : GeminiMultimodalUiState
+    data class Error(val errorMessage: String?) : GeminiMultimodalUiState
 }

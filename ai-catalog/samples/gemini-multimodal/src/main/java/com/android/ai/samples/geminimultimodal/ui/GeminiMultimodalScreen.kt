@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -106,6 +107,7 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
         Column(
             Modifier
                 .padding(12.dp)
+                .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(innerPadding),
         ) {
@@ -170,7 +172,7 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
                     .height(24.dp),
             )
 
-            when (val state = uiState) {
+            when (uiState) {
                 is GeminiMultimodalUiState.Initial -> {
                     Text(
                         text = stringResource(id = R.string.geminimultimodal_generation_placeholder),
@@ -182,12 +184,12 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
                 }
                 is GeminiMultimodalUiState.Success -> {
                     Text(
-                        text = state.generatedText,
+                        text = (uiState as GeminiMultimodalUiState.Success).generatedText,
                     )
                 }
                 is GeminiMultimodalUiState.Error -> {
                     Text(
-                        text = state.errorMessage,
+                        text = (uiState as GeminiMultimodalUiState.Error).errorMessage ?: stringResource(R.string.unknown_error),
                     )
                 }
             }
