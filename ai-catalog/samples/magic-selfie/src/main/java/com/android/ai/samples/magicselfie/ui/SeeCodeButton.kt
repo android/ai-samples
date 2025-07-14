@@ -41,7 +41,7 @@ fun SeeCodeButton(context: Context) {
         },
         modifier = Modifier.padding(end = 8.dp),
     ) {
-        Icon(Icons.Filled.Code, contentDescription = "See code")
+        Icon(Icons.Filled.Code, contentDescription = stringResource(R.string.see_code))
         Text(
             modifier = Modifier.padding(start = 8.dp),
             fontSize = 12.sp,
