@@ -203,14 +203,15 @@ fun TodoInput(text: String, onTextChange: (String) -> Unit, onAddClick: () -> Un
 @Composable
 fun MicButton(uiState: TodoScreenUiState, onToggle: () -> Unit) {
     if (uiState is TodoScreenUiState.Success) {
-        val successState = uiState as TodoScreenUiState.Success
         val micIcon = when {
-            !successState.isLiveSessionReady -> Icons.Filled.MicOff
-            successState.isLiveSessionRunning -> Icons.Filled.Mic
+            uiState.liveSessionState is LiveSessionState.Ready -> Icons.Filled.MicOff
+            uiState.liveSessionState is LiveSessionState.Running -> Icons.Filled.Mic
+            uiState.liveSessionState is LiveSessionState.NotReady -> Icons.Filled.MicNone
+            uiState.liveSessionState is LiveSessionState.Error -> Icons.Filled.MicNone
             else -> Icons.Filled.MicNone
         }
 
-        val containerColor = if (successState.isLiveSessionRunning) {
+        val containerColor = if (uiState.liveSessionState is LiveSessionState.Running) {
             val infiniteTransition =
                 rememberInfiniteTransition(label = "mic_color_transition")
             infiniteTransition.animateColor(
@@ -227,7 +228,7 @@ fun MicButton(uiState: TodoScreenUiState, onToggle: () -> Unit) {
         }
 
         FloatingActionButton(
-            onClick = { if (successState.isLiveSessionReady) onToggle() },
+            onClick = { if (uiState.liveSessionState !is LiveSessionState.NotReady) onToggle() },
             containerColor = containerColor,
         ) {
             Icon(micIcon, stringResource(R.string.interact_with_todolist_by_voice))

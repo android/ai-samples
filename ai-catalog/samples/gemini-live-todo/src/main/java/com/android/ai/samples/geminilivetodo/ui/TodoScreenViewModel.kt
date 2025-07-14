@@ -43,8 +43,12 @@ import com.google.firebase.ai.type.liveGenerationConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonObject
@@ -56,25 +60,18 @@ import kotlinx.serialization.json.long
 @HiltViewModel
 class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRepository) : ViewModel() {
     private val TAG = "TodoScreenViewModel"
-
     private var session: LiveSession? = null
 
-    private val _uiState = MutableStateFlow<TodoScreenUiState>(TodoScreenUiState.Initial)
-    val uiState: StateFlow<TodoScreenUiState> = _uiState.asStateFlow()
+    private val liveSessionState = MutableStateFlow<LiveSessionState>(LiveSessionState.NotReady)
+    private val todos = todoRepository.todos
 
-    init {
-        viewModelScope.launch {
-            todoRepository.todos.collect { todos ->
-                _uiState.update {
-                    if (it is TodoScreenUiState.Success) {
-                        it.copy(todos = todos)
-                    } else {
-                        TodoScreenUiState.Success(todos = todos)
-                    }
-                }
-            }
-        }
-    }
+    val uiState:  StateFlow<TodoScreenUiState> = combine(liveSessionState, todos) { liveSessionState, todos ->
+        TodoScreenUiState.Success(todos, liveSessionState)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000L),
+        initialValue = TodoScreenUiState.Initial
+    )
 
     fun addTodo(taskDescription: String) {
         todoRepository.addTodo(taskDescription)
@@ -91,34 +88,21 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
     @SuppressLint("MissingPermission")
     fun toggleLiveSession(activity: Activity) {
         viewModelScope.launch {
-            val currentState = _uiState.value
-            if (currentState !is TodoScreenUiState.Success) return@launch
+            if (liveSessionState.value is LiveSessionState.NotReady) return@launch
 
             session?.let {
-                if (!currentState.isLiveSessionRunning) {
+                if (liveSessionState.value is LiveSessionState.Ready) {
                     if (ContextCompat.checkSelfPermission(
                             activity,
                             Manifest.permission.RECORD_AUDIO,
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
                         it.startAudioConversation(::handleFunctionCall)
-                        _uiState.update {
-                            if (it is TodoScreenUiState.Success) {
-                                it.copy(isLiveSessionRunning = true)
-                            } else {
-                                it
-                            }
-                        }
+                        liveSessionState.value = LiveSessionState.Running
                     }
                 } else {
                     it.stopAudioConversation()
-                    _uiState.update {
-                        if (it is TodoScreenUiState.Success) {
-                            it.copy(isLiveSessionRunning = false)
-                        } else {
-                            it
-                        }
-                    }
+                    liveSessionState.value = LiveSessionState.Ready
                 }
             }
         }
@@ -192,21 +176,10 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                 session = generativeModel.connect()
             } catch (e: Exception) {
                 Log.e(TAG, "Error connecting to the model", e)
-                _uiState.update {
-                    TodoScreenUiState.Error(
-                        isLiveSessionReady = false,
-                        isLiveSessionRunning = false,
-                    )
-                }
+                liveSessionState.value = LiveSessionState.Error
             }
 
-            _uiState.update {
-                if (it is TodoScreenUiState.Success) {
-                    it.copy(isLiveSessionReady = true)
-                } else {
-                    it
-                }
-            }
+            liveSessionState.value = LiveSessionState.Ready
         }
     }
 
