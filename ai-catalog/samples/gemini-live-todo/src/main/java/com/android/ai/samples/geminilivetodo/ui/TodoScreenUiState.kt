@@ -22,12 +22,12 @@ sealed interface TodoScreenUiState {
 
     data class Success(
         val todos: List<Todo> = emptyList(),
-        val liveSessionState: LiveSessionState
+        val liveSessionState: LiveSessionState,
     ) : TodoScreenUiState
 
     data class Error(
         val todos: List<Todo> = emptyList(),
-        val liveSessionState: LiveSessionState
+        val liveSessionState: LiveSessionState,
     ) : TodoScreenUiState
 }
 
@@ -35,5 +35,5 @@ sealed interface LiveSessionState {
     data object NotReady : LiveSessionState
     data object Ready : LiveSessionState
     data object Running : LiveSessionState
-    data object Error: LiveSessionState
+    data object Error : LiveSessionState
 }

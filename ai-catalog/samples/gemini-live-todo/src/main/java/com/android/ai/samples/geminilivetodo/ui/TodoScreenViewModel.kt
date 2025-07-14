@@ -45,11 +45,8 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -65,12 +62,12 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
     private val liveSessionState = MutableStateFlow<LiveSessionState>(LiveSessionState.NotReady)
     private val todos = todoRepository.todos
 
-    val uiState:  StateFlow<TodoScreenUiState> = combine(liveSessionState, todos) { liveSessionState, todos ->
+    val uiState: StateFlow<TodoScreenUiState> = combine(liveSessionState, todos) { liveSessionState, todos ->
         TodoScreenUiState.Success(todos, liveSessionState)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000L),
-        initialValue = TodoScreenUiState.Initial
+        initialValue = TodoScreenUiState.Initial,
     )
 
     fun addTodo(taskDescription: String) {
