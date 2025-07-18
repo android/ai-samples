@@ -20,7 +20,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.geminimultimodal.R
+import com.google.mlkit.genai.common.DownloadCallback
 import com.google.mlkit.genai.common.FeatureStatus
+import com.google.mlkit.genai.common.GenAiException
 import com.google.mlkit.genai.summarization.Summarization
 import com.google.mlkit.genai.summarization.SummarizationRequest
 import com.google.mlkit.genai.summarization.Summarizer
@@ -28,41 +30,49 @@ import com.google.mlkit.genai.summarization.SummarizerOptions
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 
+sealed class GenAISummarizationUiState {
+    data object Initial : GenAISummarizationUiState()
+    data object CheckingFeatureStatus : GenAISummarizationUiState()
+    data class DownloadingFeature(val bytesToDownload: Long, val bytesDownloaded: Long) : GenAISummarizationUiState()
+    data class Generating(val generatedOutput: String) : GenAISummarizationUiState()
+    data class Success(val generatedOutput: String) : GenAISummarizationUiState()
+    data class Error(val errorMessage: String) : GenAISummarizationUiState()
+}
+
 class GenAISummarizationViewModel @Inject constructor() : ViewModel() {
-    private val _summarizationGenerated = MutableStateFlow("")
-    val summarizationGenerated: StateFlow<String> = _summarizationGenerated
+    private val _uiState = MutableStateFlow<GenAISummarizationUiState>(GenAISummarizationUiState.Initial)
+    val uiState: StateFlow<GenAISummarizationUiState> = _uiState.asStateFlow()
 
     private var summarizer: Summarizer? = null
 
     fun summarize(textToSummarize: String, context: Context) {
         if (textToSummarize.isEmpty()) {
-            _summarizationGenerated.value = context.getString(R.string.summarization_no_input)
-            return
+            _uiState.value = GenAISummarizationUiState.Error(context.getString(R.string.summarization_no_input))
         }
 
-        val summarizationOptions =
-            SummarizerOptions.builder(context)
-                .setOutputType(SummarizerOptions.OutputType.THREE_BULLETS)
-                .build()
-        summarizer = Summarization.getClient(summarizationOptions)
-
         viewModelScope.launch {
-            summarizer?.let { summarizer ->
+            val summarizationOptions =
+                SummarizerOptions.builder(context)
+                    .setOutputType(SummarizerOptions.OutputType.THREE_BULLETS)
+                    .build()
+            summarizer = Summarization.getClient(summarizationOptions)
 
+            summarizer?.let { summarizer ->
                 var featureStatus = FeatureStatus.UNAVAILABLE
 
                 try {
+                    _uiState.value = GenAISummarizationUiState.CheckingFeatureStatus
                     featureStatus = summarizer.checkFeatureStatus().await()
                 } catch (error: Exception) {
                     Log.e("GenAISummarization", "Error checking feature status", error)
                 }
 
                 if (featureStatus == FeatureStatus.UNAVAILABLE) {
-                    _summarizationGenerated.value =
-                        context.getString(R.string.summarization_not_available)
+                    _uiState.value = GenAISummarizationUiState.Error(context.getString(R.string.summarization_not_available))
                     return@launch
                 }
 
@@ -75,26 +85,47 @@ class GenAISummarizationViewModel @Inject constructor() : ViewModel() {
                 if (featureStatus == FeatureStatus.DOWNLOADABLE ||
                     featureStatus == FeatureStatus.DOWNLOADING
                 ) {
-                    _summarizationGenerated.value =
-                        context.getString(R.string.summarization_downloading)
+                    summarizer.downloadFeature(
+                        object : DownloadCallback {
+                            override fun onDownloadStarted(bytesToDownload: Long) {
+                                _uiState.value = GenAISummarizationUiState.DownloadingFeature(bytesToDownload, 0)
+                            }
+
+                            override fun onDownloadProgress(bytesDownloaded: Long) {
+                                val bytesToDownload = (_uiState.value as GenAISummarizationUiState.DownloadingFeature).bytesToDownload
+                                _uiState.value = GenAISummarizationUiState.DownloadingFeature(bytesToDownload, bytesDownloaded)
+                            }
+
+                            override fun onDownloadCompleted() {
+                                _uiState.value = GenAISummarizationUiState.Generating("")
+                            }
+
+                            override fun onDownloadFailed(exception: GenAiException) {
+                                _uiState.value = GenAISummarizationUiState.Error(context.getString(R.string.summarization_download_failed))
+                            }
+                        },
+                    )
                 }
 
-                val summarizationRequest = SummarizationRequest.builder(textToSummarize).build()
-                summarizer.runInference(summarizationRequest) { newText ->
-                    if (_summarizationGenerated.value ==
-                        context.getString(R.string.summarization_downloading)
-                    ) {
-                        clearGeneratedSummary()
-                    }
-                    _summarizationGenerated.value += newText
-                }
-                return@launch
+                generateSummary(summarizer, textToSummarize)
             }
         }
     }
 
+    private suspend fun generateSummary(summarizer: Summarizer, textToSummarize: String) {
+        _uiState.value = GenAISummarizationUiState.Generating("")
+        val summarizationRequest = SummarizationRequest.builder(textToSummarize).build()
+        summarizer.runInference(summarizationRequest) { newText ->
+            val generatedOutput = (_uiState.value as GenAISummarizationUiState.Generating).generatedOutput
+            _uiState.value = GenAISummarizationUiState.Generating(generatedOutput + newText)
+        }.await()
+
+        val generatedOutput = (_uiState.value as GenAISummarizationUiState.Generating).generatedOutput
+        _uiState.value = GenAISummarizationUiState.Success(generatedOutput)
+    }
+
     fun clearGeneratedSummary() {
-        _summarizationGenerated.value = ""
+        _uiState.value = GenAISummarizationUiState.Initial
     }
 
     override fun onCleared() {

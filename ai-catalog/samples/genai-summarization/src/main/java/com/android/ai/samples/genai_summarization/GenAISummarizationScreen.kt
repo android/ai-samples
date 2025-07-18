@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.geminimultimodal.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,11 +55,12 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
     var showBottomSheet by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    val summarizationResult = viewModel.summarizationGenerated.collectAsState()
+    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     var textInput by remember { mutableStateOf("") }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(), topBar = {
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
             TopAppBar(
                 colors = topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -123,14 +125,27 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
         }
 
         if (showBottomSheet) {
+            val bottomSheetText = when (val state = uiState.value) {
+                is GenAISummarizationUiState.DownloadingFeature -> stringResource(
+                    id = R.string.summarization_downloading,
+                    state.bytesDownloaded,
+                    state.bytesToDownload,
+                )
+                is GenAISummarizationUiState.Error -> state.errorMessage
+                is GenAISummarizationUiState.Generating -> state.generatedOutput
+                GenAISummarizationUiState.Initial -> ""
+                is GenAISummarizationUiState.Success -> state.generatedOutput
+                GenAISummarizationUiState.CheckingFeatureStatus -> stringResource(id = R.string.summarization_checking_feature_status)
+            }
             ModalBottomSheet(
                 onDismissRequest = {
                     showBottomSheet = false
                     viewModel.clearGeneratedSummary()
-                }, sheetState = sheetState,
+                },
+                sheetState = sheetState,
             ) {
                 Text(
-                    text = summarizationResult.value,
+                    text = bottomSheetText,
                     modifier = Modifier.padding(
                         top = 8.dp,
                         bottom = 24.dp,

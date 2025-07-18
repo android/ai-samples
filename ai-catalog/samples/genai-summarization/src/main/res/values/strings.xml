@@ -20,6 +20,7 @@
 
     <string name="summarization_no_input">No text inputted</string>
     <string name="summarization_not_available">Feature is not available on this device</string>
-    <string name="summarization_downloading">Downloading feature</string>
-
+    <string name="summarization_download_failed">Feature download failed</string>
+    <string name="summarization_downloading">Downloading feature: %1$d / %2$d</string>
+    <string name="summarization_checking_feature_status">Checking feature status</string>
 </resources>
