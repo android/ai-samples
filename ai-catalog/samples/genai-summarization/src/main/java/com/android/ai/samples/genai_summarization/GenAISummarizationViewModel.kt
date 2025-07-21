@@ -39,7 +39,10 @@ import kotlinx.coroutines.launch
 sealed class GenAISummarizationUiState {
     data object Initial : GenAISummarizationUiState()
     data object CheckingFeatureStatus : GenAISummarizationUiState()
-    data class DownloadingFeature(val bytesToDownload: Long, val bytesDownloaded: Long) : GenAISummarizationUiState()
+    data class DownloadingFeature(
+        val bytesToDownload: Long,
+        val bytesDownloaded: Long,
+    ) : GenAISummarizationUiState()
     data class Generating(val generatedOutput: String) : GenAISummarizationUiState()
     data class Success(val generatedOutput: String) : GenAISummarizationUiState()
     data class Error(val errorMessageStringRes: Int) : GenAISummarizationUiState()
