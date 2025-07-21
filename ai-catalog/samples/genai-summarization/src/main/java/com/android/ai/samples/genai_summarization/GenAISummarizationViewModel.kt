@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.geminimultimodal.R
 import com.google.common.util.concurrent.FutureCallback
+import com.google.common.util.concurrent.Futures
 import com.google.mlkit.genai.common.DownloadCallback
 import com.google.mlkit.genai.common.FeatureStatus
 import com.google.mlkit.genai.common.GenAiException
@@ -54,6 +55,7 @@ class GenAISummarizationViewModel @Inject constructor() : ViewModel() {
     fun summarize(textToSummarize: String, context: Context) {
         if (textToSummarize.isEmpty()) {
             _uiState.value = GenAISummarizationUiState.Error(R.string.summarization_no_input)
+            return
         }
 
         viewModelScope.launch {
@@ -97,7 +99,9 @@ class GenAISummarizationViewModel @Inject constructor() : ViewModel() {
                             }
 
                             override fun onDownloadCompleted() {
-                                generateSummarization(summarizer, textToSummarize)
+                                viewModelScope.launch {
+                                    generateSummarization(summarizer, textToSummarize)
+                                }
                             }
 
                             override fun onDownloadFailed(exception: GenAiException) {
@@ -112,23 +116,16 @@ class GenAISummarizationViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    private fun generateSummarization(summarizer: Summarizer, textToSummarize: String) {
+    private suspend fun generateSummarization(summarizer: Summarizer, textToSummarize: String) {
         _uiState.value = GenAISummarizationUiState.Generating("")
         val summarizationRequest = SummarizationRequest.builder(textToSummarize).build()
         summarizer.runInference(summarizationRequest) { newText ->
             val generatedOutput = (_uiState.value as GenAISummarizationUiState.Generating).generatedOutput
             _uiState.value = GenAISummarizationUiState.Generating(generatedOutput + newText)
-            object : FutureCallback<SummarizationResult> {
-                override fun onSuccess(result: SummarizationResult?) {
-                    val generatedOutput = (_uiState.value as GenAISummarizationUiState.Generating).generatedOutput
-                    _uiState.value = GenAISummarizationUiState.Success(generatedOutput)
-                }
+        }.await()
 
-                override fun onFailure(t: Throwable) {
-                    _uiState.value = GenAISummarizationUiState.Error(R.string.summarization_generation_error)
-                }
-            }
-        }
+        val generatedOutput = (_uiState.value as GenAISummarizationUiState.Generating).generatedOutput
+        _uiState.value = GenAISummarizationUiState.Success(generatedOutput)
     }
 
     fun clearGeneratedSummary() {
