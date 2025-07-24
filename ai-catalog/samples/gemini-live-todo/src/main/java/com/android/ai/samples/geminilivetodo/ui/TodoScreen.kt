@@ -16,10 +16,10 @@
 package com.android.ai.samples.geminilivetodo.ui
 
 import android.Manifest
-import android.app.Activity
 import android.content.pm.PackageManager
 import android.widget.Toast
-import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.LinearEasing
@@ -69,12 +69,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -91,11 +91,20 @@ import kotlin.collections.reversed
 fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var text by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
-    val activity = LocalActivity.current as Activity
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted: Boolean ->
+            if (isGranted) {
+                viewModel.toggleLiveSession()
+            } else {
+                Toast.makeText(context, R.string.error_permission, Toast.LENGTH_SHORT).show()
+            }
+        },
+    )
 
     LaunchedEffect(Unit) {
-        requestAudioPermissionIfNeeded(activity)
         viewModel.initializeGeminiLive()
     }
 
@@ -112,16 +121,18 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
         floatingActionButton = {
             MicButton(
                 uiState = uiState,
-                modifier = Modifier,
                 onToggle = {
-                    if (ContextCompat.checkSelfPermission(
-                            activity,
+                    when (PackageManager.PERMISSION_GRANTED) {
+                        ContextCompat.checkSelfPermission(
+                            context,
                             Manifest.permission.RECORD_AUDIO,
-                        ) == PackageManager.PERMISSION_GRANTED
-                    ) {
-                        viewModel.toggleLiveSession()
-                    } else {
-                        Toast.makeText(activity, R.string.error_permission, Toast.LENGTH_SHORT).show()
+                        ),
+                        -> {
+                            viewModel.toggleLiveSession()
+                        }
+                        else -> {
+                            requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                        }
                     }
                 },
             )
@@ -194,7 +205,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
 }
 
 @Composable
-fun TodoInput(text: String, modifier: Modifier, onTextChange: (String) -> Unit, onAddClick: () -> Unit) {
+fun TodoInput(text: String, modifier: Modifier = Modifier, onTextChange: (String) -> Unit, onAddClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -219,7 +230,7 @@ fun TodoInput(text: String, modifier: Modifier, onTextChange: (String) -> Unit, 
 }
 
 @Composable
-fun MicButton(uiState: TodoScreenUiState, modifier: Modifier, onToggle: () -> Unit) {
+fun MicButton(uiState: TodoScreenUiState, modifier: Modifier = Modifier, onToggle: () -> Unit) {
     if (uiState is TodoScreenUiState.Success) {
         val micIcon = when {
             uiState.liveSessionState is LiveSessionState.Ready -> Icons.Filled.MicOff
@@ -269,7 +280,7 @@ fun MicButton(uiState: TodoScreenUiState, modifier: Modifier, onToggle: () -> Un
 }
 
 @Composable
-fun TodoItem(modifier: Modifier, task: Todo, onToggle: () -> Unit, onDelete: () -> Unit) {
+fun TodoItem(modifier: Modifier = Modifier, task: Todo, onToggle: () -> Unit, onDelete: () -> Unit) {
     val defaultBackgroundColor = Color.Transparent
     val backgroundColor = remember { Animatable(defaultBackgroundColor) }
 
@@ -299,15 +310,5 @@ fun TodoItem(modifier: Modifier, task: Todo, onToggle: () -> Unit, onDelete: () 
                 contentDescription = "Delete",
             )
         }
-    }
-}
-
-private fun requestAudioPermissionIfNeeded(activity: Activity) {
-    if (ContextCompat.checkSelfPermission(
-            activity,
-            Manifest.permission.RECORD_AUDIO,
-        ) != PackageManager.PERMISSION_GRANTED
-    ) {
-        ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.RECORD_AUDIO), 1)
     }
 }
