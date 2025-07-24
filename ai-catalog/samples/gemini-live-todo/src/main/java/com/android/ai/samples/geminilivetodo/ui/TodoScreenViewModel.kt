@@ -15,13 +15,8 @@
  */
 package com.android.ai.samples.geminilivetodo.ui
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.pm.PackageManager
 import android.util.Log
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.geminilivetodo.data.TodoRepository
