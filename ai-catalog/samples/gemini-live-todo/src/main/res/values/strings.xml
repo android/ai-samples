@@ -21,6 +21,7 @@
     <string name="add_button">Add</string>
     <string name="error_title">Error</string>
     <string name="error_message">The live session model could not be initialized.</string>
+    <string name="error_permission">Enable audio recording permission.</string>
     <string name="dismiss_button">Dismiss</string>
     <string name="interact_with_todolist_by_voice">Button to start the live session and interact with the todo list by voice</string>
 </resources>

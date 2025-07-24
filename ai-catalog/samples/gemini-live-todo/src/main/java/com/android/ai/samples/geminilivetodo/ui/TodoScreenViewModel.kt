@@ -83,20 +83,14 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
     }
 
     @SuppressLint("MissingPermission")
-    fun toggleLiveSession(activity: Activity) {
+    fun toggleLiveSession() {
         viewModelScope.launch {
             if (liveSessionState.value is LiveSessionState.NotReady) return@launch
 
             session?.let {
                 if (liveSessionState.value is LiveSessionState.Ready) {
-                    if (ContextCompat.checkSelfPermission(
-                            activity,
-                            Manifest.permission.RECORD_AUDIO,
-                        ) == PackageManager.PERMISSION_GRANTED
-                    ) {
-                        it.startAudioConversation(::handleFunctionCall)
-                        liveSessionState.value = LiveSessionState.Running
-                    }
+                    it.startAudioConversation(::handleFunctionCall)
+                    liveSessionState.value = LiveSessionState.Running
                 } else {
                     it.stopAudioConversation()
                     liveSessionState.value = LiveSessionState.Ready
@@ -105,8 +99,7 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
         }
     }
 
-    fun initializeGeminiLive(activity: Activity) {
-        requestAudioPermissionIfNeeded(activity)
+    fun initializeGeminiLive() {
         viewModelScope.launch {
             Log.d(TAG, "Start Gemini Live initialization")
             val liveGenerationConfig = liveGenerationConfig {
@@ -231,16 +224,6 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                 )
                 FunctionResponsePart(functionCall.name, response)
             }
-        }
-    }
-
-    fun requestAudioPermissionIfNeeded(activity: Activity) {
-        if (ContextCompat.checkSelfPermission(
-                activity,
-                Manifest.permission.RECORD_AUDIO,
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.RECORD_AUDIO), 1)
         }
     }
 }
