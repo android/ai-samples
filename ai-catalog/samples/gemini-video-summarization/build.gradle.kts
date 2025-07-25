@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.material3.android)
     implementation(libs.firebase.common.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.ui.tooling.preview.android)
     ksp(libs.hilt.compiler)
     implementation(platform(libs.firebase.bom))

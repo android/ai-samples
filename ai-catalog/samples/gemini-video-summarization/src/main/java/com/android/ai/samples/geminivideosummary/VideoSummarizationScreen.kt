@@ -17,7 +17,6 @@ package com.android.ai.samples.geminivideosummary
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.compose.foundation.layout.Column
@@ -27,7 +26,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,11 +39,11 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -50,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import com.android.ai.samples.geminivideosummary.player.VideoPlayer
@@ -57,7 +59,6 @@ import com.android.ai.samples.geminivideosummary.player.VideoSelectionDropdown
 import com.android.ai.samples.geminivideosummary.ui.OutputTextDisplay
 import com.android.ai.samples.geminivideosummary.ui.TextToSpeechControls
 import com.android.ai.samples.geminivideosummary.util.sampleVideoList
-import com.android.ai.samples.geminivideosummary.viewmodel.OutputTextState
 import com.android.ai.samples.geminivideosummary.viewmodel.VideoSummarizationViewModel
 import com.google.com.android.ai.samples.geminivideosummary.R
 import java.util.Locale
@@ -71,19 +72,10 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewModel()) {
-
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var selectedVideoUri by remember { mutableStateOf<Uri?>(sampleVideoList.first().uri) }
-    var isDropdownExpanded by remember { mutableStateOf(false) }
-    val outputTextState by viewModel.outputText.collectAsState()
-    val showListenButton by remember { mutableStateOf(outputTextState is OutputTextState.Success) }
-    var textForSpeech by remember { mutableStateOf("") }
     var textToSpeech: TextToSpeech? by remember { mutableStateOf(null) }
-    var isInitialized by remember { mutableStateOf(false) }
-    var isSpeaking by remember { mutableStateOf(false) }
-    var isPaused by remember { mutableStateOf(false) }
-
-    val videoOptions = sampleVideoList
+    var isTtsInitialized by remember { mutableStateOf(false) }
 
     val exoPlayer = remember(context) {
         ExoPlayer.Builder(context).build().apply {
@@ -91,37 +83,23 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
         }
     }
 
-    LaunchedEffect(selectedVideoUri) {
-        onSelectedVideoChange(
-            selectedVideoUri,
-            exoPlayer,
-            textToSpeech,
-            onSpeakingStateChange = { speaking, paused ->
-                isSpeaking = speaking
-                isPaused = paused
-            },
-        )
+    LaunchedEffect(uiState.selectedVideoUri) {
+        uiState.selectedVideoUri?.let {
+            exoPlayer.setMediaItem(MediaItem.fromUri(it))
+            exoPlayer.prepare()
+            textToSpeech?.stop()
+            viewModel.onSpeakingStateChanged(isSpeaking = false, isPaused = true)
+        }
     }
 
     DisposableEffect(key1 = true) {
         textToSpeech = initializeTextToSpeech(context) { initialized ->
-            isInitialized = initialized
+            isTtsInitialized = initialized
         }
         onDispose {
             textToSpeech?.shutdown()
         }
     }
-    var selectedAccent by remember { mutableStateOf(Locale.FRANCE) }
-    val accentOptions = listOf(
-        Locale.UK,
-        Locale.FRANCE,
-        Locale.GERMANY,
-        Locale.ITALY,
-        Locale.JAPAN,
-        Locale.KOREA,
-        Locale.US,
-    )
-    var isAccentDropdownExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -132,8 +110,9 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
                 ),
                 title = {
                     Text(text = stringResource(R.string.video_summarization_title))
-                }, actions = {
-                    SeeCodeButton(context)
+                },
+                actions = {
+                    SeeCodeButton()
                 },
             )
         },
@@ -145,16 +124,13 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
         ) {
             Spacer(modifier = Modifier.height(16.dp))
             VideoSelectionDropdown(
-                selectedVideoUri = selectedVideoUri,
-                isDropdownExpanded = isDropdownExpanded,
-                videoOptions = videoOptions,
+                selectedVideoUri = uiState.selectedVideoUri,
+                isDropdownExpanded = uiState.isDropdownExpanded,
+                videoOptions = sampleVideoList,
                 onVideoUriSelected = { uri ->
-                    selectedVideoUri = uri
-                    viewModel.clearOutputText()
+                    viewModel.onVideoSelected(uri)
                 },
-                onDropdownExpanded = { expanded ->
-                    isDropdownExpanded = expanded
-                },
+                onDropdownExpanded = { viewModel.onDropdownExpandedChanged(it) },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -166,52 +142,60 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    onSummarizeButtonClick(
-                        selectedVideoUri, textToSpeech,
-                        onSpeakingStateChange = { speaking, paused ->
-                            isSpeaking = speaking
-                            isPaused = paused
-                        },
-                        viewModel,
-                    )
+                    textToSpeech?.stop()
+                    viewModel.onSpeakingStateChanged(isSpeaking = false, isPaused = true)
+                    viewModel.summarize()
                 },
+                enabled = !uiState.isSummarizing,
             ) {
                 Text(stringResource(R.string.summarize_video_button))
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (showListenButton) {
-                if (outputTextState is OutputTextState.Success) {
-                    textForSpeech = (outputTextState as OutputTextState.Success).text
-                }
-
+            if (uiState.summarizedText != null) {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 TextToSpeechControls(
-                    isInitialized = isInitialized,
-                    isSpeaking = isSpeaking,
-                    isPaused = isPaused,
+                    isInitialized = isTtsInitialized,
+                    isSpeaking = uiState.isSpeaking,
+                    isPaused = uiState.isPaused,
                     textToSpeech = textToSpeech,
-                    speechText = textForSpeech,
-                    selectedAccent = selectedAccent,
+                    speechText = uiState.summarizedText ?: "",
+                    selectedAccent = uiState.selectedAccent,
                     accentOptions = accentOptions,
                     onSpeakingStateChange = { speaking, paused ->
-                        isSpeaking = speaking
-                        isPaused = paused
+                        viewModel.onSpeakingStateChanged(speaking, paused)
                     },
-                    isAccentDropdownExpanded = isAccentDropdownExpanded,
+                    isAccentDropdownExpanded = uiState.isAccentDropdownExpanded,
                     onAccentSelected = { accent ->
-                        selectedAccent = accent
+                        viewModel.onAccentSelected(accent)
                     },
-                    onAccentDropdownExpanded = { expanded ->
-                        isAccentDropdownExpanded = expanded
-                    },
+                    onAccentDropdownExpanded = { viewModel.onAccentDropdownExpandedChanged(it) },
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            OutputTextDisplay(outputTextState, modifier = Modifier.weight(1f))
+            when {
+                uiState.isSummarizing -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                }
+                uiState.errorMessage != null -> {
+                    AlertDialog(
+                        onDismissRequest = { viewModel.dismissError() },
+                        title = { Text("Error") },
+                        text = { Text(uiState.errorMessage!!) },
+                        confirmButton = {
+                            Button(onClick = { viewModel.dismissError() }) {
+                                Text("OK")
+                            }
+                        },
+                    )
+                }
+                uiState.summarizedText != null -> {
+                    OutputTextDisplay(uiState.summarizedText!!, modifier = Modifier.weight(1f))
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -224,35 +208,18 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
     }
 }
 
-fun onSelectedVideoChange(
-    selectedVideoUri: Uri?,
-    exoPlayer: ExoPlayer,
-    textToSpeech: TextToSpeech?,
-    onSpeakingStateChange: (speaking: Boolean, paused: Boolean) -> Unit,
-) {
-    selectedVideoUri?.takeIf { it.toString().isNotEmpty() }?.let { uri ->
-        exoPlayer.setMediaItem(MediaItem.fromUri(uri))
-        exoPlayer.prepare()
-        textToSpeech?.stop()
-        onSpeakingStateChange(false, true)
-    }
-}
-
-fun onSummarizeButtonClick(
-    selectedVideoUri: Uri?,
-    textToSpeech: TextToSpeech?,
-    onSpeakingStateChange: (speaking: Boolean, paused: Boolean) -> Unit,
-    viewModel: VideoSummarizationViewModel,
-) {
-    if (selectedVideoUri != null) {
-        viewModel.getVideoSummary(selectedVideoUri)
-        textToSpeech?.stop()
-        onSpeakingStateChange(false, true)
-    }
-}
+val accentOptions = listOf(
+    Locale.UK,
+    Locale.FRANCE,
+    Locale.GERMANY,
+    Locale.ITALY,
+    Locale.JAPAN,
+    Locale.KOREA,
+    Locale.US,
+)
 
 fun initializeTextToSpeech(context: Context, onInitialized: (Boolean) -> Unit): TextToSpeech {
-    val textToSpeech = TextToSpeech(context) { status ->
+    return TextToSpeech(context) { status ->
         if (status == TextToSpeech.SUCCESS) {
             onInitialized(true)
         } else {
@@ -260,11 +227,11 @@ fun initializeTextToSpeech(context: Context, onInitialized: (Boolean) -> Unit): 
             onInitialized(false)
         }
     }
-    return textToSpeech
 }
 
 @Composable
-fun SeeCodeButton(context: Context) {
+fun SeeCodeButton() {
+    val context = LocalContext.current
     val githubLink =
         "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-video-summarization"
     Button(
