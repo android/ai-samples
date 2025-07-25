@@ -29,21 +29,22 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-sealed class GeminiChatbotUiState {
-    data object Initial : GeminiChatbotUiState()
-    data class Generating(val messages: List<ChatMessage>) : GeminiChatbotUiState()
-    data class Success(val messages: List<ChatMessage>) : GeminiChatbotUiState()
-    data class Error(
-        val errorMessage: String,
-        val messages: List<ChatMessage>,
-    ) : GeminiChatbotUiState()
+sealed interface GeminiMessageState {
+    data object WaitingForMessage : GeminiMessageState
+    data object Generating : GeminiMessageState
+    data class Error(val errorMessage: String) : GeminiMessageState
 }
 
-class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
+data class GeminiChatbotUiState(
+    val messages: List<ChatMessage> = listOf(),
+    val geminiMessageState: GeminiMessageState = GeminiMessageState.WaitingForMessage,
+)
 
-    private val _uiState = MutableStateFlow<GeminiChatbotUiState>(GeminiChatbotUiState.Initial)
+class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
+    private val _uiState = MutableStateFlow(GeminiChatbotUiState())
     val uiState: StateFlow<GeminiChatbotUiState> = _uiState.asStateFlow()
 
     private val generativeModel by lazy {
@@ -70,45 +71,42 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
     private val chat = generativeModel.startChat()
 
     fun sendMessage(message: String) {
-        val currentMessages =
-            when (val state = _uiState.value) {
-                is GeminiChatbotUiState.Success -> state.messages
-                is GeminiChatbotUiState.Error -> state.messages
-                else -> emptyList()
-            }
-
-        val newMessages =
-            currentMessages.toMutableList().apply {
-                add(ChatMessage(message, System.currentTimeMillis(), false, null))
-            }
         viewModelScope.launch {
             try {
-                _uiState.value = GeminiChatbotUiState.Generating(newMessages)
-
-                val response = chat.sendMessage(message)
-                response.text?.let {
-                    newMessages.add(
-                        ChatMessage(
-                            it.trim(),
-                            System.currentTimeMillis(),
-                            true,
-                            null,
-                        ),
+                val userMessage = ChatMessage(
+                    text = message,
+                    timestamp = System.currentTimeMillis(),
+                )
+                _uiState.update {
+                    it.copy(
+                        messages = listOf(userMessage) + it.messages,
+                        geminiMessageState = GeminiMessageState.Generating,
                     )
                 }
-                _uiState.value = GeminiChatbotUiState.Success(newMessages)
-            } catch (e: Exception) {
-                _uiState.value =
-                    GeminiChatbotUiState.Error(
-                        e.localizedMessage ?: "Something went wrong, try again",
-                        newMessages,
+
+                val response = chat.sendMessage(message)
+                val newMessage = response.text?.let {
+                    ChatMessage(
+                        text = it.trim(),
+                        timestamp = System.currentTimeMillis(),
+                        isIncoming = true,
                     )
+                } ?: error("Model returned an empty response") // This error will be caught by the try/catch
+
+                _uiState.update {
+                    it.copy(messages = listOf(newMessage) + it.messages, geminiMessageState = GeminiMessageState.WaitingForMessage)
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(geminiMessageState = GeminiMessageState.Error(e.localizedMessage ?: "Something went wrong, try again"))
+                }
             }
         }
     }
 
     fun dismissError() {
-        val errorState = _uiState.value as? GeminiChatbotUiState.Error ?: return
-        _uiState.value = GeminiChatbotUiState.Success(errorState.messages)
+        _uiState.update {
+            it.copy(geminiMessageState = GeminiMessageState.WaitingForMessage)
+        }
     }
 }

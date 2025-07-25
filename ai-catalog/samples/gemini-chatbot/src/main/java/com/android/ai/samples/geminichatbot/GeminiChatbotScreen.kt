@@ -17,16 +17,14 @@ package com.android.ai.samples.geminichatbot
 
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -53,10 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -74,12 +69,13 @@ fun GeminiChatbotScreen(viewModel: GeminiChatbotViewModel = hiltViewModel()) {
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .imePadding(),
         topBar = {
             TopAppBar(
                 colors = topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 ),
                 title = {
                     Text(text = stringResource(id = R.string.geminichatbot_title_bar))
@@ -90,27 +86,18 @@ fun GeminiChatbotScreen(viewModel: GeminiChatbotViewModel = hiltViewModel()) {
             )
         },
     ) { innerPadding ->
-
         Column {
-            val layoutDirection = LocalLayoutDirection.current
-
-            val messages = when (val state = uiState) {
-                is GeminiChatbotUiState.Initial -> emptyList()
-                is GeminiChatbotUiState.Generating -> state.messages
-                is GeminiChatbotUiState.Success -> state.messages
-                is GeminiChatbotUiState.Error -> state.messages
-            }
-
             MessageList(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
                     .weight(1f),
-                messages = messages.sortedByDescending { it.timestamp },
+                messages = uiState.messages,
                 contentPadding = innerPadding,
             )
 
-            when (val state = uiState) {
-                is GeminiChatbotUiState.Generating -> {
+            when (val state = uiState.geminiMessageState) {
+                is GeminiMessageState.Generating -> {
                     CircularProgressIndicator(
                         modifier = Modifier
                             .padding(vertical = 8.dp)
@@ -118,7 +105,7 @@ fun GeminiChatbotScreen(viewModel: GeminiChatbotViewModel = hiltViewModel()) {
                     )
                 }
 
-                is GeminiChatbotUiState.Error -> {
+                is GeminiMessageState.Error -> {
                     AlertDialog(
                         onDismissRequest = { viewModel.dismissError() },
                         title = { Text(text = stringResource(R.string.error)) },
@@ -130,8 +117,7 @@ fun GeminiChatbotScreen(viewModel: GeminiChatbotViewModel = hiltViewModel()) {
                         },
                     )
                 }
-
-                else -> { /* No additional UI for Initial or Success states */ }
+                else -> { /* No additional UI for waiting state */ }
             }
 
             InputBar(
@@ -144,23 +130,14 @@ fun GeminiChatbotScreen(viewModel: GeminiChatbotViewModel = hiltViewModel()) {
                     viewModel.sendMessage(message)
                     message = ""
                 },
-                contentPadding = innerPadding.copy(layoutDirection, top = 0.dp),
-                sendEnabled = uiState !is GeminiChatbotUiState.Generating,
+                sendEnabled = uiState.geminiMessageState !is GeminiMessageState.Generating,
             )
         }
     }
 }
 
-private fun PaddingValues.copy(layoutDirection: LayoutDirection, start: Dp? = null, top: Dp? = null, end: Dp? = null, bottom: Dp? = null) =
-    PaddingValues(
-        start = start ?: calculateStartPadding(layoutDirection),
-        top = top ?: calculateTopPadding(),
-        end = end ?: calculateEndPadding(layoutDirection),
-        bottom = bottom ?: calculateBottomPadding(),
-    )
-
 @Composable
-fun MessageList(modifier: Modifier = Modifier, messages: List<ChatMessage>, contentPadding: PaddingValues) {
+fun MessageList(messages: List<ChatMessage>, contentPadding: PaddingValues, modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = modifier,
         contentPadding = contentPadding,
@@ -168,41 +145,33 @@ fun MessageList(modifier: Modifier = Modifier, messages: List<ChatMessage>, cont
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
     ) {
         items(items = messages) { message ->
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(
-                    16.dp,
-                    if (message.isIncoming) Alignment.Start else Alignment.End,
-                ),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                val iconSize = 48.dp
-                Spacer(modifier = Modifier.size(iconSize))
-                MessageBubble(
-                    message = message,
-                )
-            }
+            MessageBubble(
+                message = message,
+            )
         }
     }
 }
 
 @Composable
-fun MessageBubble(modifier: Modifier = Modifier, message: ChatMessage) {
-    Surface(
-        modifier = modifier,
-        color = if (message.isIncoming) {
-            MaterialTheme.colorScheme.secondaryContainer
-        } else {
-            MaterialTheme.colorScheme.primary
-        },
-        shape = MaterialTheme.shapes.large,
+fun MessageBubble(message: ChatMessage, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = if (message.isIncoming) Alignment.CenterStart else Alignment.CenterEnd,
     ) {
-        Text(
-            modifier = Modifier.padding(16.dp),
-            text = message.text,
-        )
+        Surface(
+            modifier = Modifier.widthIn(max = 300.dp),
+            color = if (message.isIncoming) {
+                MaterialTheme.colorScheme.secondaryContainer
+            } else {
+                MaterialTheme.colorScheme.primary
+            },
+            shape = MaterialTheme.shapes.large,
+        ) {
+            Text(
+                modifier = Modifier.padding(16.dp),
+                text = message.text,
+            )
+        }
     }
 }
 
