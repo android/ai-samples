@@ -51,7 +51,6 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
     val sampleTextOptions = stringArrayResource(R.array.summarization_sample_text)
 
     val sheetState = rememberModalBottomSheetState()
-    val context = LocalContext.current
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var textInput by remember { mutableStateOf("") }
