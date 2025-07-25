@@ -51,10 +51,9 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
     val sampleTextOptions = stringArrayResource(R.array.summarization_sample_text)
 
     val sheetState = rememberModalBottomSheetState()
-    var showBottomSheet by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var textInput by remember { mutableStateOf("") }
 
     Scaffold(
@@ -90,8 +89,7 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
             // Summarize button
             Button(
                 onClick = {
-                    showBottomSheet = true
-                    viewModel.summarize(textInput, context)
+                    viewModel.summarize(textInput)
                 },
                 modifier = Modifier
                     .padding(10.dp)
@@ -123,8 +121,8 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
             }
         }
 
-        if (showBottomSheet) {
-            val bottomSheetText = when (val state = uiState.value) {
+        if (uiState !is GenAISummarizationUiState.Initial) {
+            val bottomSheetText = when (val state = uiState) {
                 is GenAISummarizationUiState.DownloadingFeature -> stringResource(
                     id = R.string.summarization_downloading,
                     state.bytesDownloaded,
@@ -138,7 +136,6 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
             }
             ModalBottomSheet(
                 onDismissRequest = {
-                    showBottomSheet = false
                     viewModel.clearGeneratedSummary()
                 },
                 sheetState = sheetState,
