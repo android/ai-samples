@@ -16,20 +16,16 @@
 package com.android.ai.samples.genai_summarization
 
 import android.app.Application
-import android.content.Context
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.geminimultimodal.R
-import com.google.common.util.concurrent.FutureCallback
 import com.google.mlkit.genai.common.DownloadCallback
 import com.google.mlkit.genai.common.FeatureStatus
 import com.google.mlkit.genai.common.GenAiException
 import com.google.mlkit.genai.summarization.Summarization
 import com.google.mlkit.genai.summarization.SummarizationRequest
-import com.google.mlkit.genai.summarization.SummarizationResult
 import com.google.mlkit.genai.summarization.Summarizer
 import com.google.mlkit.genai.summarization.SummarizerOptions
 import javax.inject.Inject
@@ -38,7 +34,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
-import java.time.Instant
 
 sealed class GenAISummarizationUiState {
     data object Initial : GenAISummarizationUiState()
