@@ -91,6 +91,7 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
                 onClick = {
                     viewModel.summarize(textInput)
                 },
+                enabled = textInput.isNotEmpty(),
                 modifier = Modifier
                     .padding(10.dp)
                     .align(Alignment.CenterHorizontally),
