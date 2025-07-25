@@ -32,6 +32,7 @@ import com.google.mlkit.genai.summarization.SummarizationRequest
 import com.google.mlkit.genai.summarization.SummarizationResult
 import com.google.mlkit.genai.summarization.Summarizer
 import com.google.mlkit.genai.summarization.SummarizerOptions
+import kotlinx.coroutines.Job
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -58,6 +59,7 @@ class GenAISummarizationViewModel @Inject constructor(val context: Application) 
     val uiState: StateFlow<GenAISummarizationUiState> = _uiState.asStateFlow()
 
     private var summarizer: Summarizer? = null
+    private var summarizationJob: Job? = null
 
     init {
         val summarizationOptions =
@@ -73,7 +75,7 @@ class GenAISummarizationViewModel @Inject constructor(val context: Application) 
             return
         }
 
-        viewModelScope.launch {
+        summarizationJob = viewModelScope.launch {
             summarizer?.let { summarizer ->
                 var featureStatus = FeatureStatus.UNAVAILABLE
 
@@ -146,6 +148,7 @@ class GenAISummarizationViewModel @Inject constructor(val context: Application) 
 
     fun clearGeneratedSummary() {
         _uiState.value = GenAISummarizationUiState.Initial
+        summarizationJob?.cancel()
     }
 
     override fun onCleared() {
