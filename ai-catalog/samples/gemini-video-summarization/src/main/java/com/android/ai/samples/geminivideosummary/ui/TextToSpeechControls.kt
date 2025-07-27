@@ -15,6 +15,7 @@
  */
 package com.android.ai.samples.geminivideosummary.ui
 
+import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.compose.foundation.clickable
@@ -31,10 +32,18 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.android.ai.samples.geminivideosummary.viewmodel.TtsState
 import com.google.com.android.ai.samples.geminivideosummary.R
 import java.util.Locale
 
@@ -48,18 +57,29 @@ import java.util.Locale
  */
 @Composable
 fun TextToSpeechControls(
-    isInitialized: Boolean,
-    isSpeaking: Boolean,
-    isPaused: Boolean,
-    textToSpeech: TextToSpeech?,
+    ttsState: TtsState,
     speechText: String,
     selectedAccent: Locale,
     accentOptions: List<Locale>,
-    onSpeakingStateChange: (speaking: Boolean, paused: Boolean) -> Unit,
-    isAccentDropdownExpanded: Boolean,
+    onTtsStateChange: (TtsState) -> Unit,
     onAccentSelected: (Locale) -> Unit,
-    onAccentDropdownExpanded: (Boolean) -> Unit,
+    onInitializationResult: (Boolean, String?) -> Unit
 ) {
+    var textToSpeech by remember { mutableStateOf<TextToSpeech?>(null) }
+    var isAccentDropdownExpanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    DisposableEffect(key1 = true) {
+        textToSpeech = initializeTextToSpeech(context, onInitializationResult)
+        onDispose {
+            textToSpeech?.shutdown()
+        }
+    }
+
+    LaunchedEffect(speechText, selectedAccent) {
+        textToSpeech?.stop()
+        onTtsStateChange(TtsState.Idle)
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -74,43 +94,73 @@ fun TextToSpeechControls(
                 Icon(
                     imageVector = Icons.Filled.ArrowDropDown,
                     contentDescription = "Dropdown",
-                    modifier = Modifier.clickable { onAccentDropdownExpanded(!isAccentDropdownExpanded) },
+                    modifier = Modifier.clickable { isAccentDropdownExpanded = !isAccentDropdownExpanded },
                 )
             },
             modifier = Modifier
-                .clickable { onAccentDropdownExpanded(!isAccentDropdownExpanded) }
+                .clickable { isAccentDropdownExpanded = !isAccentDropdownExpanded }
                 .padding(end = 8.dp)
                 .weight(1f),
         )
+
         DropdownMenu(
             expanded = isAccentDropdownExpanded,
-            onDismissRequest = { onAccentDropdownExpanded(false) },
+            onDismissRequest = { isAccentDropdownExpanded = false },
         ) {
             accentOptions.forEach { accent ->
-                DropdownMenuItem(text = { Text(accent.displayLanguage) }, onClick = {
-                    onAccentSelected(accent)
-                    onAccentDropdownExpanded(false)
-                })
+                DropdownMenuItem(
+                    text = { Text(accent.displayLanguage) },
+                    onClick = {
+                        onAccentSelected(accent)
+                        isAccentDropdownExpanded = false
+                    }
+                )
             }
         }
 
-        if (isInitialized && !isSpeaking) {
-            Button(onClick = {
-                handleSpeakButtonClick(
-                    textToSpeech, speechText, selectedAccent, onSpeakingStateChange,
-                )
-            }) {
+        if (ttsState == TtsState.Idle || ttsState == TtsState.Paused) {
+            Button(
+                onClick = {
+                    handleSpeakButtonClick(
+                        textToSpeech, speechText, selectedAccent, onTtsStateChange,
+                    )
+                },
+            ) {
                 Text(text = stringResource(R.string.text_listen_to_ai_output))
             }
         }
 
-        if (isSpeaking && !isPaused) {
-            Button(onClick = {
-                textToSpeech?.stop()
-                onSpeakingStateChange(false, true)
-            }) {
+        if (ttsState == TtsState.Playing) {
+            Button(
+                onClick = {
+                    textToSpeech?.stop()
+                    onTtsStateChange(TtsState.Paused)
+                }
+            ) {
                 Text(text = stringResource(R.string.pause))
             }
+        }
+    }
+}
+
+private fun initializeTextToSpeech(context: Context, onResult: (Boolean, String?) -> Unit): TextToSpeech {
+    return TextToSpeech(context) { status ->
+        if (status == TextToSpeech.SUCCESS) {
+            onResult(true, null)
+        } else {
+            val reason = when (status) {
+                TextToSpeech.ERROR -> "a generic error."
+                TextToSpeech.ERROR_SYNTHESIS -> "a synthesis error."
+                TextToSpeech.ERROR_SERVICE -> "an error with the service."
+                TextToSpeech.ERROR_OUTPUT -> "an error writing the audio."
+                TextToSpeech.ERROR_NETWORK -> "a network error."
+                TextToSpeech.ERROR_NETWORK_TIMEOUT -> "a network timeout."
+                TextToSpeech.ERROR_NOT_INSTALLED_YET -> "the required voice data has not been installed."
+                else -> "an unknown error."
+            }
+            val errorMessage = "TTS Initialization failed: $reason"
+            Log.e("TextToSpeech", errorMessage)
+            onResult(false, errorMessage)
         }
     }
 }
@@ -119,7 +169,7 @@ private fun handleSpeakButtonClick(
     textToSpeech: TextToSpeech?,
     textForSpeech: String,
     selectedAccent: Locale,
-    onSpeakingStateChange: (speaking: Boolean, paused: Boolean) -> Unit,
+    onTtsStateChange: (TtsState) -> Unit,
 ) {
     // Check if the voice and language is supported
     val result = textToSpeech?.voice?.locale?.let {
@@ -132,6 +182,6 @@ private fun handleSpeakButtonClick(
         textToSpeech?.speak(
             textForSpeech, TextToSpeech.QUEUE_FLUSH, null, null,
         )
-        onSpeakingStateChange(true, false)
+        onTtsStateChange(TtsState.Playing)
     }
 }

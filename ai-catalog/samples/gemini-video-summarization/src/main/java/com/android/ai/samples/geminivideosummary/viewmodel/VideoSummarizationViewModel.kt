@@ -46,23 +46,28 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
     val uiState: StateFlow<VideoSummarizationState> = _uiState.asStateFlow()
 
     fun onVideoSelected(uri: Uri) {
-        _uiState.update { it.copy(selectedVideoUri = uri, summarizedText = null) }
+        _uiState.update { it.copy(selectedVideoUri = uri, summarizationState = SummarizationState.Idle) }
     }
 
     fun onAccentSelected(locale: Locale) {
         _uiState.update { it.copy(selectedAccent = locale) }
     }
 
-    fun onSpeakingStateChanged(isSpeaking: Boolean, isPaused: Boolean) {
-        _uiState.update { it.copy(isSpeaking = isSpeaking, isPaused = isPaused) }
+    fun onTtsStateChanged(newTtsState: TtsState) {
+        val currentState = _uiState.value.summarizationState
+        if (currentState is SummarizationState.Success) {
+            _uiState.update {
+                it.copy(summarizationState = currentState.copy(ttsState = newTtsState))
+            }
+        }
     }
 
-    fun onDropdownExpandedChanged(isExpanded: Boolean) {
-        _uiState.update { it.copy(isDropdownExpanded = isExpanded) }
-    }
-
-    fun onAccentDropdownExpandedChanged(isExpanded: Boolean) {
-        _uiState.update { it.copy(isAccentDropdownExpanded = isExpanded) }
+    fun onTtsInitializationResult(isSuccess: Boolean, errorMessage: String?) {
+        if (!isSuccess && errorMessage != null) {
+            _uiState.update {
+                it.copy(summarizationState = SummarizationState.Error(errorMessage))
+            }
+        }
     }
 
     fun summarize() {
@@ -70,7 +75,7 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
         viewModelScope.launch {
             val promptData =
                 "Summarize this video in the form of top 3-4 takeaways only. Write in the form of bullet points. Don't assume if you don't know"
-            _uiState.update { it.copy(isSummarizing = true) }
+            _uiState.update { it.copy(summarizationState = SummarizationState.InProgress) }
 
             try {
                 val generativeModel =
@@ -87,15 +92,13 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
                 }
                 _uiState.update {
                     it.copy(
-                        summarizedText = outputStringBuilder.toString(),
-                        isSummarizing = false,
+                        summarizationState = SummarizationState.Success(outputStringBuilder.toString())
                     )
                 }
             } catch (error: Exception) {
                 _uiState.update {
                     it.copy(
-                        errorMessage = error.localizedMessage,
-                        isSummarizing = false,
+                        summarizationState = SummarizationState.Error(error.localizedMessage ?: "An unknown error occurred")
                     )
                 }
                 Log.e(tag, "Error processing prompt : $error")
@@ -104,18 +107,26 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
     }
 
     fun dismissError() {
-        _uiState.update { it.copy(errorMessage = null) }
+        _uiState.update { it.copy(summarizationState = SummarizationState.Idle) }
     }
+}
+
+sealed interface SummarizationState {
+    data object Idle : SummarizationState
+    data object InProgress : SummarizationState
+    data class Error(val message: String) : SummarizationState
+    data class Success(val summarizedText: String, val ttsState: TtsState = TtsState.Idle) :
+        SummarizationState
+}
+
+sealed interface TtsState {
+    data object Idle : TtsState
+    data object Playing : TtsState
+    data object Paused : TtsState
 }
 
 data class VideoSummarizationState(
     val selectedVideoUri: Uri? = sampleVideoList.first().uri,
-    val isDropdownExpanded: Boolean = false,
-    val summarizedText: String? = null,
-    val isSummarizing: Boolean = false,
-    val errorMessage: String? = null,
-    val isSpeaking: Boolean = false,
-    val isPaused: Boolean = false,
-    val selectedAccent: Locale = Locale.US,
-    val isAccentDropdownExpanded: Boolean = false,
+    val summarizationState: SummarizationState = SummarizationState.Idle,
+    val selectedAccent: Locale = Locale.US
 )
