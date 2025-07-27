@@ -63,7 +63,7 @@ fun TextToSpeechControls(
     accentOptions: List<Locale>,
     onTtsStateChange: (TtsState) -> Unit,
     onAccentSelected: (Locale) -> Unit,
-    onInitializationResult: (Boolean, String?) -> Unit
+    onInitializationResult: (Boolean, String?) -> Unit,
 ) {
     var textToSpeech by remember { mutableStateOf<TextToSpeech?>(null) }
     var isAccentDropdownExpanded by remember { mutableStateOf(false) }
@@ -113,7 +113,7 @@ fun TextToSpeechControls(
                     onClick = {
                         onAccentSelected(accent)
                         isAccentDropdownExpanded = false
-                    }
+                    },
                 )
             }
         }
@@ -135,7 +135,7 @@ fun TextToSpeechControls(
                 onClick = {
                     textToSpeech?.stop()
                     onTtsStateChange(TtsState.Paused)
-                }
+                },
             ) {
                 Text(text = stringResource(R.string.pause))
             }

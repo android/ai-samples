@@ -137,7 +137,7 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
                 onDismissError = { viewModel.dismissError() },
                 onTtsInitializationResult = { isSuccess, errorMessage ->
                     viewModel.onTtsInitializationResult(isSuccess, errorMessage)
-                }
+                },
             )
         }
     }
@@ -156,10 +156,10 @@ private fun SummarizationSection(
     onTtsStateChanged: (TtsState) -> Unit,
     onAccentSelected: (Locale) -> Unit,
     onDismissError: () -> Unit,
-    onTtsInitializationResult: (Boolean, String?) -> Unit
+    onTtsInitializationResult: (Boolean, String?) -> Unit,
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Button(
             modifier = Modifier.fillMaxWidth(),
@@ -195,7 +195,7 @@ private fun SummarizationSection(
                     accentOptions = accentOptions,
                     onTtsStateChange = onTtsStateChanged,
                     onAccentSelected = onAccentSelected,
-                    onInitializationResult = onTtsInitializationResult
+                    onInitializationResult = onTtsInitializationResult,
                 )
                 OutputTextDisplay(summarizationState.summarizedText, modifier = Modifier.weight(1f))
             }

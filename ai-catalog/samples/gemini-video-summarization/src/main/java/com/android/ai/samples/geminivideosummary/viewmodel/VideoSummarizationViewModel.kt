@@ -92,13 +92,13 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
                 }
                 _uiState.update {
                     it.copy(
-                        summarizationState = SummarizationState.Success(outputStringBuilder.toString())
+                        summarizationState = SummarizationState.Success(outputStringBuilder.toString()),
                     )
                 }
             } catch (error: Exception) {
                 _uiState.update {
                     it.copy(
-                        summarizationState = SummarizationState.Error(error.localizedMessage ?: "An unknown error occurred")
+                        summarizationState = SummarizationState.Error(error.localizedMessage ?: "An unknown error occurred"),
                     )
                 }
                 Log.e(tag, "Error processing prompt : $error")
@@ -115,8 +115,10 @@ sealed interface SummarizationState {
     data object Idle : SummarizationState
     data object InProgress : SummarizationState
     data class Error(val message: String) : SummarizationState
-    data class Success(val summarizedText: String, val ttsState: TtsState = TtsState.Idle) :
-        SummarizationState
+    data class Success(
+        val summarizedText: String,
+        val ttsState: TtsState = TtsState.Idle,
+    ) : SummarizationState
 }
 
 sealed interface TtsState {
@@ -128,5 +130,5 @@ sealed interface TtsState {
 data class VideoSummarizationState(
     val selectedVideoUri: Uri? = sampleVideoList.first().uri,
     val summarizationState: SummarizationState = SummarizationState.Idle,
-    val selectedAccent: Locale = Locale.US
+    val selectedAccent: Locale = Locale.US,
 )
