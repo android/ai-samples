@@ -31,27 +31,52 @@ import com.google.mlkit.genai.summarization.SummarizerOptions
 import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 
 sealed class GenAISummarizationUiState {
     data object Initial : GenAISummarizationUiState()
-    data object CheckingFeatureStatus : GenAISummarizationUiState()
-    data class DownloadingFeature(
-        val bytesToDownload: Long,
-        val bytesDownloaded: Long,
-    ) : GenAISummarizationUiState()
-
     data class Generating(val generatedOutput: String) : GenAISummarizationUiState()
     data class Success(val generatedOutput: String) : GenAISummarizationUiState()
     data class Error(@StringRes val errorMessageStringRes: Int) : GenAISummarizationUiState()
 }
 
-class GenAISummarizationViewModel @Inject constructor(val context: Application) : AndroidViewModel(context) {
+sealed class GenAISummarizationFeatureState {
+    data object Initial : GenAISummarizationFeatureState()
+    data class Downloading(
+        val bytesToDownload: Long,
+        val bytesDownloaded: Long,
+    ) : GenAISummarizationFeatureState()
+
+    data object Downloaded : GenAISummarizationFeatureState()
+    data object Unavailable : GenAISummarizationFeatureState()
+}
+
+data class ScreenUIState(
+    val uiState: GenAISummarizationUiState,
+    val featureState: GenAISummarizationFeatureState,
+)
+
+class GenAISummarizationViewModel @Inject constructor(context: Application) : AndroidViewModel(context) {
     private val _uiState = MutableStateFlow<GenAISummarizationUiState>(GenAISummarizationUiState.Initial)
     val uiState: StateFlow<GenAISummarizationUiState> = _uiState.asStateFlow()
+
+    private val _featureState = MutableStateFlow<GenAISummarizationFeatureState>(GenAISummarizationFeatureState.Initial)
+    val featureState: StateFlow<GenAISummarizationFeatureState> = _featureState.asStateFlow()
+
+    val screenUiState: StateFlow<ScreenUIState> =
+        combine(uiState, featureState) { uiState, featureState -> ScreenUIState(uiState, featureState) }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.Eagerly,
+                ScreenUIState(GenAISummarizationUiState.Initial, GenAISummarizationFeatureState.Initial),
+            )
 
     private var summarizer = Summarization.getClient(
         SummarizerOptions.builder(context)
@@ -59,64 +84,70 @@ class GenAISummarizationViewModel @Inject constructor(val context: Application) 
             .build(),
     )
     private var summarizationJob: Job? = null
+    private var downloadJob: Job? = null
+
+    init {
+        downloadFeature()
+    }
+
+    fun downloadFeature() {
+        downloadJob = viewModelScope.launch {
+            val featureStatus = summarizer.checkFeatureStatus().await()
+            when (featureStatus) {
+                FeatureStatus.AVAILABLE -> {
+                    _featureState.value = GenAISummarizationFeatureState.Downloaded
+                }
+
+                FeatureStatus.UNAVAILABLE -> {
+                    _featureState.value = GenAISummarizationFeatureState.Unavailable
+                }
+
+                else -> {
+                    // If feature is downloadable, making an inference call will automatically start
+                    // the downloading process.
+                    // If feature is downloading, the inference request will automatically execute after
+                    // the feature has been downloaded.
+                    // Alternatively, you can call summarizer.downloadFeature() to monitor the
+                    // progress of the download.
+                    // Calling downloadFeature() while the feature is already downloading will not start another download.
+                    summarizer.downloadFeature(
+                        object : DownloadCallback {
+                            override fun onDownloadStarted(bytesToDownload: Long) {
+                                _featureState.value = GenAISummarizationFeatureState.Downloading(bytesToDownload, 0)
+                            }
+
+                            override fun onDownloadProgress(bytesDownloaded: Long) {
+                                (_featureState.value as? GenAISummarizationFeatureState.Downloading)?.bytesToDownload?.let { bytesToDownload ->
+                                    _featureState.value = GenAISummarizationFeatureState.Downloading(bytesToDownload, bytesDownloaded)
+                                }
+                            }
+
+                            override fun onDownloadCompleted() {
+                                _featureState.value = GenAISummarizationFeatureState.Downloaded
+                            }
+
+                            override fun onDownloadFailed(exception: GenAiException) {
+                                Log.e("GenAISummarization", "Download failed", exception)
+                                _featureState.value = GenAISummarizationFeatureState.Unavailable
+                            }
+                        },
+                    )
+                }
+            }
+        }
+    }
 
     fun summarize(textToSummarize: String) {
-        if (textToSummarize.isEmpty()) {
-            _uiState.value = GenAISummarizationUiState.Error(R.string.summarization_no_input)
+        if (featureState.value is GenAISummarizationFeatureState.Unavailable) {
+            _uiState.value = GenAISummarizationUiState.Error(R.string.summarization_not_available)
             return
         }
 
         summarizationJob = viewModelScope.launch {
-            var featureStatus = FeatureStatus.UNAVAILABLE
-
-            try {
-                _uiState.value = GenAISummarizationUiState.CheckingFeatureStatus
-                featureStatus = summarizer.checkFeatureStatus().await()
-            } catch (error: Exception) {
-                _uiState.value = GenAISummarizationUiState.Error(R.string.summarization_feature_check_fail)
-                Log.e("GenAISummarization", "Error checking feature status", error)
-            }
-
-            if (featureStatus == FeatureStatus.UNAVAILABLE) {
-                _uiState.value = GenAISummarizationUiState.Error(R.string.summarization_not_available)
-                return@launch
-            }
-
-            // If feature is downloadable, making an inference call will automatically start
-            // the downloading process.
-            // If feature is downloading, the inference request will automatically execute after
-            // the feature has been downloaded.
-            // Alternatively, you can call summarizer.downloadFeature() to monitor the
-            // progress of the download.
-            // Calling downloadFeature() while the feature is already downloading will not start another download.
-            if (featureStatus == FeatureStatus.DOWNLOADABLE || featureStatus == FeatureStatus.DOWNLOADING) {
-                summarizer.downloadFeature(
-                    object : DownloadCallback {
-                        override fun onDownloadStarted(bytesToDownload: Long) {
-                            _uiState.value = GenAISummarizationUiState.DownloadingFeature(bytesToDownload, 0)
-                        }
-
-                        override fun onDownloadProgress(bytesDownloaded: Long) {
-                            (_uiState.value as? GenAISummarizationUiState.DownloadingFeature)?.bytesToDownload?.let { bytesToDownload ->
-                                _uiState.value = GenAISummarizationUiState.DownloadingFeature(bytesToDownload, bytesDownloaded)
-                            }
-                        }
-
-                        override fun onDownloadCompleted() {
-                            viewModelScope.launch {
-                                generateSummarization(summarizer, textToSummarize)
-                            }
-                        }
-
-                        override fun onDownloadFailed(exception: GenAiException) {
-                            Log.e("GenAISummarization", "Download failed", exception)
-                            _uiState.value = GenAISummarizationUiState.Error(R.string.summarization_download_failed)
-                        }
-                    },
-                )
-            } else {
-                generateSummarization(summarizer, textToSummarize)
-            }
+            featureState.first { it is GenAISummarizationFeatureState.Downloaded }
+                .also {
+                    generateSummarization(summarizer, textToSummarize)
+                }
         }
     }
 
@@ -137,6 +168,7 @@ class GenAISummarizationViewModel @Inject constructor(val context: Application) 
 
     fun clearGeneratedSummary() {
         _uiState.value = GenAISummarizationUiState.Initial
+        downloadJob?.cancel()
         summarizationJob?.cancel()
     }
 

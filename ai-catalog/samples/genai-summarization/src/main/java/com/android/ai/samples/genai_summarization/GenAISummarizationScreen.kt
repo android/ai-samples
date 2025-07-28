@@ -50,8 +50,9 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
     val sampleTextOptions = stringArrayResource(R.array.summarization_sample_text)
 
     val sheetState = rememberModalBottomSheetState()
+    var showBottomSheet by remember { mutableStateOf(false) }
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.screenUiState.collectAsStateWithLifecycle()
     var textInput by remember { mutableStateOf("") }
 
     Scaffold(
@@ -87,6 +88,7 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
             // Summarize button
             Button(
                 onClick = {
+                    showBottomSheet = true
                     viewModel.summarize(textInput)
                 },
                 enabled = textInput.isNotEmpty(),
@@ -120,21 +122,28 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
             }
         }
 
-        if (uiState !is GenAISummarizationUiState.Initial) {
-            val bottomSheetText = when (val state = uiState) {
-                is GenAISummarizationUiState.DownloadingFeature -> stringResource(
+        if (showBottomSheet) {
+            val bottomSheetText = when (uiState.featureState) {
+                GenAISummarizationFeatureState.Downloaded ->
+                    when (uiState.uiState) {
+                        is GenAISummarizationUiState.Error -> stringResource((uiState.uiState as GenAISummarizationUiState.Error).errorMessageStringRes)
+                        is GenAISummarizationUiState.Generating -> (uiState.uiState as GenAISummarizationUiState.Generating).generatedOutput
+                        GenAISummarizationUiState.Initial -> ""
+                        is GenAISummarizationUiState.Success -> (uiState.uiState as GenAISummarizationUiState.Success).generatedOutput
+                    }
+
+                is GenAISummarizationFeatureState.Downloading -> stringResource(
                     id = R.string.summarization_downloading,
-                    state.bytesDownloaded,
-                    state.bytesToDownload,
+                    (uiState.featureState as GenAISummarizationFeatureState.Downloading).bytesDownloaded,
+                    (uiState.featureState as GenAISummarizationFeatureState.Downloading).bytesToDownload,
                 )
-                is GenAISummarizationUiState.Error -> stringResource(state.errorMessageStringRes)
-                is GenAISummarizationUiState.Generating -> state.generatedOutput
-                GenAISummarizationUiState.Initial -> ""
-                is GenAISummarizationUiState.Success -> state.generatedOutput
-                GenAISummarizationUiState.CheckingFeatureStatus -> stringResource(id = R.string.summarization_checking_feature_status)
+
+                GenAISummarizationFeatureState.Initial -> ""
+                GenAISummarizationFeatureState.Unavailable -> stringResource(R.string.summarization_not_available)
             }
             ModalBottomSheet(
                 onDismissRequest = {
+                    showBottomSheet = false
                     viewModel.clearGeneratedSummary()
                 },
                 sheetState = sheetState,
