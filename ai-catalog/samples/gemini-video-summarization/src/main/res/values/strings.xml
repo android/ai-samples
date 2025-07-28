@@ -4,9 +4,7 @@
     <string name="summarize_video_button">Summarize Video</string>
     <string name="video_summarization_title">Video summarization</string>
     <string name="output_text_combined">%s%s</string>
-    <string name="output_text_initial">Initial</string>
     <string name="output_text_generated_placeholder">"Text generated with Gemini : "</string>
-    <string name="output_text_loading">Loading…</string>
     <string name="text_listen_to_ai_output">Listen to AI output</string>
     <string name="pause">Pause</string>
     <string name="see_code">See Code</string>
@@ -20,5 +18,16 @@
     <string name="video_title_tears_of_steel">Tears of Steel</string>
     <string name="video_title_for_bigger_blazes">For Bigger Blazes</string>
     <string name="video_title_for_bigger_escape">For Bigger Escape</string>
+
+    <!--TTS Errors-->
+    <string name="tts_generic_error">a generic error.</string>
+    <string name="tts_synthesis_error">a synthesis error.</string>
+    <string name="tts_service_error">an error with the service.</string>
+    <string name="tts_output_error">an error writing the audio.</string>
+    <string name="tts_network_error">a network error.</string>
+    <string name="tts_network_timeout_error">a network timeout.</string>
+    <string name="tts_not_installed_error">the required voice data has not been installed.</string>
+    <string name="tts_unknown_error">an unknown error.</string>
+    <string name="tts_error_message">TTS Initialization failed: %s</string>
 
 </resources>

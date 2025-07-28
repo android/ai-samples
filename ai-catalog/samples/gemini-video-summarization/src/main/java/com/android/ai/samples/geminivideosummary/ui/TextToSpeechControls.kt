@@ -149,16 +149,16 @@ private fun initializeTextToSpeech(context: Context, onResult: (Boolean, String?
             onResult(true, null)
         } else {
             val reason = when (status) {
-                TextToSpeech.ERROR -> "a generic error."
-                TextToSpeech.ERROR_SYNTHESIS -> "a synthesis error."
-                TextToSpeech.ERROR_SERVICE -> "an error with the service."
-                TextToSpeech.ERROR_OUTPUT -> "an error writing the audio."
-                TextToSpeech.ERROR_NETWORK -> "a network error."
-                TextToSpeech.ERROR_NETWORK_TIMEOUT -> "a network timeout."
-                TextToSpeech.ERROR_NOT_INSTALLED_YET -> "the required voice data has not been installed."
-                else -> "an unknown error."
+                TextToSpeech.ERROR -> R.string.tts_generic_error
+                TextToSpeech.ERROR_SYNTHESIS -> R.string.tts_synthesis_error
+                TextToSpeech.ERROR_SERVICE -> R.string.tts_service_error
+                TextToSpeech.ERROR_OUTPUT -> R.string.tts_output_error
+                TextToSpeech.ERROR_NETWORK -> R.string.tts_network_error
+                TextToSpeech.ERROR_NETWORK_TIMEOUT -> R.string.tts_network_timeout_error
+                TextToSpeech.ERROR_NOT_INSTALLED_YET -> R.string.tts_not_installed_error
+                else -> R.string.tts_unknown_error
             }
-            val errorMessage = "TTS Initialization failed: $reason"
+            val errorMessage = context.getString(R.string.tts_error_message, context.getString(reason))
             Log.e("TextToSpeech", errorMessage)
             onResult(false, errorMessage)
         }
