@@ -17,10 +17,28 @@ package com.android.ai.catalog.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val Primary50: Color = Color(0xFFC6FF00)
+val Secondary40: Color = Color(0xFF34A853)
+val Tertiary80: Color = Color(0xFFFDADEE)
+val Error80: Color = Color(0xFFFFB4AB)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val Primary10: Color = Color(0xFF283300)
+val Secondary5: Color = Color(0xFF001504)
+val Tertiary30: Color = Color(0xFF6D2F67)
+val Error20: Color = Color(0xFF690005)
+
+val Primary20: Color = Color(0xFF4F6600)
+val Secondary20: Color = Color(0xFF184E26)
+val Tertiary35: Color = Color(0xFF7B3A73)
+val Error40: Color = Color(0xFFBA1A1A)
+
+val Secondary50: Color = Color(0xFF3CC360)
+val Tertiary90: Color = Color(0xFFFFD7F4)
+val Error90: Color = Color(0xFFFFDAD6)
+
+
+
+val PaleGreen: Color = Color(0xFFB1CCC6)
+val DarkPurple: Color = Color(0xFF7B3A73)
+val DarkPink: Color = Color(0xFF6D2F67)
+val DarkerGreen: Color = Color(0xFF4F6600)
