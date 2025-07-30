@@ -25,4 +25,5 @@
     <string name="summarization_downloading">Downloading feature: %1$d / %2$d</string>
     <string name="summarization_checking_feature_status">Checking feature status</string>
     <string name="summarization_generation_error">Error generating summary</string>
+    <string name="summarization_see_code">See code</string>
 </resources>

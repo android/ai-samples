@@ -15,6 +15,7 @@
  */
 package com.android.ai.samples.genai_image_description
 
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -23,9 +24,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -45,6 +49,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.android.ai.samples.geminimultimodal.R
@@ -77,6 +83,9 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
                 title = {
                     Text(text = stringResource(id = R.string.genai_image_description_title_bar))
                 },
+                actions = {
+                    SeeCodeButton()
+                }
             )
         },
     ) { innerPadding ->
@@ -135,5 +144,26 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
                 )
             }
         }
+    }
+}
+
+@Composable
+fun SeeCodeButton() {
+    val context = LocalContext.current
+    val githubLink = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-image-description"
+
+    Button(
+        onClick = {
+            val intent = Intent(Intent.ACTION_VIEW, githubLink.toUri())
+            context.startActivity(intent)
+        },
+        modifier = Modifier.padding(end = 8.dp),
+    ) {
+        Icon(Icons.Filled.Code, contentDescription = "See code")
+        Text(
+            modifier = Modifier.padding(start = 8.dp),
+            fontSize = 12.sp,
+            text = stringResource(R.string.genai_image_see_code),
+        )
     }
 }

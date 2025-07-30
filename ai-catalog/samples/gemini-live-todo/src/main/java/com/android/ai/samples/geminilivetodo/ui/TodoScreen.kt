@@ -16,6 +16,7 @@
 package com.android.ai.samples.geminilivetodo.ui
 
 import android.app.Activity
+import android.content.Intent
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.animateColor
@@ -37,6 +38,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicNone
@@ -66,11 +68,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.geminilivetodo.R
@@ -101,6 +105,9 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 ),
                 title = { Text(stringResource(R.string.gemini_live_title)) },
+                actions = {
+                    SeeCodeButton()
+                },
             )
         },
         floatingActionButton = {
@@ -281,5 +288,26 @@ fun TodoItem(modifier: Modifier, task: Todo, onToggle: () -> Unit, onDelete: () 
                 contentDescription = "Delete",
             )
         }
+    }
+}
+
+@Composable
+fun SeeCodeButton() {
+    val context = LocalContext.current
+    val githubLink = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-live-todo"
+
+    Button(
+        onClick = {
+            val intent = Intent(Intent.ACTION_VIEW, githubLink.toUri())
+            context.startActivity(intent)
+        },
+        modifier = Modifier.padding(end = 8.dp),
+    ) {
+        Icon(Icons.Filled.Code, contentDescription = "See code")
+        Text(
+            modifier = Modifier.padding(start = 8.dp),
+            fontSize = 12.sp,
+            text = stringResource(R.string.see_code),
+        )
     }
 }

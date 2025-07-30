@@ -15,12 +15,16 @@
  */
 package com.android.ai.samples.genai_summarization
 
+import android.content.Intent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -37,9 +41,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.geminimultimodal.R
@@ -65,6 +72,9 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
                 title = {
                     Text(text = stringResource(id = R.string.genai_summarization_title_bar))
                 },
+                actions = {
+                    SeeCodeButton()
+                }
             )
         },
     ) { innerPadding ->
@@ -150,5 +160,26 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
                 )
             }
         }
+    }
+}
+
+@Composable
+fun SeeCodeButton() {
+    val context = LocalContext.current
+    val githubLink = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-summarization"
+
+    Button(
+        onClick = {
+            val intent = Intent(Intent.ACTION_VIEW, githubLink.toUri())
+            context.startActivity(intent)
+        },
+        modifier = Modifier.padding(end = 8.dp),
+    ) {
+        Icon(Icons.Filled.Code, contentDescription = "See code")
+        Text(
+            modifier = Modifier.padding(start = 8.dp),
+            fontSize = 12.sp,
+            text = stringResource(R.string.summarization_see_code),
+        )
     }
 }
