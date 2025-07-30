@@ -15,6 +15,7 @@
  */
 package com.android.ai.samples.genai_writing_assistance
 
+import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,9 +26,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -53,7 +57,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.android.ai.samples.geminimultimodal.R
 import com.google.mlkit.genai.rewriting.RewriterOptions
@@ -84,6 +90,9 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                 title = {
                     Text(text = stringResource(id = R.string.genai_writing_assistance_title_bar))
                 },
+                actions = {
+                    SeeCodeButton()
+                }
             )
         },
     ) { innerPadding ->
@@ -264,6 +273,27 @@ fun RewriteOptionsDialog(onConfirm: (rewriteStyle: RewriteStyle) -> Unit, onDism
                 }
             }
         }
+    }
+}
+
+@Composable
+fun SeeCodeButton() {
+    val context = LocalContext.current
+    val githubLink = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-writing-assistance"
+
+    Button(
+        onClick = {
+            val intent = Intent(Intent.ACTION_VIEW, githubLink.toUri())
+            context.startActivity(intent)
+        },
+        modifier = Modifier.padding(end = 8.dp),
+    ) {
+        Icon(Icons.Filled.Code, contentDescription = "See code")
+        Text(
+            modifier = Modifier.padding(start = 8.dp),
+            fontSize = 12.sp,
+            text = stringResource(R.string.genai_writing_assistance_see_code),
+        )
     }
 }
 

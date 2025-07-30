@@ -29,4 +29,5 @@
     <string name="genai_writing_assistance_no_input">No text inputted</string>
     <string name="genai_writing_assistance_not_available">Feature is not available on this device</string>
     <string name="genai_writing_assistance_downloading">Downloading feature</string>
+    <string name="genai_writing_assistance_see_code">See code</string>
 </resources>
