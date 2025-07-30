@@ -92,7 +92,7 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                 },
                 actions = {
                     SeeCodeButton()
-                }
+                },
             )
         },
     ) { innerPadding ->
