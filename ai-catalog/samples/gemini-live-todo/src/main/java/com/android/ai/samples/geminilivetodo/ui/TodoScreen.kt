@@ -15,8 +15,11 @@
  */
 package com.android.ai.samples.geminilivetodo.ui
 
-import android.app.Activity
-import androidx.activity.compose.LocalActivity
+import android.Manifest
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.LinearEasing
@@ -66,11 +69,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.geminilivetodo.R
@@ -86,11 +91,21 @@ import kotlin.collections.reversed
 fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var text by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
-    val activity = LocalActivity.current as Activity
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted: Boolean ->
+            if (isGranted) {
+                viewModel.toggleLiveSession()
+            } else {
+                Toast.makeText(context, R.string.error_permission, Toast.LENGTH_SHORT).show()
+            }
+        },
+    )
 
     LaunchedEffect(Unit) {
-        viewModel.initializeGeminiLive(activity)
+        viewModel.initializeGeminiLive()
     }
 
     Scaffold(
@@ -106,7 +121,20 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
         floatingActionButton = {
             MicButton(
                 uiState = uiState,
-                onToggle = { viewModel.toggleLiveSession(activity) },
+                onToggle = {
+                    when (PackageManager.PERMISSION_GRANTED) {
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.RECORD_AUDIO,
+                        ),
+                        -> {
+                            viewModel.toggleLiveSession()
+                        }
+                        else -> {
+                            requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                        }
+                    }
+                },
             )
         },
         floatingActionButtonPosition = FabPosition.Center,
@@ -121,6 +149,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
         ) {
             TodoInput(
                 text = text,
+                modifier = Modifier,
                 onTextChange = { text = it },
                 onAddClick = {
                     viewModel.addTodo(text)
@@ -176,7 +205,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
 }
 
 @Composable
-fun TodoInput(text: String, onTextChange: (String) -> Unit, onAddClick: () -> Unit) {
+fun TodoInput(text: String, modifier: Modifier = Modifier, onTextChange: (String) -> Unit, onAddClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -201,7 +230,7 @@ fun TodoInput(text: String, onTextChange: (String) -> Unit, onAddClick: () -> Un
 }
 
 @Composable
-fun MicButton(uiState: TodoScreenUiState, onToggle: () -> Unit) {
+fun MicButton(uiState: TodoScreenUiState, modifier: Modifier = Modifier, onToggle: () -> Unit) {
     if (uiState is TodoScreenUiState.Success) {
         val micIcon = when {
             uiState.liveSessionState is LiveSessionState.Ready -> Icons.Filled.MicOff
@@ -251,7 +280,7 @@ fun MicButton(uiState: TodoScreenUiState, onToggle: () -> Unit) {
 }
 
 @Composable
-fun TodoItem(modifier: Modifier, task: Todo, onToggle: () -> Unit, onDelete: () -> Unit) {
+fun TodoItem(modifier: Modifier = Modifier, task: Todo, onToggle: () -> Unit, onDelete: () -> Unit) {
     val defaultBackgroundColor = Color.Transparent
     val backgroundColor = remember { Animatable(defaultBackgroundColor) }
 
