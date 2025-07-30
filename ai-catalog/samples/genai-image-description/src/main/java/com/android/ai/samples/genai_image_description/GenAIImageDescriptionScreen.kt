@@ -85,7 +85,7 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
                 },
                 actions = {
                     SeeCodeButton()
-                }
+                },
             )
         },
     ) { innerPadding ->

@@ -74,7 +74,7 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
                 },
                 actions = {
                     SeeCodeButton()
-                }
+                },
             )
         },
     ) { innerPadding ->
