@@ -38,7 +38,11 @@ import androidx.compose.ui.unit.dp
 import com.android.ai.theme.AISampleCatalogTheme
 
 @Composable
-fun Tag(text: String, color: Color, modifier: Modifier = Modifier) {
+fun Tag(
+    text: String,
+    color: Color,
+    modifier: Modifier = Modifier,
+) {
 
     Row(
         modifier = modifier
