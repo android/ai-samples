@@ -38,7 +38,9 @@ val Error90: Color = Color(0xFFFFDAD6)
 
 
 
-val PaleGreen: Color = Color(0xFFB1CCC6)
-val DarkPurple: Color = Color(0xFF7B3A73)
-val DarkPink: Color = Color(0xFF6D2F67)
-val DarkerGreen: Color = Color(0xFF4F6600)
+val Firebase: Color = Color(0xFFFFC400)
+val GeminiNano: Color = Color(0xFFDCE2FF)
+val GeminiProFlash: Color = Color(0xFFC7E4FF)
+val Media3: Color = Color(0xFF80DA88)
+val Imagen: Color = Color(0xFF2DAEB8)
+val MlKit: Color = Color(0xFFC2E7FF)

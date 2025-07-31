@@ -55,6 +55,7 @@ import androidx.navigation.compose.rememberNavController
 import com.android.ai.catalog.R
 import com.android.ai.catalog.ui.domain.SampleCatalogItem
 import com.android.ai.catalog.ui.domain.sampleCatalog
+import com.android.ai.uicomponent.Tag
 import com.google.firebase.FirebaseApp
 import kotlinx.serialization.Serializable
 
@@ -150,23 +151,7 @@ fun CatalogListItem(catalogItem: SampleCatalogItem, onButtonClick: () -> Unit) {
             Row {
                 Spacer(Modifier.weight(1f))
                 catalogItem.tags.forEach {
-                    Spacer(Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                color = it.backgroundColor,
-                                shape = RoundedCornerShape(
-                                    8.dp,
-                                ),
-                            )
-                            .padding(start = 4.dp, end = 4.dp),
-                    ) {
-                        Text(
-                            fontSize = 9.sp,
-                            text = it.label,
-                            color = it.textColor,
-                        )
-                    }
+                    Tag(text = it.label, color = it.backgroundColor)
                 }
             }
         }
