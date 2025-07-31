@@ -22,6 +22,12 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import com.android.ai.catalog.R
+import com.android.ai.catalog.ui.theme.Firebase
+import com.android.ai.catalog.ui.theme.GeminiNano
+import com.android.ai.catalog.ui.theme.GeminiProFlash
+import com.android.ai.catalog.ui.theme.Imagen
+import com.android.ai.catalog.ui.theme.Media3
+import com.android.ai.catalog.ui.theme.MlKit
 import com.android.ai.samples.geminichatbot.GeminiChatbotScreen
 import com.android.ai.samples.geminilivetodo.ui.TodoScreen
 import com.android.ai.samples.geminimultimodal.ui.GeminiMultimodalScreen
