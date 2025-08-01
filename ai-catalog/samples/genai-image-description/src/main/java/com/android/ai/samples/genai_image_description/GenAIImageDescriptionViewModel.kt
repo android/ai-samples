@@ -35,6 +35,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 
@@ -90,8 +91,8 @@ class GenAIImageDescriptionViewModel @Inject constructor(val context: Applicatio
                         }
 
                         override fun onDownloadProgress(bytesDownloaded: Long) {
-                            (_uiState.value as? GenAIImageDescriptionUiState.DownloadingFeature)?.bytesToDownload?.let { bytesToDownload ->
-                                _uiState.value = GenAIImageDescriptionUiState.DownloadingFeature(bytesToDownload, bytesDownloaded)
+                            _uiState.update {
+                                (it as? GenAIImageDescriptionUiState.DownloadingFeature)?.copy(bytesDownloaded = bytesDownloaded) ?: it
                             }
                         }
 
