@@ -120,8 +120,9 @@ class GenAIImageDescriptionViewModel @Inject constructor(val context: Applicatio
         val request = ImageDescriptionRequest.builder(bitmap).build()
 
         imageDescriber.runInference(request) { newText ->
-            val generatedOutput = (_uiState.value as GenAIImageDescriptionUiState.Generating).generatedOutput
-            _uiState.value = GenAIImageDescriptionUiState.Generating(generatedOutput + newText)
+            _uiState.update {
+                (it as? GenAIImageDescriptionUiState.Generating)?.copy(generatedOutput = it.generatedOutput + newText) ?: it
+            }
         }.await()
 
         (_uiState.value as? GenAIImageDescriptionUiState.Generating)?.generatedOutput?.let { generatedOutput ->
