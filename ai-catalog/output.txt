@@ -1,0 +1,320 @@
+commit 40cb6c39ac49739573a285f674dfac1ac67c2cac
+Author: Caren <calren24@gmail.com>
+Date:   Mon Jul 28 15:33:57 2025 -0700
+
+    Refactor GenAI Summarization sample to use UI state (#62)
+    
+    Co-authored-by: calren <5016806+calren@users.noreply.github.com>
+
+diff --git a/ai-catalog/samples/genai-summarization/build.gradle.kts b/ai-catalog/samples/genai-summarization/build.gradle.kts
+index 43901e4..511b45a 100644
+--- a/ai-catalog/samples/genai-summarization/build.gradle.kts
++++ b/ai-catalog/samples/genai-summarization/build.gradle.kts
+@@ -71,5 +71,6 @@ dependencies {
+     implementation(libs.androidx.runtime.livedata)
+     implementation(libs.genai.summarization)
+     implementation(libs.kotlinx.coroutines.guava)
++    implementation(libs.androidx.lifecycle.runtime.compose)
+     ksp(libs.hilt.compiler)
+ }
+diff --git a/ai-catalog/samples/genai-summarization/src/main/java/com/android/ai/samples/genai_summarization/GenAISummarizationScreen.kt b/ai-catalog/samples/genai-summarization/src/main/java/com/android/ai/samples/genai_summarization/GenAISummarizationScreen.kt
+index 40f65cd..f783b13 100644
+--- a/ai-catalog/samples/genai-summarization/src/main/java/com/android/ai/samples/genai_summarization/GenAISummarizationScreen.kt
++++ b/ai-catalog/samples/genai-summarization/src/main/java/com/android/ai/samples/genai_summarization/GenAISummarizationScreen.kt
+@@ -31,18 +31,17 @@ import androidx.compose.material3.TopAppBar
+ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+ import androidx.compose.material3.rememberModalBottomSheetState
+ import androidx.compose.runtime.Composable
+-import androidx.compose.runtime.collectAsState
+ import androidx.compose.runtime.getValue
+ import androidx.compose.runtime.mutableStateOf
+ import androidx.compose.runtime.remember
+ import androidx.compose.runtime.setValue
+ import androidx.compose.ui.Alignment
+ import androidx.compose.ui.Modifier
+-import androidx.compose.ui.platform.LocalContext
+ import androidx.compose.ui.res.stringArrayResource
+ import androidx.compose.ui.res.stringResource
+ import androidx.compose.ui.unit.dp
+ import androidx.hilt.navigation.compose.hiltViewModel
++import androidx.lifecycle.compose.collectAsStateWithLifecycle
+ import com.android.ai.samples.geminimultimodal.R
+ 
+ @OptIn(ExperimentalMaterial3Api::class)
+@@ -51,18 +50,17 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
+     val sampleTextOptions = stringArrayResource(R.array.summarization_sample_text)
+ 
+     val sheetState = rememberModalBottomSheetState()
+-    var showBottomSheet by remember { mutableStateOf(false) }
+-    val context = LocalContext.current
+ 
+-    val summarizationResult = viewModel.summarizationGenerated.collectAsState()
++    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+     var textInput by remember { mutableStateOf("") }
+ 
+     Scaffold(
+-        modifier = Modifier.fillMaxSize(), topBar = {
++        modifier = Modifier.fillMaxSize(),
++        topBar = {
+             TopAppBar(
+                 colors = topAppBarColors(
+                     containerColor = MaterialTheme.colorScheme.primaryContainer,
+-                    titleContentColor = MaterialTheme.colorScheme.primary,
++                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                 ),
+                 title = {
+                     Text(text = stringResource(id = R.string.genai_summarization_title_bar))
+@@ -89,9 +87,9 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
+             // Summarize button
+             Button(
+                 onClick = {
+-                    showBottomSheet = true
+-                    viewModel.summarize(textInput, context)
++                    viewModel.summarize(textInput)
+                 },
++                enabled = textInput.isNotEmpty(),
+                 modifier = Modifier
+                     .padding(10.dp)
+                     .align(Alignment.CenterHorizontally),
+@@ -122,15 +120,27 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
+             }
+         }
+ 
+-        if (showBottomSheet) {
++        if (uiState !is GenAISummarizationUiState.Initial) {
++            val bottomSheetText = when (val state = uiState) {
++                is GenAISummarizationUiState.DownloadingFeature -> stringResource(
++                    id = R.string.summarization_downloading,
++                    state.bytesDownloaded,
++                    state.bytesToDownload,
++                )
++                is GenAISummarizationUiState.Error -> stringResource(state.errorMessageStringRes)
++                is GenAISummarizationUiState.Generating -> state.generatedOutput
++                GenAISummarizationUiState.Initial -> ""
++                is GenAISummarizationUiState.Success -> state.generatedOutput
++                GenAISummarizationUiState.CheckingFeatureStatus -> stringResource(id = R.string.summarization_checking_feature_status)
++            }
+             ModalBottomSheet(
+                 onDismissRequest = {
+-                    showBottomSheet = false
+                     viewModel.clearGeneratedSummary()
+-                }, sheetState = sheetState,
++                },
++                sheetState = sheetState,
+             ) {
+                 Text(
+-                    text = summarizationResult.value,
++                    text = bottomSheetText,
+                     modifier = Modifier.padding(
+                         top = 8.dp,
+                         bottom = 24.dp,
+diff --git a/ai-catalog/samples/genai-summarization/src/main/java/com/android/ai/samples/genai_summarization/GenAISummarizationViewModel.kt b/ai-catalog/samples/genai-summarization/src/main/java/com/android/ai/samples/genai_summarization/GenAISummarizationViewModel.kt
+index d66c52e..540eabf 100644
+--- a/ai-catalog/samples/genai-summarization/src/main/java/com/android/ai/samples/genai_summarization/GenAISummarizationViewModel.kt
++++ b/ai-catalog/samples/genai-summarization/src/main/java/com/android/ai/samples/genai_summarization/GenAISummarizationViewModel.kt
+@@ -15,89 +15,132 @@
+  */
+ package com.android.ai.samples.genai_summarization
+ 
+-import android.content.Context
++import android.app.Application
+ import android.util.Log
+-import androidx.lifecycle.ViewModel
++import androidx.annotation.StringRes
++import androidx.lifecycle.AndroidViewModel
+ import androidx.lifecycle.viewModelScope
+ import com.android.ai.samples.geminimultimodal.R
++import com.google.mlkit.genai.common.DownloadCallback
+ import com.google.mlkit.genai.common.FeatureStatus
++import com.google.mlkit.genai.common.GenAiException
+ import com.google.mlkit.genai.summarization.Summarization
+ import com.google.mlkit.genai.summarization.SummarizationRequest
+ import com.google.mlkit.genai.summarization.Summarizer
+ import com.google.mlkit.genai.summarization.SummarizerOptions
+ import javax.inject.Inject
++import kotlinx.coroutines.Job
+ import kotlinx.coroutines.flow.MutableStateFlow
+ import kotlinx.coroutines.flow.StateFlow
++import kotlinx.coroutines.flow.asStateFlow
+ import kotlinx.coroutines.guava.await
+ import kotlinx.coroutines.launch
+ 
+-class GenAISummarizationViewModel @Inject constructor() : ViewModel() {
+-    private val _summarizationGenerated = MutableStateFlow("")
+-    val summarizationGenerated: StateFlow<String> = _summarizationGenerated
++sealed class GenAISummarizationUiState {
++    data object Initial : GenAISummarizationUiState()
++    data object CheckingFeatureStatus : GenAISummarizationUiState()
++    data class DownloadingFeature(
++        val bytesToDownload: Long,
++        val bytesDownloaded: Long,
++    ) : GenAISummarizationUiState()
+ 
+-    private var summarizer: Summarizer? = null
++    data class Generating(val generatedOutput: String) : GenAISummarizationUiState()
++    data class Success(val generatedOutput: String) : GenAISummarizationUiState()
++    data class Error(@StringRes val errorMessageStringRes: Int) : GenAISummarizationUiState()
++}
++
++class GenAISummarizationViewModel @Inject constructor(val context: Application) : AndroidViewModel(context) {
++    private val _uiState = MutableStateFlow<GenAISummarizationUiState>(GenAISummarizationUiState.Initial)
++    val uiState: StateFlow<GenAISummarizationUiState> = _uiState.asStateFlow()
+ 
+-    fun summarize(textToSummarize: String, context: Context) {
++    private var summarizer = Summarization.getClient(
++        SummarizerOptions.builder(context)
++            .setOutputType(SummarizerOptions.OutputType.THREE_BULLETS)
++            .build(),
++    )
++    private var summarizationJob: Job? = null
++
++    fun summarize(textToSummarize: String) {
+         if (textToSummarize.isEmpty()) {
+-            _summarizationGenerated.value = context.getString(R.string.summarization_no_input)
++            _uiState.value = GenAISummarizationUiState.Error(R.string.summarization_no_input)
+             return
+         }
+ 
+-        val summarizationOptions =
+-            SummarizerOptions.builder(context)
+-                .setOutputType(SummarizerOptions.OutputType.THREE_BULLETS)
+-                .build()
+-        summarizer = Summarization.getClient(summarizationOptions)
+-
+-        viewModelScope.launch {
+-            summarizer?.let { summarizer ->
+-
+-                var featureStatus = FeatureStatus.UNAVAILABLE
+-
+-                try {
+-                    featureStatus = summarizer.checkFeatureStatus().await()
+-                } catch (error: Exception) {
+-                    Log.e("GenAISummarization", "Error checking feature status", error)
+-                }
+-
+-                if (featureStatus == FeatureStatus.UNAVAILABLE) {
+-                    _summarizationGenerated.value =
+-                        context.getString(R.string.summarization_not_available)
+-                    return@launch
+-                }
+-
+-                // If feature is downloadable, making an inference call will automatically start
+-                // the downloading process.
+-                // If feature is downloading, the inference request will automatically execute after
+-                // the feature has been downloaded.
+-                // Alternatively, you can call summarizer.downloadFeature() to monitor the
+-                // progress of the download.
+-                if (featureStatus == FeatureStatus.DOWNLOADABLE ||
+-                    featureStatus == FeatureStatus.DOWNLOADING
+-                ) {
+-                    _summarizationGenerated.value =
+-                        context.getString(R.string.summarization_downloading)
+-                }
+-
+-                val summarizationRequest = SummarizationRequest.builder(textToSummarize).build()
+-                summarizer.runInference(summarizationRequest) { newText ->
+-                    if (_summarizationGenerated.value ==
+-                        context.getString(R.string.summarization_downloading)
+-                    ) {
+-                        clearGeneratedSummary()
+-                    }
+-                    _summarizationGenerated.value += newText
+-                }
++        summarizationJob = viewModelScope.launch {
++            var featureStatus = FeatureStatus.UNAVAILABLE
++
++            try {
++                _uiState.value = GenAISummarizationUiState.CheckingFeatureStatus
++                featureStatus = summarizer.checkFeatureStatus().await()
++            } catch (error: Exception) {
++                _uiState.value = GenAISummarizationUiState.Error(R.string.summarization_feature_check_fail)
++                Log.e("GenAISummarization", "Error checking feature status", error)
++            }
++
++            if (featureStatus == FeatureStatus.UNAVAILABLE) {
++                _uiState.value = GenAISummarizationUiState.Error(R.string.summarization_not_available)
+                 return@launch
+             }
++
++            // If feature is downloadable, making an inference call will automatically start
++            // the downloading process.
++            // If feature is downloading, the inference request will automatically execute after
++            // the feature has been downloaded.
++            // Alternatively, you can call summarizer.downloadFeature() to monitor the
++            // progress of the download.
++            // Calling downloadFeature() while the feature is already downloading will not start another download.
++            if (featureStatus == FeatureStatus.DOWNLOADABLE || featureStatus == FeatureStatus.DOWNLOADING) {
++                summarizer.downloadFeature(
++                    object : DownloadCallback {
++                        override fun onDownloadStarted(bytesToDownload: Long) {
++                            _uiState.value = GenAISummarizationUiState.DownloadingFeature(bytesToDownload, 0)
++                        }
++
++                        override fun onDownloadProgress(bytesDownloaded: Long) {
++                            (_uiState.value as? GenAISummarizationUiState.DownloadingFeature)?.bytesToDownload?.let { bytesToDownload ->
++                                _uiState.value = GenAISummarizationUiState.DownloadingFeature(bytesToDownload, bytesDownloaded)
++                            }
++                        }
++
++                        override fun onDownloadCompleted() {
++                            viewModelScope.launch {
++                                generateSummarization(summarizer, textToSummarize)
++                            }
++                        }
++
++                        override fun onDownloadFailed(exception: GenAiException) {
++                            Log.e("GenAISummarization", "Download failed", exception)
++                            _uiState.value = GenAISummarizationUiState.Error(R.string.summarization_download_failed)
++                        }
++                    },
++                )
++            } else {
++                generateSummarization(summarizer, textToSummarize)
++            }
++        }
++    }
++
++    private suspend fun generateSummarization(summarizer: Summarizer, textToSummarize: String) {
++        _uiState.value = GenAISummarizationUiState.Generating("")
++        val summarizationRequest = SummarizationRequest.builder(textToSummarize).build()
++
++        summarizer.runInference(summarizationRequest) { newText ->
++            val generatedOutput = (_uiState.value as GenAISummarizationUiState.Generating).generatedOutput
++            _uiState.value = GenAISummarizationUiState.Generating(generatedOutput + newText)
++        }.await()
++        // Instead of using await() here, alternatively you can attach a FutureCallback<SummarizationResult>
++
++        (_uiState.value as? GenAISummarizationUiState.Generating)?.generatedOutput?.let { generatedOutput ->
++            _uiState.value = GenAISummarizationUiState.Success(generatedOutput)
+         }
+     }
+ 
+     fun clearGeneratedSummary() {
+-        _summarizationGenerated.value = ""
++        _uiState.value = GenAISummarizationUiState.Initial
++        summarizationJob?.cancel()
+     }
+ 
+     override fun onCleared() {
+-        summarizer?.close()
++        summarizer.close()
+     }
+ }
+diff --git a/ai-catalog/samples/genai-summarization/src/main/res/values/strings.xml b/ai-catalog/samples/genai-summarization/src/main/res/values/strings.xml
+index 9b37da4..2a918ca 100644
+--- a/ai-catalog/samples/genai-summarization/src/main/res/values/strings.xml
++++ b/ai-catalog/samples/genai-summarization/src/main/res/values/strings.xml
+@@ -19,7 +19,10 @@
+     <string name="summarization_sample_text_5">Preparing for a marathon is a significant undertaking requiring dedication and consistent effort. It involves much more than simply running long distances; a well-rounded approach is crucial for success and injury prevention. A structured training plan forms the backbone of marathon preparation. This plan should gradually increase your weekly mileage, allowing your body to adapt to the growing demands. Consistency is paramount; sticking to your running schedule, which will include a mix of easy runs, tempo runs, and crucial long runs, builds the necessary endurance. Equally important is incorporating rest and recovery into your routine. Rest days allow muscles to repair and grow stronger, reducing the risk of overuse injuries that can derail training. Proper sleep is a vital part of this recovery process. Fueling your body correctly is another key element. A balanced diet providing sufficient carbohydrates for energy, along with adequate hydration, supports your training efforts and prepares you for race day demands. Experimenting with nutrition during long training runs helps determine what works best for your system. Finally, mental preparation plays a significant role. Building mental toughness and visualizing race day success can help you push through challenging moments during both training and the marathon itself. Approaching the process with patience and a positive mindset will enhance your overall experience.</string>"
+ 
+     <string name="summarization_no_input">No text inputted</string>
++    <string name="summarization_feature_check_fail">Error checking feature status</string>
+     <string name="summarization_not_available">Feature is not available on this device</string>
+-    <string name="summarization_downloading">Downloading feature</string>
+-
++    <string name="summarization_download_failed">Feature download failed</string>
++    <string name="summarization_downloading">Downloading feature: %1$d / %2$d</string>
++    <string name="summarization_checking_feature_status">Checking feature status</string>
++    <string name="summarization_generation_error">Error generating summary</string>
+ </resources>
+\ No newline at end of file
