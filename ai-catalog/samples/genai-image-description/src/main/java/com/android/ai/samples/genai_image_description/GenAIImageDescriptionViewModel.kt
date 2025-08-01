@@ -56,7 +56,7 @@ class GenAIImageDescriptionViewModel @Inject constructor(val context: Applicatio
     val uiState: StateFlow<GenAIImageDescriptionUiState> = _uiState.asStateFlow()
 
     private var imageDescriber: ImageDescriber = ImageDescription.getClient(
-        ImageDescriberOptions.builder(context).build()
+        ImageDescriberOptions.builder(context).build(),
     )
     private var imageDescriptionJob: Job? = null
 
