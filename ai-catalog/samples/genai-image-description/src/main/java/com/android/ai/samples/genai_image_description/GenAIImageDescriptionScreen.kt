@@ -38,7 +38,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.android.ai.samples.geminimultimodal.R
 
@@ -60,11 +60,7 @@ import com.android.ai.samples.geminimultimodal.R
 fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hiltViewModel()) {
 
     val sheetState = rememberModalBottomSheetState()
-    var showBottomSheet by remember { mutableStateOf(false) }
-
-    val context = LocalContext.current
-
-    val imageDescriptionResult = viewModel.resultGenerated.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val photoPickerLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
@@ -121,8 +117,7 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
             // Generate image description button
             Button(
                 onClick = {
-                    showBottomSheet = true
-                    viewModel.getImageDescription(imageUri, context)
+                    viewModel.getImageDescription(imageUri)
                 }, modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
             ) {
                 Text(
@@ -131,15 +126,26 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
             }
         }
 
-        if (showBottomSheet) {
+        if (uiState !is GenAIImageDescriptionUiState.Initial) {
+            val bottomSheetText = when (val state = uiState) {
+                is GenAIImageDescriptionUiState.DownloadingFeature -> stringResource(
+                    id = R.string.genai_image_description_downloading,
+                    state.bytesDownloaded,
+                    state.bytesToDownload,
+                )
+                is GenAIImageDescriptionUiState.Error -> stringResource(state.errorMessageStringRes)
+                is GenAIImageDescriptionUiState.Generating -> state.generatedOutput
+                GenAIImageDescriptionUiState.Initial -> ""
+                is GenAIImageDescriptionUiState.Success -> state.generatedOutput
+                GenAIImageDescriptionUiState.CheckingFeatureStatus -> stringResource(id = R.string.genai_image_description_checking_feature_status)
+            }
             ModalBottomSheet(
                 onDismissRequest = {
-                    showBottomSheet = false
-                    viewModel.clearGeneratedText()
+                    viewModel.clearResult()
                 }, sheetState = sheetState,
             ) {
                 Text(
-                    text = imageDescriptionResult.value,
+                    text = bottomSheetText,
                     modifier = Modifier.padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp),
                 )
             }
