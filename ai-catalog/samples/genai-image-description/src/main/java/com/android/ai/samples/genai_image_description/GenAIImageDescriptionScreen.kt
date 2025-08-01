@@ -137,7 +137,7 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
                 is GenAIImageDescriptionUiState.Generating -> state.generatedOutput
                 GenAIImageDescriptionUiState.Initial -> ""
                 is GenAIImageDescriptionUiState.Success -> state.generatedOutput
-                GenAIImageDescriptionUiState.CheckingFeatureStatus -> stringResource(id = R.string.genai_image_description_checking_feature_status)
+                GenAIImageDescriptionUiState.CheckingFeatureStatus -> stringResource(id = R.string.image_desc_checking_feature_status)
             }
             ModalBottomSheet(
                 onDismissRequest = {

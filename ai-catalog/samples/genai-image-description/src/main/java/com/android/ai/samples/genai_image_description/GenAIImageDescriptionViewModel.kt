@@ -73,7 +73,7 @@ class GenAIImageDescriptionViewModel @Inject constructor(val context: Applicatio
                 _uiState.value = GenAIImageDescriptionUiState.CheckingFeatureStatus
                 featureStatus = imageDescriber.checkFeatureStatus().await()
             } catch (error: Exception) {
-                _uiState.value = GenAIImageDescriptionUiState.Error(R.string.genai_image_description_feature_check_fail)
+                _uiState.value = GenAIImageDescriptionUiState.Error(R.string.image_desc_feature_check_fail)
                 Log.e("GenAIImageDesc", "Error checking feature status", error)
             }
 
@@ -103,7 +103,7 @@ class GenAIImageDescriptionViewModel @Inject constructor(val context: Applicatio
 
                         override fun onDownloadFailed(exception: GenAiException) {
                             Log.e("GenAIImageDesc", "Download failed", exception)
-                            _uiState.value = GenAIImageDescriptionUiState.Error(R.string.genai_image_description_download_failed)
+                            _uiState.value = GenAIImageDescriptionUiState.Error(R.string.image_desc_download_failed)
                         }
                     },
                 )
