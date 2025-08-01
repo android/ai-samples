@@ -22,7 +22,7 @@ plugins {
 }
 
 android {
-    namespace = "com.android.ai.samples.geminimultimodal"
+    namespace = "com.android.ai.samples.genai_image_description"
     compileSdk = 35
 
     buildFeatures {

@@ -15,6 +15,8 @@
  */
 package com.android.ai.samples.genai_image_description
 
+package com.android.ai.samples.genai_image_description
+
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -28,6 +30,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,7 +41,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.android.ai.samples.geminimultimodal.R
 
@@ -61,10 +64,7 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
 
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
-
-    val context = LocalContext.current
-
-    val imageDescriptionResult = viewModel.resultGenerated.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val photoPickerLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
@@ -122,7 +122,7 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
             Button(
                 onClick = {
                     showBottomSheet = true
-                    viewModel.getImageDescription(imageUri, context)
+                    viewModel.describeImage(imageUri)
                 }, modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
             ) {
                 Text(
@@ -135,13 +135,31 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
             ModalBottomSheet(
                 onDismissRequest = {
                     showBottomSheet = false
-                    viewModel.clearGeneratedText()
+                    viewModel.resetState()
                 }, sheetState = sheetState,
             ) {
-                Text(
-                    text = imageDescriptionResult.value,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp),
-                )
+                when (uiState) {
+                    is UiState.Initial -> {
+                        // Nothing should be shown
+                    }
+                    is UiState.Loading -> {
+                        CircularProgressIndicator()
+                    }
+                    is UiState.Success -> {
+                        val outputText = (uiState as UiState.Success).outputText
+                        Text(
+                            text = outputText,
+                            modifier = Modifier.padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp),
+                        )
+                    }
+                    is UiState.Error -> {
+                        val errorMessage = (uiState as UiState.Error).errorMessage
+                        Text(
+                            text = errorMessage,
+                            modifier = Modifier.padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp),
+                        )
+                    }
+                }
             }
         }
     }
@@ -167,3 +185,4 @@ fun SeeCodeButton() {
         )
     }
 }
+
