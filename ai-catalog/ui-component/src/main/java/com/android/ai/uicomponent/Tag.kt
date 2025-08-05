@@ -63,8 +63,8 @@ fun Tag(
             text = text.uppercase(),
             color = color,
             style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier,
-            maxLines = 1,
+            modifier = Modifier.padding(top = 3.dp, bottom = 2.dp),
+            maxLines = 1
         )
         Spacer(modifier.width(6.dp))
     }
