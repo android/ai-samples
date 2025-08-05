@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ai.theme
+package com.android.ai.catalog.ui.theme
 
 import android.app.UiModeManager
 import android.content.Context
