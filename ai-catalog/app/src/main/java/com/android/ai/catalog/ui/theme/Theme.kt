@@ -18,32 +18,9 @@ package com.android.ai.catalog.ui.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Primary50,
-    secondary = Secondary40,
-    tertiary = Tertiary80,
-    error = Error80,
-
-    onPrimary = Primary10,
-    onSecondary = Secondary5,
-    onTertiary = Tertiary30,
-    onError = Error20,
-
-    primaryContainer = Primary20,
-    secondaryContainer = Secondary20,
-    tertiaryContainer = Tertiary35,
-    errorContainer = Error40,
-
-    onPrimaryContainer = Primary50,
-    onSecondaryContainer = Secondary50,
-    onTertiaryContainer = Tertiary90,
-    onErrorContainer = Error90
-)
-
-private val LightColorScheme = lightColorScheme(
     primary = Primary50,
     secondary = Secondary40,
     tertiary = Tertiary80,
@@ -69,7 +46,7 @@ private val LightColorScheme = lightColorScheme(
 fun AISampleCatalogTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val colorScheme = when {
         darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        else -> DarkColorScheme
     }
 
     MaterialTheme(

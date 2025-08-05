@@ -29,7 +29,7 @@ fun Tag(
 
     Row(
         modifier = modifier
-            .padding(start = 2.dp, end = 6.dp)
+            .padding(start = 2.dp, end = 6.dp, bottom = 4.dp)
             .border(width = 1.dp, color = color, shape = RoundedCornerShape(size = 16.dp)),
         horizontalArrangement = Arrangement.Center
     ) {
@@ -45,8 +45,9 @@ fun Tag(
             text = text.uppercase(),
             color = color,
             style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.padding(top = 3.dp, bottom = 2.dp)
-            )
+            modifier = Modifier.padding(top = 3.dp, bottom = 2.dp),
+            maxLines = 1
+        )
         Spacer(modifier.width(6.dp))
     }
 }
