@@ -46,7 +46,10 @@ sealed class GenAISummarizationUiState {
 
     data class Generating(val generatedOutput: String) : GenAISummarizationUiState()
     data class Success(val generatedOutput: String) : GenAISummarizationUiState()
-    data class Error(@StringRes val errorMessageStringRes: Int? = null, val errorMessage: String? = null) : GenAISummarizationUiState()
+    data class Error(
+        @StringRes val errorMessageStringRes: Int? = null,
+        val errorMessage: String? = null,
+    ) : GenAISummarizationUiState()
 }
 
 class GenAISummarizationViewModel @Inject constructor(val context: Application) : AndroidViewModel(context) {
