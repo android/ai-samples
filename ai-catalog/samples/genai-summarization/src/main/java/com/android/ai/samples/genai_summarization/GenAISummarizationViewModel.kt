@@ -126,8 +126,9 @@ class GenAISummarizationViewModel @Inject constructor(val context: Application) 
             val summarizationRequest = SummarizationRequest.builder(textToSummarize).build()
 
             summarizer.runInference(summarizationRequest) { newText ->
-                val generatedOutput = (_uiState.value as GenAISummarizationUiState.Generating).generatedOutput
-                _uiState.value = GenAISummarizationUiState.Generating(generatedOutput + newText)
+                (_uiState.value as? GenAISummarizationUiState.Generating)?.let { generatingState ->
+                    _uiState.value = generatingState.copy(generatedOutput = generatingState.generatedOutput + newText)
+                }
             }.await()
             // Instead of using await() here, alternatively you can attach a FutureCallback<SummarizationResult>
 
