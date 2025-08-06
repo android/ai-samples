@@ -137,7 +137,15 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
                     state.bytesDownloaded,
                     state.bytesToDownload,
                 )
-                is GenAISummarizationUiState.Error -> stringResource(state.errorMessageStringRes)
+                is GenAISummarizationUiState.Error -> {
+                    if (state.errorMessage != null) {
+                        state.errorMessage
+                    } else if (state.errorMessageStringRes != null) {
+                        stringResource(state.errorMessageStringRes)
+                    } else {
+                        stringResource(R.string.summarization_generation_error)
+                    }
+                }
                 is GenAISummarizationUiState.Generating -> state.generatedOutput
                 GenAISummarizationUiState.Initial -> ""
                 is GenAISummarizationUiState.Success -> state.generatedOutput

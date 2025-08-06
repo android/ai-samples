@@ -46,7 +46,7 @@ sealed class GenAISummarizationUiState {
 
     data class Generating(val generatedOutput: String) : GenAISummarizationUiState()
     data class Success(val generatedOutput: String) : GenAISummarizationUiState()
-    data class Error(@StringRes val errorMessageStringRes: Int) : GenAISummarizationUiState()
+    data class Error(@StringRes val errorMessageStringRes: Int? = null, val errorMessage: String? = null) : GenAISummarizationUiState()
 }
 
 class GenAISummarizationViewModel @Inject constructor(val context: Application) : AndroidViewModel(context) {
@@ -121,17 +121,21 @@ class GenAISummarizationViewModel @Inject constructor(val context: Application) 
     }
 
     private suspend fun generateSummarization(summarizer: Summarizer, textToSummarize: String) {
-        _uiState.value = GenAISummarizationUiState.Generating("")
-        val summarizationRequest = SummarizationRequest.builder(textToSummarize).build()
+        try {
+            _uiState.value = GenAISummarizationUiState.Generating("")
+            val summarizationRequest = SummarizationRequest.builder(textToSummarize).build()
 
-        summarizer.runInference(summarizationRequest) { newText ->
-            val generatedOutput = (_uiState.value as GenAISummarizationUiState.Generating).generatedOutput
-            _uiState.value = GenAISummarizationUiState.Generating(generatedOutput + newText)
-        }.await()
-        // Instead of using await() here, alternatively you can attach a FutureCallback<SummarizationResult>
+            summarizer.runInference(summarizationRequest) { newText ->
+                val generatedOutput = (_uiState.value as GenAISummarizationUiState.Generating).generatedOutput
+                _uiState.value = GenAISummarizationUiState.Generating(generatedOutput + newText)
+            }.await()
+            // Instead of using await() here, alternatively you can attach a FutureCallback<SummarizationResult>
 
-        (_uiState.value as? GenAISummarizationUiState.Generating)?.generatedOutput?.let { generatedOutput ->
-            _uiState.value = GenAISummarizationUiState.Success(generatedOutput)
+            (_uiState.value as? GenAISummarizationUiState.Generating)?.generatedOutput?.let { generatedOutput ->
+                _uiState.value = GenAISummarizationUiState.Success(generatedOutput)
+            }
+        } catch (genAiException: GenAiException) {
+            _uiState.value = GenAISummarizationUiState.Error(errorMessage = genAiException.message)
         }
     }
 
