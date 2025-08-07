@@ -22,6 +22,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -131,47 +132,32 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
                     text = stringResource(id = R.string.genai_image_description_run_inference),
                 )
             }
-        }
 
-        BottomSheet(
-            uiState = uiState,
-            sheetState = sheetState,
-            onDismiss = { viewModel.clearResult() },
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun BottomSheet(uiState: GenAIImageDescriptionUiState, sheetState: SheetState, onDismiss: () -> Unit) {
-    if (uiState !is GenAIImageDescriptionUiState.Initial) {
-        ModalBottomSheet(
-            onDismissRequest = onDismiss,
-            sheetState = sheetState,
-        ) {
-            val bottomSheetText = when (uiState) {
+            val outputText = when (val state = uiState) {
                 is GenAIImageDescriptionUiState.DownloadingFeature -> stringResource(
                     id = R.string.image_desc_downloading,
-                    uiState.bytesDownloaded,
-                    uiState.bytesToDownload,
+                    state.bytesDownloaded,
+                    state.bytesToDownload,
                 )
 
-                is GenAIImageDescriptionUiState.Error -> stringResource(
-                    id = uiState.errorMessageStringRes,
-                )
-
-                is GenAIImageDescriptionUiState.Generating -> uiState.generatedOutput
-                is GenAIImageDescriptionUiState.Success -> uiState.generatedOutput
-                GenAIImageDescriptionUiState.CheckingFeatureStatus -> stringResource(
-                    id = R.string.image_desc_checking_feature_status,
-                )
-
-                GenAIImageDescriptionUiState.Initial -> null
+                is GenAIImageDescriptionUiState.Error -> stringResource(state.errorMessageStringRes)
+                is GenAIImageDescriptionUiState.Generating -> state.generatedOutput
+                is GenAIImageDescriptionUiState.Success -> state.generatedOutput
+                GenAIImageDescriptionUiState.CheckingFeatureStatus -> stringResource(id = R.string.image_desc_checking_feature_status)
+                else -> "" // Show nothing for the Initial state
             }
-            Text(
-                text = bottomSheetText ?: stringResource(id = R.string.image_desc_generation_error),
-                modifier = Modifier.padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp),
-            )
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            ) {
+                Text(
+                    text = outputText,
+                    modifier = Modifier.padding(16.dp),
+                )
+            }
         }
     }
 }
