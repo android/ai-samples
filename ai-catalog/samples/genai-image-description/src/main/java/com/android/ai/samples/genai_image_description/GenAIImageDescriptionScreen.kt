@@ -143,11 +143,7 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BottomSheet(
-    uiState: GenAIImageDescriptionUiState,
-    sheetState: SheetState,
-    onDismiss: () -> Unit,
-) {
+private fun BottomSheet(uiState: GenAIImageDescriptionUiState, sheetState: SheetState, onDismiss: () -> Unit) {
     if (uiState !is GenAIImageDescriptionUiState.Initial) {
         ModalBottomSheet(
             onDismissRequest = onDismiss,
