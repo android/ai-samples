@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ai.catalog.ui.theme
+package com.android.ai.theme
 
 import androidx.compose.ui.graphics.Color
 
@@ -36,7 +36,10 @@ val Secondary50: Color = Color(0xFF3CC360)
 val Tertiary90: Color = Color(0xFFFFD7F4)
 val Error90: Color = Color(0xFFFFDAD6)
 
-
+val SurfaceContainerHigh: Color = Color(0xFF313030)
+val NeutralVariant: Color = Color(0xFFE5E2E1)
+val Neutral98: Color = Color(0xFFF9F9F9)
+val Neutral50: Color = Color(0xFF7D7171)
 
 val Firebase: Color = Color(0xFFFFC400)
 val GeminiNano: Color = Color(0xFFDCE2FF)

@@ -14,11 +14,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.android.ai.theme.AISampleCatalogTheme
 
 @Composable
 fun Tag(
@@ -31,8 +33,8 @@ fun Tag(
         modifier = modifier
             .padding(start = 2.dp, end = 6.dp, bottom = 4.dp)
             .border(width = 1.dp, color = color, shape = RoundedCornerShape(size = 16.dp)),
-        horizontalArrangement = Arrangement.Center
-    ) {
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier
                 .size(20.dp)
@@ -45,7 +47,7 @@ fun Tag(
             text = text.uppercase(),
             color = color,
             style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.padding(top = 3.dp, bottom = 2.dp),
+            modifier = Modifier,
             maxLines = 1
         )
         Spacer(modifier.width(6.dp))
@@ -55,7 +57,9 @@ fun Tag(
 @Preview(showBackground = true)
 @Composable
 fun TagPreview() {
-    Tag(text = "Gemini Nano", color = Color.Gray)
+    AISampleCatalogTheme {
+        Tag(text = "Gemini Nano", color = Color.Gray)
+    }
 }
 
 

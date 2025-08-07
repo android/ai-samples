@@ -19,12 +19,6 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import com.android.ai.catalog.R
-import com.android.ai.catalog.ui.theme.Firebase
-import com.android.ai.catalog.ui.theme.GeminiNano
-import com.android.ai.catalog.ui.theme.GeminiProFlash
-import com.android.ai.catalog.ui.theme.Imagen
-import com.android.ai.catalog.ui.theme.Media3
-import com.android.ai.catalog.ui.theme.MlKit
 import com.android.ai.samples.geminichatbot.GeminiChatbotScreen
 import com.android.ai.samples.geminilivetodo.ui.TodoScreen
 import com.android.ai.samples.geminimultimodal.ui.GeminiMultimodalScreen
@@ -34,6 +28,12 @@ import com.android.ai.samples.genai_summarization.GenAISummarizationScreen
 import com.android.ai.samples.genai_writing_assistance.GenAIWritingAssistanceScreen
 import com.android.ai.samples.imagen.ui.ImagenScreen
 import com.android.ai.samples.magicselfie.ui.MagicSelfieScreen
+import com.android.ai.theme.Firebase
+import com.android.ai.theme.GeminiNano
+import com.android.ai.theme.GeminiProFlash
+import com.android.ai.theme.Imagen
+import com.android.ai.theme.Media3
+import com.android.ai.theme.MlKit
 
 @androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
 val sampleCatalog = listOf(

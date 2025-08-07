@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ai.catalog.ui.theme
+package com.android.ai.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -39,7 +39,12 @@ private val DarkColorScheme = darkColorScheme(
     onPrimaryContainer = Primary50,
     onSecondaryContainer = Secondary50,
     onTertiaryContainer = Tertiary90,
-    onErrorContainer = Error90
+    onErrorContainer = Error90,
+
+    surfaceContainerHigh = SurfaceContainerHigh,
+    onSurface = Neutral98,
+    onSurfaceVariant = NeutralVariant,
+    outline = Neutral50,
 )
 
 @Composable
