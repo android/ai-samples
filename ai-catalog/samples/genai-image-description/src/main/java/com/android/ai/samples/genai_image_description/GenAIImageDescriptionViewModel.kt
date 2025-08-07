@@ -47,7 +47,7 @@ sealed class GenAIImageDescriptionUiState {
         val bytesDownloaded: Long,
     ) : GenAIImageDescriptionUiState()
 
-    data class Generating(val generatedOutput: String) : GenAIImageDescriptionUiState()
+    data class Generating(val partialOutput: String) : GenAIImageDescriptionUiState()
     data class Success(val generatedOutput: String) : GenAIImageDescriptionUiState()
     data class Error(@StringRes val errorMessageStringRes: Int) : GenAIImageDescriptionUiState()
 }
@@ -121,11 +121,11 @@ class GenAIImageDescriptionViewModel @Inject constructor(val context: Applicatio
 
         imageDescriber.runInference(request) { newText ->
             _uiState.update {
-                (it as? GenAIImageDescriptionUiState.Generating)?.copy(generatedOutput = it.generatedOutput + newText) ?: it
+                (it as? GenAIImageDescriptionUiState.Generating)?.copy(partialOutput = it.partialOutput + newText) ?: it
             }
         }.await()
 
-        (_uiState.value as? GenAIImageDescriptionUiState.Generating)?.generatedOutput?.let { generatedOutput ->
+        (_uiState.value as? GenAIImageDescriptionUiState.Generating)?.partialOutput?.let { generatedOutput ->
             _uiState.value = GenAIImageDescriptionUiState.Success(generatedOutput)
         }
     }

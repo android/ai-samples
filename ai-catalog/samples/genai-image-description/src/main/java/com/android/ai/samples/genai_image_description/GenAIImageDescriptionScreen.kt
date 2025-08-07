@@ -60,8 +60,6 @@ import com.android.ai.samples.geminimultimodal.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hiltViewModel()) {
-
-    val sheetState = rememberModalBottomSheetState()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
@@ -141,7 +139,7 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
                 )
 
                 is GenAIImageDescriptionUiState.Error -> stringResource(state.errorMessageStringRes)
-                is GenAIImageDescriptionUiState.Generating -> state.generatedOutput
+                is GenAIImageDescriptionUiState.Generating -> state.partialOutput
                 is GenAIImageDescriptionUiState.Success -> state.generatedOutput
                 GenAIImageDescriptionUiState.CheckingFeatureStatus -> stringResource(id = R.string.image_desc_checking_feature_status)
                 else -> "" // Show nothing for the Initial state
