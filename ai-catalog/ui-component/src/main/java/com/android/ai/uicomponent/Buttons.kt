@@ -57,8 +57,7 @@ fun PrimaryButton(
             contentColor = contentColor,
             containerColor = containerColor,
         ),
-        onClick = { onClick() },
-    ) {
+        onClick = { onClick() }) {
         if (icon != null) {
             Image(
                 imageVector = icon,
@@ -160,7 +159,12 @@ fun GenerateButtonDisabledPreview() {
 }
 
 @Composable
-fun SecondaryButton(text: String, modifier: Modifier = Modifier, icon: ImageVector? = null, onClick: () -> Unit) {
+fun SecondaryButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    onClick: () -> Unit,
+) {
     OutlinedButton(
         modifier = modifier.height(48.dp),
         colors = ButtonColors(
