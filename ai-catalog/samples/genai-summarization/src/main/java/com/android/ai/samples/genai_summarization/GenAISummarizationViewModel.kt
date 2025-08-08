@@ -17,7 +17,6 @@ package com.android.ai.samples.genai_summarization
 
 import android.app.Application
 import android.util.Log
-import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.geminimultimodal.R
