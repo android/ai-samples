@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -70,8 +71,7 @@ fun CatalogWideCard(catalogItem: SampleCatalogItem, modifier: Modifier = Modifie
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.headlineSmall,
                 text = context.getString(catalogItem.title),
             )
             Row(
@@ -86,6 +86,7 @@ fun CatalogWideCard(catalogItem: SampleCatalogItem, modifier: Modifier = Modifie
             Text(
                 modifier = Modifier
                     .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                style = MaterialTheme.typography.bodyMedium,
                 text = context.getString(catalogItem.description),
             )
         }
