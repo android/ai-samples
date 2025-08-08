@@ -92,18 +92,22 @@ fun TextInputPreview() {
             value = "",
             hint = "Message hint",
             placeholder = "Placeholder", onValueChange = {},
-            primaryButton = { GenerateButton(
-                text = "",
-                icon = ImageVector.vectorResource(id = R.drawable.send_spark),
-                modifier = Modifier.width(72.dp).padding(4.dp),
-                onClick = {}
-            ) },
-            secondaryButton = { SecondaryButton(
-                text = "",
-                icon = ImageVector.vectorResource(id = R.drawable.add_photo),
-                modifier = Modifier.width(72.dp).padding(4.dp),
-                onClick = {}
-            ) },
+            primaryButton = {
+                GenerateButton(
+                    text = "",
+                    icon = ImageVector.vectorResource(id = R.drawable.send_spark),
+                    modifier = Modifier.width(72.dp).padding(4.dp),
+                    onClick = {},
+                )
+            },
+            secondaryButton = {
+                SecondaryButton(
+                    text = "",
+                    icon = ImageVector.vectorResource(id = R.drawable.add_photo),
+                    modifier = Modifier.width(72.dp).padding(4.dp),
+                    onClick = {},
+                )
+            },
         )
     }
 }
