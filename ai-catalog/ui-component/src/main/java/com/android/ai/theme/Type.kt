@@ -54,7 +54,7 @@ val Typography = Typography(
         fontFamily = FontFamily(Font(R.font.space_grotesk)),
         fontWeight = FontWeight(400),
     ),
-    headlineSmall =  TextStyle(
+    headlineSmall = TextStyle(
         fontSize = 24.sp,
         lineHeight = 32.sp,
         fontFamily = FontFamily(Font(R.font.space_grotesk)),
@@ -80,7 +80,7 @@ val Typography = Typography(
         fontWeight = FontWeight(500),
         letterSpacing = 0.1.sp,
     ),
-    labelLarge =  TextStyle(
+    labelLarge = TextStyle(
         fontSize = 14.sp,
         lineHeight = 20.sp,
         fontFamily = FontFamily(Font(R.font.space_grotesk)),
@@ -121,5 +121,5 @@ val Typography = Typography(
         fontFamily = FontFamily(Font(R.font.space_grotesk)),
         fontWeight = FontWeight(400),
         letterSpacing = 0.4.sp,
-    )
+    ),
 )

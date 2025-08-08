@@ -1,3 +1,18 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.android.ai.uicomponent
 
 import androidx.compose.foundation.BorderStroke
@@ -31,7 +46,7 @@ import com.android.ai.theme.AISampleCatalogTheme
 fun PrimaryButton(
     text: String,
     modifier: Modifier = Modifier,
-    contentColor: Color =  MaterialTheme.colorScheme.onPrimary,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     containerColor: Color = MaterialTheme.colorScheme.primary,
     icon: ImageVector? = null,
     onClick: () -> Unit,
@@ -42,20 +57,21 @@ fun PrimaryButton(
             contentColor = contentColor,
             containerColor = containerColor,
         ),
-        onClick = { onClick() }) {
+        onClick = { onClick() },
+    ) {
         if (icon != null) {
             Image(
                 imageVector = icon,
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(contentColor),
-                modifier = Modifier.size(width = 24.dp, height = 24.dp)
+                modifier = Modifier.size(width = 24.dp, height = 24.dp),
             )
             Spacer(modifier = Modifier.width(8.dp))
         }
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.padding(end = 8.dp)
+            modifier = Modifier.padding(end = 8.dp),
         )
     }
 }
@@ -67,7 +83,7 @@ fun PrimaryButtonSmallPreview() {
         PrimaryButton(
             text = "Primary button",
             icon = Icons.Default.AccountBox,
-            onClick = {}
+            onClick = {},
         )
     }
 }
@@ -76,7 +92,7 @@ fun PrimaryButtonSmallPreview() {
 fun GenerateButton(
     text: String,
     modifier: Modifier = Modifier,
-    contentColor: Color =  MaterialTheme.colorScheme.onTertiary,
+    contentColor: Color = MaterialTheme.colorScheme.onTertiary,
     containerColor: Color = MaterialTheme.colorScheme.tertiary,
     enabled: Boolean = true,
     icon: ImageVector? = ImageVector.vectorResource(id = R.drawable.draw_auto),
@@ -86,12 +102,12 @@ fun GenerateButton(
         modifier = modifier
             .height(56.dp)
             .border(
-                if (enabled){
+                if (enabled) {
                     BorderStroke(0.dp, Color.Transparent)
                 } else {
                     BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 },
-                shape = RoundedCornerShape(30.dp)
+                shape = RoundedCornerShape(30.dp),
             ),
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
@@ -100,22 +116,22 @@ fun GenerateButton(
             disabledContentColor = MaterialTheme.colorScheme.onSurface,
             disabledContainerColor = Color.Transparent,
         ),
-        onClick = { onClick() }
+        onClick = { onClick() },
     ) {
         if (icon != null) {
             Image(
                 imageVector = icon,
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(
-                    if (enabled) contentColor else MaterialTheme.colorScheme.onSurface
+                    if (enabled) contentColor else MaterialTheme.colorScheme.onSurface,
                 ),
-                modifier = Modifier.size(width = 24.dp, height = 24.dp)
+                modifier = Modifier.size(width = 24.dp, height = 24.dp),
             )
             Spacer(modifier = Modifier.width(8.dp))
         }
         Text(
             text = text,
-            style = MaterialTheme.typography.labelLarge
+            style = MaterialTheme.typography.labelLarge,
         )
     }
 }
@@ -126,7 +142,7 @@ fun GenerateButtonPreview() {
     AISampleCatalogTheme {
         GenerateButton(
             text = "Generate",
-            onClick = {}
+            onClick = {},
         )
     }
 }
@@ -138,40 +154,36 @@ fun GenerateButtonDisabledPreview() {
         GenerateButton(
             text = "Generate",
             enabled = false,
-            onClick = {}
+            onClick = {},
         )
     }
 }
 
 @Composable
-fun SecondaryButton(
-    text: String,
-    modifier: Modifier = Modifier,
-    icon: ImageVector? = null,
-    onClick: () -> Unit,
-) {
+fun SecondaryButton(text: String, modifier: Modifier = Modifier, icon: ImageVector? = null, onClick: () -> Unit) {
     OutlinedButton(
         modifier = modifier.height(48.dp),
         colors = ButtonColors(
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             containerColor = Color.Transparent,
             disabledContentColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent
+            disabledContainerColor = Color.Transparent,
         ),
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.onSurfaceVariant),
-        onClick = { onClick() }) {
+        onClick = { onClick() },
+    ) {
         if (icon != null) {
             Image(
                 imageVector = icon,
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant),
-                modifier = Modifier.size(width = 24.dp, height = 24.dp)
+                modifier = Modifier.size(width = 24.dp, height = 24.dp),
             )
             Spacer(modifier = Modifier.width(8.dp))
         }
         Text(
             text = text,
-            style = MaterialTheme.typography.labelLarge
+            style = MaterialTheme.typography.labelLarge,
         )
     }
 }
@@ -183,7 +195,7 @@ fun SecondaryButtonPreview() {
         SecondaryButton(
             text = "Outlined button",
             icon = ImageVector.vectorResource(id = R.drawable.add_photo),
-            onClick = {}
+            onClick = {},
         )
     }
 }
