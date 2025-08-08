@@ -1,3 +1,18 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.android.ai.uicomponent
 
 import android.graphics.Bitmap
@@ -23,29 +38,23 @@ import androidx.compose.ui.unit.dp
 import com.android.ai.theme.AISampleCatalogTheme
 
 @Composable
-fun ImageInput(
-    buttonText: String,
-    modifier: Modifier = Modifier,
-    image: Bitmap? = null,
-    hint: String = "",
-    onAddImage: () -> Unit
-) {
+fun ImageInput(buttonText: String, modifier: Modifier = Modifier, image: Bitmap? = null, hint: String = "", onAddImage: () -> Unit) {
     Column(
         modifier = modifier
             .border(
                 BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                RoundedCornerShape(40.dp)
+                RoundedCornerShape(40.dp),
             )
-            .padding(24.dp)
+            .padding(24.dp),
     ) {
-        if (image!=null) {
+        if (image != null) {
             Image(
                 bitmap = image.asImageBitmap(),
                 contentDescription = null,
             )
         } else {
             Spacer(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
             PrimaryButton(
                 text = buttonText,
@@ -53,10 +62,10 @@ fun ImageInput(
                 icon = ImageVector.vectorResource(id = R.drawable.send_spark),
                 modifier = Modifier
                     .height(64.dp)
-                    .align(Alignment.CenterHorizontally)
+                    .align(Alignment.CenterHorizontally),
             )
             Spacer(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
             Text(
                 text = hint,
@@ -76,7 +85,7 @@ fun ImageInputPreview() {
             buttonText = "Add Image",
             hint = "Optional hint text: Add a prompt to generate an image.",
             onAddImage = {},
-            modifier = Modifier.height(300.dp)
+            modifier = Modifier.height(300.dp),
         )
     }
 }
