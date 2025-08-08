@@ -59,7 +59,6 @@ class GenAIImageDescriptionViewModel @Inject constructor(val context: Applicatio
     private var imageDescriber: ImageDescriber = ImageDescription.getClient(
         ImageDescriberOptions.builder(context).build(),
     )
-    private var imageDescriptionJob: Job? = null
 
     fun getImageDescription(imageUri: Uri?) {
         if (imageUri == null) {
@@ -67,7 +66,7 @@ class GenAIImageDescriptionViewModel @Inject constructor(val context: Applicatio
             return
         }
 
-        imageDescriptionJob = viewModelScope.launch {
+        viewModelScope.launch {
             var featureStatus = FeatureStatus.UNAVAILABLE
 
             try {
@@ -128,11 +127,6 @@ class GenAIImageDescriptionViewModel @Inject constructor(val context: Applicatio
         (_uiState.value as? GenAIImageDescriptionUiState.Generating)?.partialOutput?.let { generatedOutput ->
             _uiState.value = GenAIImageDescriptionUiState.Success(generatedOutput)
         }
-    }
-
-    fun clearResult() {
-        _uiState.value = GenAIImageDescriptionUiState.Initial
-        imageDescriptionJob?.cancel()
     }
 
     override fun onCleared() {
