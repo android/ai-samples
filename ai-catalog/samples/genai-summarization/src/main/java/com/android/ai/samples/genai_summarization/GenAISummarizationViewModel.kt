@@ -46,7 +46,7 @@ sealed class GenAISummarizationUiState {
 
     data class Generating(val generatedOutput: String) : GenAISummarizationUiState()
     data class Success(val generatedOutput: String) : GenAISummarizationUiState()
-    data class Error(var errorMessage: String) : GenAISummarizationUiState()
+    data class Error(val errorMessage: String) : GenAISummarizationUiState()
 }
 
 class GenAISummarizationViewModel @Inject constructor(val context: Application) : AndroidViewModel(context) {
@@ -125,6 +125,7 @@ class GenAISummarizationViewModel @Inject constructor(val context: Application) 
         val summarizationRequest = SummarizationRequest.builder(textToSummarize).build()
 
         try {
+            // Instead of using await() here, alternatively you can attach a FutureCallback<SummarizationResult>
             summarizer.runInference(summarizationRequest) { newText ->
                 (_uiState.value as? GenAISummarizationUiState.Generating)?.let { generatingState ->
                     _uiState.value = generatingState.copy(generatedOutput = generatingState.generatedOutput + newText)
@@ -135,7 +136,6 @@ class GenAISummarizationViewModel @Inject constructor(val context: Application) 
             val errorMessage = genAiException.message ?: context.getString(R.string.summarization_generation_error)
             _uiState.value = GenAISummarizationUiState.Error(errorMessage)
         }
-        // Instead of using await() here, alternatively you can attach a FutureCallback<SummarizationResult>
 
         (_uiState.value as? GenAISummarizationUiState.Generating)?.generatedOutput?.let { generatedOutput ->
             _uiState.value = GenAISummarizationUiState.Success(generatedOutput)
