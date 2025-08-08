@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.android.ai.catalog.R
 import com.android.ai.catalog.domain.SampleCatalogItem
 import com.android.ai.catalog.domain.SampleTags
+import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.Tag
 
 @Composable
@@ -100,16 +101,18 @@ fun CatalogRowCard(catalogItem: SampleCatalogItem, modifier: Modifier = Modifier
 @Preview(showBackground = true)
 @Composable
 fun CatalogRowCardPreview() {
-    val sampleItem = SampleCatalogItem(
-        title = R.string.gemini_multimodal_sample_title,
-        description = R.string.gemini_multimodal_sample_description,
-        route = "GeminiMultimodalScreen",
-        sampleEntryScreen = { },
-        tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE),
-    )
+    AISampleCatalogTheme {
+        val sampleItem = SampleCatalogItem(
+            title = R.string.gemini_multimodal_sample_title,
+            description = R.string.gemini_multimodal_sample_description,
+            route = "GeminiMultimodalScreen",
+            sampleEntryScreen = { },
+            tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE),
+        )
 
-    CatalogRowCard(
-        catalogItem = sampleItem,
-        onClick = { /* No-op for the preview */ },
-    )
+        CatalogRowCard(
+            catalogItem = sampleItem,
+            onClick = { /* No-op for the preview */ },
+        )
+    }
 }
