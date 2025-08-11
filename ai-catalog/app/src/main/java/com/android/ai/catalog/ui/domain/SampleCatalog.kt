@@ -15,6 +15,7 @@
  */
 package com.android.ai.catalog.ui.domain
 
+import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -22,6 +23,7 @@ import com.android.ai.catalog.R
 import com.android.ai.samples.geminichatbot.GeminiChatbotScreen
 import com.android.ai.samples.geminilivetodo.ui.TodoScreen
 import com.android.ai.samples.geminimultimodal.ui.GeminiMultimodalScreen
+import com.android.ai.samples.geminivideometadatacreation.VideoMetadataCreationScreen
 import com.android.ai.samples.geminivideosummary.VideoSummarizationScreen
 import com.android.ai.samples.genai_image_description.GenAIImageDescriptionScreen
 import com.android.ai.samples.genai_summarization.GenAISummarizationScreen
@@ -29,6 +31,7 @@ import com.android.ai.samples.genai_writing_assistance.GenAIWritingAssistanceScr
 import com.android.ai.samples.imagen.ui.ImagenScreen
 import com.android.ai.samples.magicselfie.ui.MagicSelfieScreen
 
+@SuppressLint("UnsafeOptInUsageError")
 @androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
 val sampleCatalog = listOf(
     SampleCatalogItem(
@@ -89,6 +92,14 @@ val sampleCatalog = listOf(
         description = R.string.gemini_video_summarization_sample_description,
         route = "VideoSummarizationScreen",
         sampleEntryScreen = { VideoSummarizationScreen() },
+        tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE, SampleTags.MEDIA3),
+        needsFirebase = true,
+    ),
+    SampleCatalogItem(
+        title = R.string.gemini_video_metadata_creation_sample_title,
+        description = R.string.gemini_video_metadata_creation_sample_description,
+        route = "VideoMetadataCreationScreen",
+        sampleEntryScreen = { VideoMetadataCreationScreen() },
         tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE, SampleTags.MEDIA3),
         needsFirebase = true,
     ),
