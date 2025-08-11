@@ -17,7 +17,7 @@ package com.android.ai.samples.geminivideometadatacreation.util
 
 import android.net.Uri
 import androidx.core.net.toUri
-import com.google.com.android.ai.samples.geminivideometadatacreation.R
+import com.android.ai.samples.geminivideometadatacreation.R
 
 /**
  * Data class to represent a video item with a title and URI.

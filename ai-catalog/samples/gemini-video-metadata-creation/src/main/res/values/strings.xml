@@ -19,17 +19,6 @@
     <string name="video_title_for_bigger_blazes">For Bigger Blazes</string>
     <string name="video_title_for_bigger_escape">For Bigger Escape</string>
 
-    <!--TTS Errors-->
-    <string name="tts_generic_error">a generic error.</string>
-    <string name="tts_synthesis_error">a synthesis error.</string>
-    <string name="tts_service_error">an error with the service.</string>
-    <string name="tts_output_error">an error writing the audio.</string>
-    <string name="tts_network_error">a network error.</string>
-    <string name="tts_network_timeout_error">a network timeout.</string>
-    <string name="tts_not_installed_error">the required voice data has not been installed.</string>
-    <string name="tts_unknown_error">an unknown error.</string>
-    <string name="tts_error_message">TTS Initialization failed: %s</string>
-
     <string name="thumbnails">Thumbnails</string>
     <string name="description">Description</string>
     <string name="hashtags">Hashtags</string>

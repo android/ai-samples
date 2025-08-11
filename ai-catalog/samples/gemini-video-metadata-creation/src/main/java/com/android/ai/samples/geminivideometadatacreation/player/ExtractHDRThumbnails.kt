@@ -53,10 +53,13 @@ suspend fun extractFrame(context: Context, videoUri: Uri, timestamps: Long): Bit
             )
 
             frameExtractor.setMediaItem(mediaItem, listOf())
-
-            val frame = frameExtractor.getFrame(timestamps).await()
-            frameExtractor.release()
-            return@withContext frame.bitmap
+            try {
+                frameExtractor.setMediaItem(mediaItem, listOf())
+                val frame = frameExtractor.getFrame(timestamps).await()
+                return@withContext frame.bitmap
+            } finally {
+                frameExtractor.release()
+            }
         }
     } catch (e: Exception) {
         Log.e("extractFrame", "Error extracting frame", e)

@@ -24,7 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
-import com.google.com.android.ai.samples.geminivideometadatacreation.R
+import com.android.ai.samples.geminivideometadatacreation.R
 
 /**
  * Composable function that displays text.

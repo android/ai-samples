@@ -22,8 +22,8 @@ plugins {
 }
 
 android {
-    namespace = "com.google.com.android.ai.samples.geminivideometadatacreation"
-    compileSdk = 35
+    namespace = "com.android.ai.samples.geminivideometadatacreation"
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24

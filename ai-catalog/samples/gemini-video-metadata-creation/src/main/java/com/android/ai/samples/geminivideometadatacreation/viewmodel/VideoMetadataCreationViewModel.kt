@@ -32,13 +32,12 @@ import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.content
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.Locale
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * ViewModel class responsible for handling video metadata creation using Gemini API.
@@ -108,7 +107,7 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
                 // Load HDR quality image thumbnails in Media3, based from timestamps returned by Gemini
                 if (metadataType == MetadataType.THUMBNAILS) {
                     onThumbnailStateChanged(ThumbnailState.Loading)
-                    val bitmaps = extractListOfThumbnails(application, videoSource, metadataText)
+                    val bitmaps = extractListOfThumbnails(application.applicationContext, videoSource, metadataText)
                     onThumbnailStateChanged(ThumbnailState.Success(bitmaps))
                 }
             } catch (error: Exception) {
@@ -156,7 +155,6 @@ sealed interface ThumbnailState {
 data class VideoMetadataCreationState(
     val selectedVideoUri: Uri? = sampleVideoList.first().uri,
     val metadataCreationState: MetadataCreationState = MetadataCreationState.Idle,
-    val selectedAccent: Locale = Locale.US,
     val selectedMetadataType: MetadataType? = null,
 )
 

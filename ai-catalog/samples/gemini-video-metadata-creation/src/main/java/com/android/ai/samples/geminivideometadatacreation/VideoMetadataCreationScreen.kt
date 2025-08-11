@@ -63,7 +63,6 @@ import com.android.ai.samples.geminivideometadatacreation.viewmodel.MetadataCrea
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.MetadataType
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.VideoMetadataCreationState
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.VideoMetadataCreationViewModel
-import com.google.com.android.ai.samples.geminivideometadatacreation.R
 
 /**
  * Composable function for the AI Video Metadata Creation screen.

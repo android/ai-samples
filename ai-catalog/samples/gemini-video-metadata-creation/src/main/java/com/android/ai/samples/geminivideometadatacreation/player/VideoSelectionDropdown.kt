@@ -30,7 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.android.ai.samples.geminivideometadatacreation.util.VideoItem
-import com.google.com.android.ai.samples.geminivideometadatacreation.R
+import com.android.ai.samples.geminivideometadatacreation.R
 
 /**
  * A composable function that displays a dropdown menu for selecting a video from a list of options.

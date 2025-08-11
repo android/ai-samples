@@ -40,7 +40,7 @@ import com.android.ai.samples.geminivideometadatacreation.viewmodel.ThumbnailSta
  * - An error message if the generation fails.
  */
 @Composable
-fun ThumbnailScreen(thumbnailState: Any) {
+fun ThumbnailScreen(thumbnailState: ThumbnailState) {
 
     when (thumbnailState) {
 
@@ -74,6 +74,10 @@ fun ThumbnailScreen(thumbnailState: Any) {
 
         is ThumbnailState.Error -> {
             Text(text = thumbnailState.message)
+        }
+
+        ThumbnailState.Idle -> {
+            //Empty state - Thumbnails should only be shown when Thumbnail button is selected
         }
     }
 }
