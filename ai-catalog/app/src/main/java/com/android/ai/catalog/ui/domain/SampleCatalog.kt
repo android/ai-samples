@@ -31,7 +31,7 @@ import com.android.ai.samples.genai_writing_assistance.GenAIWritingAssistanceScr
 import com.android.ai.samples.imagen.ui.ImagenScreen
 import com.android.ai.samples.magicselfie.ui.MagicSelfieScreen
 
-@SuppressLint("UnsafeOptInUsageError")
+@SuppressLint("UnsafeOptInUsageError", "NewApi")
 @androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
 val sampleCatalog = listOf(
     SampleCatalogItem(

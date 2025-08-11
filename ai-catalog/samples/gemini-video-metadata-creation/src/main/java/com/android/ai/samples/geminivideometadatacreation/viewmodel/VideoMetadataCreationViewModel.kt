@@ -16,10 +16,16 @@
 package com.android.ai.samples.geminivideometadatacreation.viewmodel
 
 import android.app.Application
+import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.util.Log
+import androidx.annotation.OptIn
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.util.UnstableApi
+import com.android.ai.samples.geminivideometadatacreation.player.extractListOfThumbnails
 import com.android.ai.samples.geminivideometadatacreation.util.sampleVideoList
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
@@ -33,8 +39,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import androidx.media3.common.util.UnstableApi
-
 
 /**
  * ViewModel class responsible for handling video metadata creation using Gemini API.
@@ -44,8 +48,7 @@ import androidx.media3.common.util.UnstableApi
  * [StateFlow].
  */
 @HiltViewModel
-@UnstableApi
-class VideoMetadataCreationViewModel @Inject constructor() : ViewModel() {
+class VideoMetadataCreationViewModel @Inject constructor(private val application: Application) : ViewModel() {
 
     private val tag = "VideoMetadataVM"
 
@@ -56,22 +59,15 @@ class VideoMetadataCreationViewModel @Inject constructor() : ViewModel() {
         _uiState.update {
             it.copy(
                 selectedVideoUri = uri,
-                metadataCreationState = MetadataCreationState.Idle,
-                selectedMetadataType = null,
-                // thumbnailFrames = emptyList()
             )
         }
     }
 
-    fun onAccentSelected(locale: Locale) {
-        _uiState.update { it.copy(selectedAccent = locale) }
-    }
-
-    fun onTtsStateChanged(newTtsState: TtsState) {
+    fun onThumbnailStateChanged(newThumbnailState: ThumbnailState) {
         val currentState = _uiState.value.metadataCreationState
         if (currentState is MetadataCreationState.Success) {
             _uiState.update {
-                it.copy(metadataCreationState = currentState.copy(ttsState = newTtsState))
+                it.copy(metadataCreationState = currentState.copy(thumbnailState = newThumbnailState))
             }
         }
     }
@@ -84,21 +80,13 @@ class VideoMetadataCreationViewModel @Inject constructor() : ViewModel() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     fun onMetadataTypeSelected(metadataType: MetadataType) {
         _uiState.update { it.copy(selectedMetadataType = metadataType) }
     }
 
-    private fun getPromptForMetadataType(metadataType: MetadataType): String {
-        return when (metadataType) {
-            MetadataType.DESCRIPTION -> "Provide a compelling and concise description for this video, suitable for a YouTube video description about 7-8 lines. The description should be engaging and accurately reflect the video\'s content."
-            MetadataType.THUMBNAILS -> "Get three thumbnails for this video. Return only a comma separated list of timestamps in format \"hh:mm:ss\". Don\'t return any other text."
-            MetadataType.HASHTAGS -> "Generate a list of relevant and trending hashtags for this video to maximize its visibility on social media platforms. Return only the list of hashtags, separated by commas."
-            MetadataType.ACCOUNT_TAGS -> "Suggest relevant accounts to tag in the video\'s description or comments to increase its reach and engagement. Return only the list of accounts, separated by commas."
-            MetadataType.CHAPTERS -> "Analyze the video and create a list of chapters with timestamps and descriptive titles. This will help viewers navigate the video and find specific sections of interest."
-            MetadataType.LINKS -> "Analyze the video and create a list of relevant links to be tagged. Return possible 3-4 links to be shared in the video."
-        }
-    }
-
+    @OptIn(UnstableApi::class)
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     fun createMetadata(metadataType: MetadataType) {
         val videoSource = _uiState.value.selectedVideoUri ?: return
         viewModelScope.launch {
@@ -124,8 +112,12 @@ class VideoMetadataCreationViewModel @Inject constructor() : ViewModel() {
                         metadataCreationState = MetadataCreationState.Success(metadataText),
                     )
                 }
+
+                // Load HDR quality image thumbnails in Media3, based from timestamps returned by Gemini
                 if (metadataType == MetadataType.THUMBNAILS) {
-                    //    extractFrames(application, videoSource, parseTimestamps(metadataText))
+                    onThumbnailStateChanged(ThumbnailState.Loading)
+                    val bitmaps = extractListOfThumbnails(application, videoSource, metadataText)
+                    onThumbnailStateChanged(ThumbnailState.Success(bitmaps))
                 }
             } catch (error: Exception) {
                 _uiState.update {
@@ -149,7 +141,7 @@ enum class MetadataType {
     HASHTAGS,
     ACCOUNT_TAGS,
     CHAPTERS,
-    LINKS
+    LINKS,
 }
 
 sealed interface MetadataCreationState {
@@ -158,14 +150,15 @@ sealed interface MetadataCreationState {
     data class Error(val message: String) : MetadataCreationState
     data class Success(
         val metadataText: String,
-        val ttsState: TtsState = TtsState.Idle,
+        val thumbnailState: ThumbnailState = ThumbnailState.Idle,
     ) : MetadataCreationState
 }
 
-sealed interface TtsState {
-    data object Idle : TtsState
-    data object Playing : TtsState
-    data object Paused : TtsState
+sealed interface ThumbnailState {
+    data object Idle : ThumbnailState
+    data object Loading : ThumbnailState
+    data class Success(val bitmaps: List<Bitmap>) : ThumbnailState
+    data class Error(val message: String) : ThumbnailState
 }
 
 data class VideoMetadataCreationState(
@@ -174,3 +167,21 @@ data class VideoMetadataCreationState(
     val selectedAccent: Locale = Locale.US,
     val selectedMetadataType: MetadataType? = null,
 )
+
+private fun getPromptForMetadataType(metadataType: MetadataType): String {
+    return when (metadataType) {
+        MetadataType.DESCRIPTION ->
+            "Provide a compelling and concise description for this video, suitable for a YouTube video description in about 7-8 lines." +
+                "The description should be engaging and accurately reflect the video\'s content. Don't assume if you don't know"
+        MetadataType.THUMBNAILS ->
+            "Get three thumbnails for this video. Return only a comma separated list of timestamps in format \"hh:mm:ss\". Don\'t return any other text."
+        MetadataType.HASHTAGS ->
+            "Generate a list of relevant and trending hashtags for this video to maximize its visibility on social media platforms. Return only the list of hashtags, separated by commas."
+        MetadataType.ACCOUNT_TAGS ->
+            "Suggest relevant accounts to tag in the video\'s description or comments to increase its reach and engagement. Return only the list of accounts, separated by commas."
+        MetadataType.CHAPTERS ->
+            "Analyze the video and create a list of chapters with timestamps and descriptive titles. This will help viewers navigate the video and find specific sections of interest."
+        MetadataType.LINKS ->
+            "Analyze the video and create a list of relevant links to be tagged. Return possible 3-4 links to be shared in the video."
+    }
+}
