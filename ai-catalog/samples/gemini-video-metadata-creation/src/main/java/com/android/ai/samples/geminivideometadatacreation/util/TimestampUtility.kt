@@ -23,7 +23,7 @@ import android.util.Log
  *
  * Malformed or invalid time strings in the input are logged as warnings and skipped.
  *
- * @param commaSeparatedTimeString The string to parse, e.g., "00:01:30, 00:05:00, 99:99:99".
+ * @param String to parse, e.g., "00:01:30, 00:05:00, 99:99:99".
  * @return A list of Long values representing each valid time in milliseconds.
  */
 private const val TAG = "TimestampUtility"

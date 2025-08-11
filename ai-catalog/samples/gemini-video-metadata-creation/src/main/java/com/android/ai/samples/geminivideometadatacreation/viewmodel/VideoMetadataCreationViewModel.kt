@@ -72,14 +72,6 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
         }
     }
 
-    fun onTtsInitializationResult(isSuccess: Boolean, errorMessage: String?) {
-        if (!isSuccess && errorMessage != null) {
-            _uiState.update {
-                it.copy(metadataCreationState = MetadataCreationState.Error(errorMessage))
-            }
-        }
-    }
-
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     fun onMetadataTypeSelected(metadataType: MetadataType) {
         _uiState.update { it.copy(selectedMetadataType = metadataType) }
