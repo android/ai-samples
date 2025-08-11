@@ -77,7 +77,7 @@ fun ThumbnailScreen(thumbnailState: ThumbnailState) {
         }
 
         ThumbnailState.Idle -> {
-            //Empty state - Thumbnails should only be shown when Thumbnail button is selected
+            // Empty state - Thumbnails should only be shown when Thumbnail button is selected
         }
     }
 }
