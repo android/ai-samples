@@ -16,6 +16,8 @@
 package com.android.ai.samples.geminivideometadatacreation
 
 import android.content.Intent
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -55,15 +57,13 @@ import com.android.ai.samples.geminivideometadatacreation.player.VideoPlayer
 import com.android.ai.samples.geminivideometadatacreation.player.VideoSelectionDropdown
 import com.android.ai.samples.geminivideometadatacreation.ui.ButtonGrid
 import com.android.ai.samples.geminivideometadatacreation.ui.OutputTextDisplay
-import com.android.ai.samples.geminivideometadatacreation.ui.TextToSpeechControls
+import com.android.ai.samples.geminivideometadatacreation.ui.ThumbnailScreen
 import com.android.ai.samples.geminivideometadatacreation.util.sampleVideoList
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.MetadataCreationState
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.MetadataType
-import com.android.ai.samples.geminivideometadatacreation.viewmodel.TtsState
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.VideoMetadataCreationState
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.VideoMetadataCreationViewModel
 import com.google.com.android.ai.samples.geminivideometadatacreation.R
-import java.util.Locale
 
 /**
  * Composable function for the AI Video Metadata Creation screen.
@@ -71,6 +71,7 @@ import java.util.Locale
  * This screen allows users to select a video, play it, and generate metadata of its content
  * using Firebase AI. It also provides text-to-speech functionality to read out
  */
+@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @UnstableApi
@@ -112,8 +113,7 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
             modifier = Modifier
                 .padding(16.dp)
                 .padding(innerPadding),
-            //  .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             VideoSelectionDropdown(
                 selectedVideoUri = uiState.selectedVideoUri,
@@ -129,19 +129,9 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
 
             MetadataCreationSection(
                 uiState = uiState,
-                onTtsStateChanged = { ttsState ->
-                    viewModel.onTtsStateChanged(ttsState)
-                },
-                onAccentSelected = { accent ->
-                    viewModel.onAccentSelected(accent)
-                },
                 onDismissError = { viewModel.dismissError() },
-                onTtsInitializationResult = { isSuccess, errorMessage ->
-                    viewModel.onTtsInitializationResult(isSuccess, errorMessage)
-                },
                 onMetadataTypeClicked = {
                     viewModel.onMetadataTypeSelected(it)
-                    viewModel.onTtsStateChanged(TtsState.Idle)
                     viewModel.createMetadata(it)
                 },
             )
@@ -158,10 +148,7 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
 @Composable
 private fun MetadataCreationSection(
     uiState: VideoMetadataCreationState,
-    onTtsStateChanged: (TtsState) -> Unit,
-    onAccentSelected: (Locale) -> Unit,
     onDismissError: () -> Unit,
-    onTtsInitializationResult: (Boolean, String?) -> Unit,
     onMetadataTypeClicked: (MetadataType) -> Unit,
 ) {
     Column(
@@ -191,34 +178,16 @@ private fun MetadataCreationSection(
             }
 
             is MetadataCreationState.Success -> {
-                TextToSpeechControls(
-                    ttsState = metadataCreationState.ttsState,
-                    speechText = metadataCreationState.metadataText,
-                    selectedAccent = uiState.selectedAccent,
-                    accentOptions = accentOptions,
-                    onTtsStateChange = onTtsStateChanged,
-                    onAccentSelected = onAccentSelected,
-                    onInitializationResult = onTtsInitializationResult,
-                )
                 OutputTextDisplay(metadataCreationState.metadataText)
+                ThumbnailScreen(thumbnailState = metadataCreationState.thumbnailState)
             }
 
-            is MetadataCreationState.Idle -> {
-                // Nothing to show
+            MetadataCreationState.Idle -> {
+                // Default state - No button is selected unless exp licitly selected
             }
         }
     }
 }
-
-private val accentOptions = listOf(
-    Locale.UK,
-    Locale.FRANCE,
-    Locale.GERMANY,
-    Locale.ITALY,
-    Locale.JAPAN,
-    Locale.KOREA,
-    Locale.US,
-)
 
 @Composable
 fun SeeCodeButton() {

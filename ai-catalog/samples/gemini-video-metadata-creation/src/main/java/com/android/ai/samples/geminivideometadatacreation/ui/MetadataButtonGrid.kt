@@ -16,7 +16,6 @@
 package com.android.ai.samples.geminivideometadatacreation.ui
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
@@ -28,7 +27,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.MetadataType
 
-@OptIn(ExperimentalLayoutApi::class)
+/**
+ * A Composable that displays a grid of buttons for each [MetadataType].
+ *
+ * This function dynamically creates a button for every entry in the [MetadataType] enum.
+ * It uses a [FlowRow] to arrange the buttons, allowing them to wrap to the next line
+ * if they exceed the available horizontal space. The currently selected button is
+ * highlighted with the primary color.
+ */
 @Composable
 fun ButtonGrid(selectedMetadataType: MetadataType?, onMetadataCreationClicked: (MetadataType) -> Unit, modifier: Modifier = Modifier) {
     val metadataTypes = MetadataType.entries
