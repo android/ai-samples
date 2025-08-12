@@ -31,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,7 +50,7 @@ fun CatalogRowCard(catalogItem: SampleCatalogItem, onClick: () -> Unit) {
             end = 16.dp,
             top = 16.dp,
         ),
-        onClick = onClick
+        onClick = onClick,
     ) {
         Row {
             Image(

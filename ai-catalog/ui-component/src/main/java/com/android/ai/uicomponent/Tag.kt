@@ -38,11 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.android.ai.theme.AISampleCatalogTheme
 
 @Composable
-fun Tag(
-    text: String,
-    color: Color,
-    modifier: Modifier = Modifier,
-) {
+fun Tag(text: String, color: Color, modifier: Modifier = Modifier) {
 
     Row(
         modifier = modifier
@@ -64,7 +60,7 @@ fun Tag(
             color = color,
             style = MaterialTheme.typography.labelSmall,
             modifier = Modifier.padding(top = 3.dp, bottom = 2.dp),
-            maxLines = 1
+            maxLines = 1,
         )
         Spacer(modifier.width(6.dp))
     }
