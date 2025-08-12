@@ -46,16 +46,18 @@ fun TextInput(
     secondaryButton: @Composable () -> Unit = {},
     onValueChange: (String) -> Unit,
 ) {
+    val roundCornerShape = RoundedCornerShape(30.dp)
+
     Row(
         modifier = modifier
             .border(
                 1.dp,
                 MaterialTheme.colorScheme.outline,
-                shape = RoundedCornerShape(30.dp),
+                shape = roundCornerShape,
             )
             .height(56.dp)
             .clip(
-                shape = RoundedCornerShape(30.dp),
+                shape = roundCornerShape,
             )
             .background(color = MaterialTheme.colorScheme.surfaceContainerHigh),
     ) {
