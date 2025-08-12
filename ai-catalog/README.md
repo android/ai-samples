@@ -34,8 +34,8 @@ Browse the samples inside the `/samples` folder:
 1. Clone the repository
 2. Open the whole project in Android Studio.
 3. Set up a Firebase project and connect your app to Firebase by adding your Firebase configuration 
-file (google-services.json) to the app. Read more [here](https://firebase.google.com/docs/ai-logic/get-started?platform=android&api=dev#set-up-firebase).
-3. Sync & Run `app` configuration
+file (google-services.json) to the `/app` directory. Read more in the [Firebase documentation](https://firebase.google.com/docs/ai-logic/get-started?platform=android&api=dev#set-up-firebase) and the [Android-specific setup guide](https://firebase.google.com/docs/android/learn-more?authuser=0#google-services-plugin-and-file).
+4. Sync & Run `app` configuration
 
 The app will open with the samples list screen that allows you to navigate throughout the different 
 available samples.
