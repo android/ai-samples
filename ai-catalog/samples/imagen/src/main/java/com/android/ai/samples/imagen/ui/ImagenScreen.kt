@@ -15,32 +15,56 @@
  */
 package com.android.ai.samples.imagen.ui
 
+import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.material3.TwoRowsTopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.imagen.R
+import com.android.ai.theme.AISampleCatalogTheme
+import com.android.ai.uicomponent.BackButton
+import com.android.ai.uicomponent.GenerateButton
+import com.android.ai.uicomponent.SecondaryButton
+import com.android.ai.uicomponent.TextInput
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,49 +78,103 @@ fun ImagenScreen(viewModel: ImagenViewModel = hiltViewModel()) {
 }
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Unit) {
     val isGenerating = uiState is ImagenUIState.Loading
 
     Scaffold(
         modifier = Modifier,
         topBar = {
-            TopAppBar(
+            TwoRowsTopAppBar(
                 colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    containerColor = Color.Transparent,
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
+                navigationIcon = {
+                    BackButton { }
+                },
                 title = {
-                    Text(text = stringResource(R.string.title_image_generation_screen))
+                        Text(
+                            text = stringResource(R.string.title_image_generation_screen),
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                },
+                subtitle = {
+                    Text(
+                        text = stringResource(R.string.title_image_generation_screen),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                 },
                 actions = {
                     SeeCodeButton()
                 },
             )
         },
+
     ) { innerPadding ->
-        Column(
+        Image(
+            painter = painterResource(id = com.android.ai.uicomponent.R.drawable.bg),
+            contentDescription = "Background Image",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.FillWidth,
+        )
+        Box(
             Modifier
+                .aspectRatio(.5f)
+//                .fillMaxHeight()
+//                .defaultMinSize(minHeight = 500.dp)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
-                .padding(innerPadding),
+                .imePadding()
+                .padding(innerPadding)
+                .clip(
+                    shape = RoundedCornerShape(40.dp),
+                )
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.outline,
+                    shape = RoundedCornerShape(40.dp),
+                )
+                .background(color = MaterialTheme.colorScheme.surfaceContainerHigh)
         ) {
-            GeneratedContent(
-                uiState = uiState,
+
+            when (uiState) {
+                is ImagenUIState.Error -> Toast.makeText(LocalContext.current, uiState.message, Toast.LENGTH_SHORT).show()
+                is ImagenUIState.ImageGenerated -> Image(
+                    bitmap = uiState.bitmap.asImageBitmap(),
+                    contentDescription = uiState.contentDescription,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.fillMaxSize(),
+                )
+                ImagenUIState.Initial -> {}
+                ImagenUIState.Loading -> {}
+            }
+
+            var textFieldValue by rememberSaveable { mutableStateOf("") }
+
+            TextInput(
+                value = textFieldValue,
+                placeholder = stringResource(R.string.placeholder_prompt),
+                primaryButton = {
+                    GenerateButton(
+                        text = "",
+                        icon = painterResource(id = com.android.ai.uicomponent.R.drawable.send_spark),
+                        modifier = Modifier
+                            .width(72.dp)
+                            .padding(4.dp),
+                        enabled = !isGenerating,
+                        onClick = { onGenerateClick(textFieldValue) },
+                    )
+                },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f),
-            )
+                    .padding(10.dp)
+                    .align(Alignment.BottomCenter)
+            ) {
+                textFieldValue = it
+            }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            GenerationInput(
-                onGenerateClick = onGenerateClick,
-                enabled = !isGenerating,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.ime))
         }
     }
 }
@@ -105,8 +183,10 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun ImagenScreenPreview() {
-    ImagenScreen(
-        uiState = ImagenUIState.Initial,
-        onGenerateClick = {},
-    )
+    AISampleCatalogTheme {
+        ImagenScreen(
+            uiState = ImagenUIState.Initial,
+            onGenerateClick = {},
+        )
+    }
 }

@@ -18,19 +18,30 @@ package com.android.ai.uicomponent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.ai.theme.AISampleCatalogTheme
@@ -39,7 +50,6 @@ import com.android.ai.theme.AISampleCatalogTheme
 fun TextInput(
     value: String,
     modifier: Modifier = Modifier,
-    hint: String = "",
     placeholder: String = "",
     primaryButton: @Composable () -> Unit = {},
     secondaryButton: @Composable () -> Unit = {},
@@ -60,23 +70,24 @@ fun TextInput(
             )
             .background(color = MaterialTheme.colorScheme.surfaceContainerHigh),
     ) {
-        OutlinedTextField(
+        TextField(
             value = value,
-            label = { Text(text = hint) },
-            placeholder = { Text(text = placeholder) },
             onValueChange = onValueChange,
+            placeholder = { Text(text = placeholder) },
+            textStyle = MaterialTheme.typography.bodyLarge
+                .copy(color = MaterialTheme.colorScheme.onSurface),
             modifier = Modifier
                 .weight(1f)
-                .height(48.dp)
+                .wrapContentHeight()
+                .align(Alignment.CenterVertically)
                 .padding(start = 12.dp),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
-                disabledContainerColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
-            ),
+                disabledIndicatorColor = Color.Transparent
+            )
         )
         secondaryButton()
         primaryButton()
@@ -88,8 +99,7 @@ fun TextInput(
 fun TextInputPreview() {
     AISampleCatalogTheme {
         TextInput(
-            value = "",
-            hint = "Message hint",
+            value = "Message hint",
             placeholder = "Placeholder", onValueChange = {},
             primaryButton = {
                 GenerateButton(
