@@ -85,14 +85,13 @@ fun PrimaryButton(
                 modifier = Modifier.size(width = 24.dp, height = 24.dp),
             )
         }
-        AnimatedContent(text.isNotEmpty()) { hasText ->
-            if (hasText) {
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(start = 8.dp),
-                )
-            }
+        if (text.isNotEmpty()) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(end = 8.dp),
+            )
         }
     }
 }

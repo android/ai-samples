@@ -16,7 +16,6 @@
 package com.android.ai.samples.imagen.ui
 
 import android.graphics.BitmapFactory
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,40 +23,72 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.material3.TwoRowsTopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageShader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.imagen.R
 import com.android.ai.theme.AISampleCatalogTheme
+import com.android.ai.uicomponent.BackButton
+import com.android.ai.uicomponent.GenerateButton
+import com.android.ai.uicomponent.SecondaryButton
+import com.android.ai.uicomponent.TextInput
+import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
-import com.android.ai.uicomponent.TextInput
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -105,28 +136,34 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
 
         Box(
             Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+                .aspectRatio(.5f)
+//                .fillMaxHeight()
+//                .defaultMinSize(minHeight = 500.dp)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp)
                 .imePadding()
+                .padding(innerPadding)
+                .clip(
+                    shape = RoundedCornerShape(40.dp),
+                )
                 .border(
                     1.dp,
                     MaterialTheme.colorScheme.outline,
                     shape = RoundedCornerShape(40.dp),
                 )
-                .clip(RoundedCornerShape(40.dp))
-                .background(ShaderBrush(imageShader)),
+                .background(color = MaterialTheme.colorScheme.surfaceContainerHigh)
         ) {
 
             when (uiState) {
+                is ImagenUIState.Error -> Toast.makeText(LocalContext.current, uiState.message, Toast.LENGTH_SHORT).show()
                 is ImagenUIState.ImageGenerated -> Image(
                     bitmap = uiState.bitmap.asImageBitmap(),
                     contentDescription = uiState.contentDescription,
-                    contentScale = ContentScale.FillHeight,
+                    contentScale = ContentScale.Fit,
                     modifier = Modifier.fillMaxSize(),
                 )
+                ImagenUIState.Initial -> {}
                 ImagenUIState.Loading -> {}
-                else -> {}
             }
 
             val textFieldState = rememberTextFieldState()
@@ -141,7 +178,7 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
                         icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
                         modifier = Modifier
                             .width(72.dp)
-                            .height(72.dp),
+                            .padding(4.dp),
                         enabled = !isGenerating,
                         onClick = {
                             onGenerateClick(textFieldState.text.toString())
@@ -151,7 +188,6 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
                 },
                 modifier = Modifier
                     .padding(10.dp)
-                    .height(80.dp)
                     .align(Alignment.BottomCenter),
             )
         }

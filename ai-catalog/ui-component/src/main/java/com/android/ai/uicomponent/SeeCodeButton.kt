@@ -23,18 +23,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
+import com.android.ai.samples.imagen.R
+import com.android.ai.uicomponent.PrimaryButton
 
 @Composable
 fun SeeCodeButton(sourceCodeUrl: String, modifier: Modifier = Modifier, withText: Boolean = true) {
     val context = LocalContext.current
-
+    val githubLink = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/imagen"
     PrimaryButton(
-        text = if (withText) "SOURCE" else "",
+        text= "SOURCE",
         icon = rememberVectorPainter(Icons.Filled.Code),
         onClick = {
-            val intent = Intent(Intent.ACTION_VIEW, sourceCodeUrl.toUri())
+            val intent = Intent(Intent.ACTION_VIEW, githubLink.toUri())
             context.startActivity(intent)
         },
-        modifier = modifier,
     )
 }
