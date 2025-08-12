@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,22 +44,19 @@ import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.Tag
 
 @Composable
-fun CatalogRowCard(catalogItem: SampleCatalogItem, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    val context = LocalContext.current
+fun CatalogRowCard(catalogItem: SampleCatalogItem, onClick: () -> Unit) {
     ElevatedCard(
         modifier = Modifier.padding(
             start = 16.dp,
             end = 16.dp,
             top = 16.dp,
         ),
-        onClick = {
-            onClick()
-        },
+        onClick = onClick
     ) {
         Row {
             Image(
                 painter = painterResource(id = R.drawable.illo),
-                contentDescription = "Illustration",
+                contentDescription = null,
                 modifier = Modifier
                     .height(92.dp)
                     .width(92.dp)
@@ -72,7 +70,7 @@ fun CatalogRowCard(catalogItem: SampleCatalogItem, modifier: Modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 8.dp),
                     style = MaterialTheme.typography.titleMedium,
-                    text = context.getString(catalogItem.title),
+                    text = stringResource(catalogItem.title),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -89,7 +87,7 @@ fun CatalogRowCard(catalogItem: SampleCatalogItem, modifier: Modifier = Modifier
                     modifier = Modifier
                         .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
                     style = MaterialTheme.typography.bodyMedium,
-                    text = context.getString(catalogItem.description),
+                    text = stringResource(catalogItem.description),
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
                 )

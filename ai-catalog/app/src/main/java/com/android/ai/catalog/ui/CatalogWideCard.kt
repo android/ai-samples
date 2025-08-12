@@ -28,12 +28,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.android.ai.catalog.R
 import com.android.ai.catalog.domain.SampleCatalogItem
 import com.android.ai.catalog.domain.SampleTags
@@ -41,17 +39,14 @@ import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.Tag
 
 @Composable
-fun CatalogWideCard(catalogItem: SampleCatalogItem, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    val context = LocalContext.current
+fun CatalogWideCard(catalogItem: SampleCatalogItem, onClick: () -> Unit) {
     ElevatedCard(
         modifier = Modifier.padding(
             start = 16.dp,
             end = 16.dp,
             top = 16.dp,
         ),
-        onClick = {
-            onClick()
-        },
+        onClick = onClick,
         shape = RoundedCornerShape(
             topStart = 0.dp,
             topEnd = 0.dp,
@@ -62,7 +57,7 @@ fun CatalogWideCard(catalogItem: SampleCatalogItem, modifier: Modifier = Modifie
         Column {
             Image(
                 painter = painterResource(id = R.drawable.illo), // Assuming illo.png is in res/drawable
-                contentDescription = "Illustration", // Add a content description
+                contentDescription = null, // Add a content description
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(182.dp), // Add some padding below the image
@@ -73,7 +68,7 @@ fun CatalogWideCard(catalogItem: SampleCatalogItem, modifier: Modifier = Modifie
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
                 style = MaterialTheme.typography.headlineSmall,
-                text = context.getString(catalogItem.title),
+                text = stringResource(catalogItem.title),
             )
             Row(
                 modifier = Modifier
@@ -88,7 +83,7 @@ fun CatalogWideCard(catalogItem: SampleCatalogItem, modifier: Modifier = Modifie
                 modifier = Modifier
                     .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
                 style = MaterialTheme.typography.bodyMedium,
-                text = context.getString(catalogItem.description),
+                text = stringResource(catalogItem.description),
             )
         }
     }
@@ -108,8 +103,7 @@ fun CatalogWideCardPreview() {
 
         CatalogWideCard(
             catalogItem = sampleItem,
-            onClick = { /* No-op for the preview */ },
+            onClick = {},
         )
     }
-
 }
