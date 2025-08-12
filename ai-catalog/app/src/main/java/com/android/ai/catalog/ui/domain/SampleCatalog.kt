@@ -28,6 +28,12 @@ import com.android.ai.samples.genai_summarization.GenAISummarizationScreen
 import com.android.ai.samples.genai_writing_assistance.GenAIWritingAssistanceScreen
 import com.android.ai.samples.imagen.ui.ImagenScreen
 import com.android.ai.samples.magicselfie.ui.MagicSelfieScreen
+import com.android.ai.theme.Firebase
+import com.android.ai.theme.GeminiNano
+import com.android.ai.theme.GeminiProFlash
+import com.android.ai.theme.Imagen
+import com.android.ai.theme.Media3
+import com.android.ai.theme.MlKit
 
 @androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
 val sampleCatalog = listOf(
@@ -116,12 +122,11 @@ data class SampleCatalogItem(
 enum class SampleTags(
     val label: String,
     val backgroundColor: Color,
-    val textColor: Color,
 ) {
-    FIREBASE("Firebase", Color(0xFFFF9100), Color.White),
-    GEMINI_2_0_FLASH("Gemini 2.0 Flash", Color(0xFF4285F4), Color.White),
-    GEMINI_NANO("Gemini Nano", Color(0xFF7abafe), Color.White),
-    IMAGEN("Imagen", Color(0xFF7CB342), Color.White),
-    MEDIA3("Media3", Color(0xFF7CB584), Color.White),
-    ML_KIT("ML Kit", Color.White, Color(0xFF4285F4)),
+    FIREBASE("Firebase", Firebase),
+    GEMINI_2_0_FLASH("Gemini 2.0 Flash", GeminiProFlash),
+    GEMINI_NANO("Gemini Nano", GeminiNano),
+    IMAGEN("Imagen", Imagen),
+    MEDIA3("Media3", Media3),
+    ML_KIT("ML Kit", MlKit),
 }

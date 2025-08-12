@@ -22,7 +22,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import com.android.ai.catalog.ui.CatalogApp
-import com.android.ai.catalog.ui.theme.AISampleCatalogTheme
+import com.android.ai.theme.AISampleCatalogTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
