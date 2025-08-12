@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ai.catalog.ui.theme
+package com.android.ai.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
@@ -21,7 +21,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.android.ai.catalog.R
+import com.android.ai.uicomponent.R
 
 val Typography = Typography(
     displayLarge = TextStyle(
@@ -54,7 +54,7 @@ val Typography = Typography(
         fontFamily = FontFamily(Font(R.font.space_grotesk)),
         fontWeight = FontWeight(400),
     ),
-    headlineSmall =  TextStyle(
+    headlineSmall = TextStyle(
         fontSize = 24.sp,
         lineHeight = 32.sp,
         fontFamily = FontFamily(Font(R.font.space_grotesk)),
@@ -80,7 +80,7 @@ val Typography = Typography(
         fontWeight = FontWeight(500),
         letterSpacing = 0.1.sp,
     ),
-    labelLarge =  TextStyle(
+    labelLarge = TextStyle(
         fontSize = 14.sp,
         lineHeight = 20.sp,
         fontFamily = FontFamily(Font(R.font.space_grotesk)),
@@ -121,5 +121,5 @@ val Typography = Typography(
         fontFamily = FontFamily(Font(R.font.space_grotesk)),
         fontWeight = FontWeight(400),
         letterSpacing = 0.4.sp,
-    )
+    ),
 )

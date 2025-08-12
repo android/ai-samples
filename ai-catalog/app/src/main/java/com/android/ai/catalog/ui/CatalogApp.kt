@@ -17,17 +17,13 @@ package com.android.ai.catalog.ui
 
 import android.content.Intent
 import android.util.Log
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -55,6 +51,7 @@ import androidx.navigation.compose.rememberNavController
 import com.android.ai.catalog.R
 import com.android.ai.catalog.ui.domain.SampleCatalogItem
 import com.android.ai.catalog.ui.domain.sampleCatalog
+import com.android.ai.uicomponent.Tag
 import com.google.firebase.FirebaseApp
 import kotlinx.serialization.Serializable
 
@@ -150,23 +147,7 @@ fun CatalogListItem(catalogItem: SampleCatalogItem, onButtonClick: () -> Unit) {
             Row {
                 Spacer(Modifier.weight(1f))
                 catalogItem.tags.forEach {
-                    Spacer(Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                color = it.backgroundColor,
-                                shape = RoundedCornerShape(
-                                    8.dp,
-                                ),
-                            )
-                            .padding(start = 4.dp, end = 4.dp),
-                    ) {
-                        Text(
-                            fontSize = 9.sp,
-                            text = it.label,
-                            color = it.textColor,
-                        )
-                    }
+                    Tag(text = it.label, color = it.backgroundColor)
                 }
             }
         }
