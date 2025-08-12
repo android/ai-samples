@@ -56,12 +56,12 @@ fun CatalogWideCard(catalogItem: SampleCatalogItem, onClick: () -> Unit) {
     ) {
         Column {
             Image(
-                painter = painterResource(id = R.drawable.illo), // Assuming illo.png is in res/drawable
-                contentDescription = null, // Add a content description
+                painter = painterResource(id = R.drawable.illo),
+                contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(182.dp), // Add some padding below the image
-                contentScale = ContentScale.FillWidth, // Or another ContentScale like Fit, FillBounds, etc.
+                    .height(182.dp),
+                contentScale = ContentScale.FillWidth,
             )
             Text(
                 modifier = Modifier
