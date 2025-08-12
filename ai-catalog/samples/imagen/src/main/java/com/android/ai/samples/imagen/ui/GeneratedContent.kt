@@ -37,24 +37,11 @@ fun GeneratedContent(uiState: ImagenUIState, modifier: Modifier = Modifier) {
     ) {
         when (uiState) {
             ImagenUIState.Initial -> {
-                Text(
-                    text = stringResource(R.string.imagen_placeholder),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .wrapContentSize(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                //
             }
 
             ImagenUIState.Loading -> {
-                Text(
-                    text = stringResource(R.string.generating_label),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .wrapContentSize(Alignment.Center),
-                    textAlign = TextAlign.Center,
-                )
+                //
             }
 
             is ImagenUIState.ImageGenerated -> {

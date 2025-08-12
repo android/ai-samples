@@ -18,6 +18,7 @@ package com.android.ai.uicomponent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,9 +26,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -67,22 +68,36 @@ fun PrimaryButton(
                 colorFilter = ColorFilter.tint(contentColor),
                 modifier = Modifier.size(width = 24.dp, height = 24.dp),
             )
-            Spacer(modifier = Modifier.width(8.dp))
         }
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.padding(end = 8.dp),
+        if (text.isNotEmpty()) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(end = 8.dp),
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PrimaryButtonPreview() {
+    AISampleCatalogTheme {
+        PrimaryButton(
+            text = "Primary button",
+            icon = rememberVectorPainter(Icons.Default.AccountBox),
+            onClick = {},
         )
     }
 }
 
 @Preview
 @Composable
-fun PrimaryButtonSmallPreview() {
+fun PrimaryButtonWithIconPreview() {
     AISampleCatalogTheme {
         PrimaryButton(
-            text = "Primary button",
+            text = "",
             icon = rememberVectorPainter(Icons.Default.AccountBox),
             onClick = {},
         )
@@ -164,11 +179,8 @@ fun GenerateButtonDisabledPreview() {
 fun SecondaryButton(text: String, modifier: Modifier = Modifier, icon: Painter? = null, onClick: () -> Unit) {
     OutlinedButton(
         modifier = modifier.height(48.dp),
-        colors = ButtonColors(
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            containerColor = Color.Transparent,
-            disabledContentColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent,
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.onSurfaceVariant),
         onClick = { onClick() },
@@ -200,3 +212,42 @@ fun SecondaryButtonPreview() {
         )
     }
 }
+
+@Composable
+fun BackButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    OutlinedButton(
+        modifier = modifier.height(48.dp).width(48.dp),
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
+        contentPadding = PaddingValues(0.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
+        shape = RoundedCornerShape(12.dp),
+        onClick = { onClick() },
+    ) {
+        Image(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant),
+            modifier = Modifier.size(width = 24.dp, height = 24.dp),
+            )
+    }
+}
+
+
+@Preview
+@Composable
+fun BackButtonPreview() {
+    AISampleCatalogTheme {
+        BackButton(
+            onClick = {},
+        )
+    }
+}
+
