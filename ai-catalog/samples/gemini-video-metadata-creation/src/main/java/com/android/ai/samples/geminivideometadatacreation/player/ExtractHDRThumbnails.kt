@@ -15,12 +15,12 @@
  */
 package com.android.ai.samples.geminivideometadatacreation.player
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.transformer.ExperimentalFrameExtractor
@@ -37,42 +37,44 @@ import kotlinx.coroutines.withContext
  *  * of the extractor.
  *  *
  */
-@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @UnstableApi
+@SuppressLint("UnsafeOptInUsageError", "NewApi")
 suspend fun extractFrame(context: Context, videoUri: Uri, timestamps: Long): Bitmap? {
     val mediaItem = MediaItem.fromUri(videoUri)
 
-    return try {
-        withContext(Dispatchers.IO) {
-            // Enable HDR frames fi=or better image quality
-            val configuration =
-                ExperimentalFrameExtractor.Configuration.Builder().setExtractHdrFrames(true).build()
-            val frameExtractor = ExperimentalFrameExtractor(
-                context,
-                configuration,
-            )
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        return try {
+            withContext(Dispatchers.IO) {
+                // Enable HDR frames for better image quality
+                val configuration = ExperimentalFrameExtractor.Configuration.Builder().setExtractHdrFrames(true).build()
+                val frameExtractor = ExperimentalFrameExtractor(
+                    context,
+                    configuration,
+                )
 
-            frameExtractor.setMediaItem(mediaItem, listOf())
-            try {
                 frameExtractor.setMediaItem(mediaItem, listOf())
-                val frame = frameExtractor.getFrame(timestamps).await()
-                return@withContext frame.bitmap
-            } finally {
-                frameExtractor.release()
+                try {
+                    frameExtractor.setMediaItem(mediaItem, listOf())
+                    val frame = frameExtractor.getFrame(timestamps).await()
+                    return@withContext frame.bitmap
+                } finally {
+                    frameExtractor.release()
+                }
             }
+        } catch (e: Exception) {
+            Log.e("extractFrame", "Error extracting frame", e)
+            return null
         }
-    } catch (e: Exception) {
-        Log.e("extractFrame", "Error extracting frame", e)
+    } else {
+        Log.e("extractFrame", "HDR thumbnails only supported on Android 14 and above")
         return null
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @UnstableApi
 suspend fun extractListOfThumbnails(context: Context, videoUri: Uri, outputContent: String): List<Bitmap> {
 
     val timestamps: List<Long> = convertCommaSeparatedTimeStringsToTimestamps(outputContent)
-
     return withContext(Dispatchers.IO) {
         timestamps.mapNotNull { timestamp ->
             extractFrame(context, videoUri, timestamp)

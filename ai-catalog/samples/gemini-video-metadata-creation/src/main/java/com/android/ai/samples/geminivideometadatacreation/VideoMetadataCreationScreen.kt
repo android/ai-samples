@@ -16,8 +16,6 @@
 package com.android.ai.samples.geminivideometadatacreation
 
 import android.content.Intent
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -51,7 +49,6 @@ import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.android.ai.samples.geminivideometadatacreation.player.VideoPlayer
 import com.android.ai.samples.geminivideometadatacreation.player.VideoSelectionDropdown
@@ -70,10 +67,8 @@ import com.android.ai.samples.geminivideometadatacreation.viewmodel.VideoMetadat
  * This screen allows users to select a video, play it, and generate metadata of its content
  * using Firebase AI. It also provides text-to-speech functionality to read out
  */
-@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@UnstableApi
 fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current

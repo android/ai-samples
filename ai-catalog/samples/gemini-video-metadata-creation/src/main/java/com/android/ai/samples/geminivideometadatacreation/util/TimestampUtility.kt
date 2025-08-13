@@ -18,12 +18,12 @@ package com.android.ai.samples.geminivideometadatacreation.util
 import android.util.Log
 
 /**
- * Converts a comma-separated string of time values (in hh:mm:ss format)
+ * Converts a comma-separated string of time values (in hh:mm:ss or mm:ss format)
  * into a list of timestamps in milliseconds.
  *
  * Malformed or invalid time strings in the input are logged as warnings and skipped.
  *
- * @param String to parse, e.g., "00:01:30, 00:05:00, 99:99:99".
+ * @param String to parse, e.g., "01:30, 00:05:00, 99:99".
  * @return A list of Long values representing each valid time in milliseconds.
  */
 private const val TAG = "TimestampUtility"
@@ -38,41 +38,42 @@ fun convertCommaSeparatedTimeStringsToTimestamps(commaSeparatedTimeString: Strin
         .map { it.trim() }
         .filterNot { it.isBlank() }
         .mapNotNull { timeString ->
-            parseHhMmSsToTimestamp(timeString)
+            parseTimeStringToTimestamp(timeString)
         }
 }
 
+private const val SECONDS_IN_HOUR = 3600L
+private const val MINUTES_IN_HOUR = 60L
+private const val MILLISECONDS_IN_SECOND = 1000L
+
 /**
- * Parses a single time string in hh:mm:ss format to milliseconds.
+ * Parses a single time string in hh:mm:ss or mm:ss format to milliseconds.
  *
- * @param timeString The time string to parse (e.g., "01:23:45").
+ * @param timeString The time string to parse (e.g., "01:23:45" or "23:45").
  * @return The time in milliseconds, or null if the format is invalid or the
  *         time components are out of range.
  */
-private fun parseHhMmSsToTimestamp(timeString: String): Long? {
-    val timeRegex = "(\\d{2}):(\\d{2}):(\\d{2})".toRegex()
+private fun parseTimeStringToTimestamp(timeString: String): Long? {
+    try {
+        val parts = timeString.split(':').map { it.toInt() }
 
-    val matchResult = timeRegex.matchEntire(timeString)
-    if (matchResult == null) {
-        Log.w(TAG, "Time string '$timeString' does not match hh:mm:ss format. Skipping.")
-        return null
-    }
-
-    return try {
-        val (hoursStr, minutesStr, secondsStr) = matchResult.destructured
-        val hours = hoursStr.toInt()
-        val minutes = minutesStr.toInt()
-        val seconds = secondsStr.toInt()
+        val (hours, minutes, seconds) = when (parts.size) {
+            3 -> Triple(parts[0], parts[1], parts[2]) // hh:mm:ss
+            2 -> Triple(0, parts[0], parts[1]) // mm:ss
+            else -> {
+                Log.w(TAG, "Invalid time format for '$timeString'. Expected hh:mm:ss or mm:ss.")
+                return null
+            }
+        }
 
         if (hours in 0..23 && minutes in 0..59 && seconds in 0..59) {
-            (hours * 3600L + minutes * 60L + seconds) * 1000L
+            return (hours * SECONDS_IN_HOUR + minutes * MINUTES_IN_HOUR + seconds) * MILLISECONDS_IN_SECOND
         } else {
             Log.w(TAG, "Time components out of valid range for '$timeString'. Skipping.")
-            null
+            return null
         }
     } catch (e: NumberFormatException) {
-        // This case is unlikely with the regex, but good for robustness.
         Log.w(TAG, "Error parsing number components in '$timeString'. Skipping.", e)
-        null
+        return null
     }
 }

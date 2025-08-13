@@ -37,14 +37,6 @@ val sampleVideoList = listOf(
         "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4".toUri(),
     ),
     VideoItem(
-        R.string.video_title_rio_de_janeiro,
-        "gs://cloud-samples-data/generative-ai/video/rio_de_janeiro_beyond_the_map_rio.mp4".toUri(),
-    ),
-    VideoItem(
-        R.string.video_title_youtube_google_tv,
-        "https://www.youtube.com/watch?v=QFMIP5GOo70".toUri(),
-    ),
-    VideoItem(
         R.string.video_title_tears_of_steel,
         "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4".toUri(),
     ),

@@ -15,7 +15,6 @@
  */
 package com.android.ai.catalog.ui.domain
 
-import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -31,7 +30,6 @@ import com.android.ai.samples.genai_writing_assistance.GenAIWritingAssistanceScr
 import com.android.ai.samples.imagen.ui.ImagenScreen
 import com.android.ai.samples.magicselfie.ui.MagicSelfieScreen
 
-@SuppressLint("UnsafeOptInUsageError", "NewApi")
 @androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
 val sampleCatalog = listOf(
     SampleCatalogItem(
@@ -100,7 +98,7 @@ val sampleCatalog = listOf(
         description = R.string.gemini_video_metadata_creation_sample_description,
         route = "VideoMetadataCreationScreen",
         sampleEntryScreen = { VideoMetadataCreationScreen() },
-        tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE, SampleTags.MEDIA3),
+        tags = listOf(SampleTags.GEMINI_2_5_FLASH, SampleTags.FIREBASE, SampleTags.MEDIA3),
         needsFirebase = true,
     ),
     SampleCatalogItem(
@@ -131,6 +129,7 @@ enum class SampleTags(
 ) {
     FIREBASE("Firebase", Color(0xFFFF9100), Color.White),
     GEMINI_2_0_FLASH("Gemini 2.0 Flash", Color(0xFF4285F4), Color.White),
+    GEMINI_2_5_FLASH("Gemini 2.5 Flash", Color(0xFF4285F4), Color.White),
     GEMINI_NANO("Gemini Nano", Color(0xFF7abafe), Color.White),
     IMAGEN("Imagen", Color(0xFF7CB342), Color.White),
     MEDIA3("Media3", Color(0xFF7CB584), Color.White),
