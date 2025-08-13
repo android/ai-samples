@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -95,7 +96,7 @@ fun TextInputPreview() {
             primaryButton = {
                 GenerateButton(
                     text = "",
-                    icon = ImageVector.vectorResource(id = R.drawable.send_spark),
+                    icon = painterResource(id = R.drawable.send_spark),
                     modifier = Modifier.width(72.dp).padding(4.dp),
                     onClick = {},
                 )
@@ -103,7 +104,7 @@ fun TextInputPreview() {
             secondaryButton = {
                 SecondaryButton(
                     text = "",
-                    icon = ImageVector.vectorResource(id = R.drawable.add_photo),
+                    icon = painterResource(id = R.drawable.add_photo),
                     modifier = Modifier.width(72.dp).padding(4.dp),
                     onClick = {},
                 )

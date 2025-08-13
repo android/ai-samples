@@ -36,8 +36,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.ai.theme.AISampleCatalogTheme
@@ -48,7 +49,7 @@ fun PrimaryButton(
     modifier: Modifier = Modifier,
     contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     containerColor: Color = MaterialTheme.colorScheme.primary,
-    icon: ImageVector? = null,
+    icon: Painter? = null,
     onClick: () -> Unit,
 ) {
     Button(
@@ -61,7 +62,7 @@ fun PrimaryButton(
     ) {
         if (icon != null) {
             Image(
-                imageVector = icon,
+                painter = icon,
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(contentColor),
                 modifier = Modifier.size(width = 24.dp, height = 24.dp),
@@ -82,7 +83,7 @@ fun PrimaryButtonSmallPreview() {
     AISampleCatalogTheme {
         PrimaryButton(
             text = "Primary button",
-            icon = Icons.Default.AccountBox,
+            icon = rememberVectorPainter(Icons.Default.AccountBox),
             onClick = {},
         )
     }
@@ -95,7 +96,7 @@ fun GenerateButton(
     contentColor: Color = MaterialTheme.colorScheme.onTertiary,
     containerColor: Color = MaterialTheme.colorScheme.tertiary,
     enabled: Boolean = true,
-    icon: ImageVector? = ImageVector.vectorResource(id = R.drawable.draw_auto),
+    icon: Painter? = painterResource(id = R.drawable.draw_auto),
     onClick: () -> Unit,
 ) {
     Button(
@@ -120,7 +121,7 @@ fun GenerateButton(
     ) {
         if (icon != null) {
             Image(
-                imageVector = icon,
+                painter = icon,
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(
                     if (enabled) contentColor else MaterialTheme.colorScheme.onSurface,
@@ -160,7 +161,7 @@ fun GenerateButtonDisabledPreview() {
 }
 
 @Composable
-fun SecondaryButton(text: String, modifier: Modifier = Modifier, icon: ImageVector? = null, onClick: () -> Unit) {
+fun SecondaryButton(text: String, modifier: Modifier = Modifier, icon: Painter? = null, onClick: () -> Unit) {
     OutlinedButton(
         modifier = modifier.height(48.dp),
         colors = ButtonColors(
@@ -174,7 +175,7 @@ fun SecondaryButton(text: String, modifier: Modifier = Modifier, icon: ImageVect
     ) {
         if (icon != null) {
             Image(
-                imageVector = icon,
+                painter = icon,
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant),
                 modifier = Modifier.size(width = 24.dp, height = 24.dp),
@@ -194,7 +195,7 @@ fun SecondaryButtonPreview() {
     AISampleCatalogTheme {
         SecondaryButton(
             text = "Outlined button",
-            icon = ImageVector.vectorResource(id = R.drawable.add_photo),
+            icon = painterResource(id = R.drawable.add_photo),
             onClick = {},
         )
     }

@@ -59,7 +59,7 @@ fun Tag(text: String, color: Color, modifier: Modifier = Modifier) {
             text = text.uppercase(),
             color = color,
             style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier,
+            modifier = Modifier.padding(top = 3.dp, bottom = 2.dp),
             maxLines = 1,
         )
         Spacer(modifier.width(6.dp))

@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ai.catalog.ui.domain
+package com.android.ai.catalog.domain
 
+import android.Manifest
+import androidx.annotation.RequiresPermission
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -38,7 +40,7 @@ import com.android.ai.theme.Imagen
 import com.android.ai.theme.Media3
 import com.android.ai.theme.MlKit
 
-@androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
+@RequiresPermission(Manifest.permission.RECORD_AUDIO)
 val sampleCatalog = listOf(
     SampleCatalogItem(
         title = R.string.gemini_image_chat,
@@ -55,6 +57,7 @@ val sampleCatalog = listOf(
         sampleEntryScreen = { GeminiMultimodalScreen() },
         tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
+        isFeatured = true,
     ),
     SampleCatalogItem(
         title = R.string.gemini_chatbot_sample_title,
@@ -144,6 +147,7 @@ data class SampleCatalogItem(
     val sampleEntryScreen: @Composable () -> Unit,
     val tags: List<SampleTags> = emptyList(),
     val needsFirebase: Boolean = false,
+    val isFeatured: Boolean = false,
 )
 
 enum class SampleTags(
