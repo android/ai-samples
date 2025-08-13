@@ -54,7 +54,7 @@ fun CatalogRowCard(catalogItem: SampleCatalogItem, onClick: () -> Unit) {
     ) {
         Row {
             Image(
-                painter = painterResource(id = catalogItem.keyArt?:R.drawable.img_keyart_multimodal),
+                painter = painterResource(id = catalogItem.keyArt ?: R.drawable.img_keyart_multimodal),
                 contentDescription = null,
                 modifier = Modifier
                     .height(92.dp)

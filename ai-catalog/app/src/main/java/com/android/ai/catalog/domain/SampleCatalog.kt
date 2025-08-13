@@ -20,7 +20,6 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresPermission
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.ui.graphics.Color
 import com.android.ai.catalog.R
 import com.android.ai.samples.geminichatbot.GeminiChatbotScreen
@@ -44,7 +43,7 @@ val sampleCatalog = listOf(
         tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
         isFeatured = true,
-        keyArt = R.drawable.img_keyart_multimodal
+        keyArt = R.drawable.img_keyart_multimodal,
     ),
     SampleCatalogItem(
         title = R.string.gemini_chatbot_sample_title,
@@ -53,7 +52,7 @@ val sampleCatalog = listOf(
         sampleEntryScreen = { GeminiChatbotScreen() },
         tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
-        keyArt = R.drawable.img_keyart_chatbot
+        keyArt = R.drawable.img_keyart_chatbot,
     ),
     SampleCatalogItem(
         title = R.string.genai_summarization_sample_title,
@@ -61,7 +60,7 @@ val sampleCatalog = listOf(
         route = "GenAISummarizationScreen",
         sampleEntryScreen = { GenAISummarizationScreen() },
         tags = listOf(SampleTags.GEMINI_NANO, SampleTags.ML_KIT),
-        keyArt = R.drawable.img_keyart_summary
+        keyArt = R.drawable.img_keyart_summary,
     ),
     SampleCatalogItem(
         title = R.string.genai_image_description_sample_title,
@@ -69,7 +68,7 @@ val sampleCatalog = listOf(
         route = "GenAIImageDescriptionScreen",
         sampleEntryScreen = { GenAIImageDescriptionScreen() },
         tags = listOf(SampleTags.GEMINI_NANO, SampleTags.ML_KIT),
-        keyArt = R.drawable.img_keyart_img_desc
+        keyArt = R.drawable.img_keyart_img_desc,
     ),
     SampleCatalogItem(
         title = R.string.genai_writing_assistance_sample_title,
@@ -77,7 +76,7 @@ val sampleCatalog = listOf(
         route = "GenAIWritingAssistanceScreen",
         sampleEntryScreen = { GenAIWritingAssistanceScreen() },
         tags = listOf(SampleTags.GEMINI_NANO, SampleTags.ML_KIT),
-        keyArt = R.drawable.img_keyart_text
+        keyArt = R.drawable.img_keyart_text,
     ),
     SampleCatalogItem(
         title = R.string.imagen_sample_title,
@@ -86,7 +85,7 @@ val sampleCatalog = listOf(
         sampleEntryScreen = { ImagenScreen() },
         tags = listOf(SampleTags.IMAGEN, SampleTags.FIREBASE),
         needsFirebase = true,
-        keyArt = R.drawable.img_keyart_imagen
+        keyArt = R.drawable.img_keyart_imagen,
     ),
     SampleCatalogItem(
         title = R.string.magic_selfie_sample_title,
@@ -95,7 +94,7 @@ val sampleCatalog = listOf(
         sampleEntryScreen = { MagicSelfieScreen() },
         tags = listOf(SampleTags.IMAGEN, SampleTags.FIREBASE, SampleTags.ML_KIT),
         needsFirebase = true,
-        keyArt = R.drawable.img_keyart_magic_selfie
+        keyArt = R.drawable.img_keyart_magic_selfie,
     ),
     SampleCatalogItem(
         title = R.string.gemini_video_summarization_sample_title,
@@ -104,7 +103,7 @@ val sampleCatalog = listOf(
         sampleEntryScreen = { VideoSummarizationScreen() },
         tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE, SampleTags.MEDIA3),
         needsFirebase = true,
-        keyArt = R.drawable.img_keyart_video_summary
+        keyArt = R.drawable.img_keyart_video_summary,
     ),
     SampleCatalogItem(
         title = R.string.gemini_live_todo_title,
@@ -113,7 +112,7 @@ val sampleCatalog = listOf(
         sampleEntryScreen = { TodoScreen() },
         tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
-        keyArt = R.drawable.img_keyart_todo
+        keyArt = R.drawable.img_keyart_todo,
     ),
 
     // To create a new sample entry, add a new SampleCatalogItem here.
@@ -134,7 +133,7 @@ enum class SampleTags(
     val label: String,
     val backgroundColor: Color,
 ) {
-    FIREBASE("Firebase",  extendedColorScheme.firebase),
+    FIREBASE("Firebase", extendedColorScheme.firebase),
     GEMINI_2_0_FLASH("Gemini 2.0 Flash", extendedColorScheme.geminiProFlash),
     GEMINI_NANO("Gemini Nano", extendedColorScheme.geminiNano),
     IMAGEN("Imagen", extendedColorScheme.imagen),

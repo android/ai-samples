@@ -56,7 +56,7 @@ fun CatalogWideCard(catalogItem: SampleCatalogItem, onClick: () -> Unit) {
     ) {
         Column {
             Image(
-                painter = painterResource(id = catalogItem.keyArt?:R.drawable.img_keyart_multimodal),
+                painter = painterResource(id = catalogItem.keyArt ?: R.drawable.img_keyart_multimodal),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
