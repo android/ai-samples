@@ -96,7 +96,7 @@ fun GenerateButton(
     contentColor: Color = MaterialTheme.colorScheme.onTertiary,
     containerColor: Color = MaterialTheme.colorScheme.tertiary,
     enabled: Boolean = true,
-    icon: Painter? = painterResource(id = R.drawable.draw_auto),
+    icon: Painter? = painterResource(id = R.drawable.ic_ai_edit),
     onClick: () -> Unit,
 ) {
     Button(
@@ -195,7 +195,7 @@ fun SecondaryButtonPreview() {
     AISampleCatalogTheme {
         SecondaryButton(
             text = "Outlined button",
-            icon = painterResource(id = R.drawable.add_photo),
+            icon = painterResource(id = R.drawable.ic_ai_img),
             onClick = {},
         )
     }

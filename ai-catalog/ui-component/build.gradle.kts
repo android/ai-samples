@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.ui.google.fonts)
     implementation(libs.ui.tooling.preview)
     debugImplementation(libs.ui.tooling)
 }

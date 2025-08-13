@@ -96,7 +96,7 @@ fun TextInputPreview() {
             primaryButton = {
                 GenerateButton(
                     text = "",
-                    icon = painterResource(id = R.drawable.send_spark),
+                    icon = painterResource(id = R.drawable.ic_ai_send),
                     modifier = Modifier.width(72.dp).padding(4.dp),
                     onClick = {},
                 )
@@ -104,7 +104,7 @@ fun TextInputPreview() {
             secondaryButton = {
                 SecondaryButton(
                     text = "",
-                    icon = painterResource(id = R.drawable.add_photo),
+                    icon = painterResource(id = R.drawable.ic_add),
                     modifier = Modifier.width(72.dp).padding(4.dp),
                     onClick = {},
                 )

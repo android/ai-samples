@@ -60,7 +60,7 @@ fun ImageInput(buttonText: String, modifier: Modifier = Modifier, image: Bitmap?
             PrimaryButton(
                 text = buttonText,
                 onClick = onAddImage,
-                icon = painterResource(id = R.drawable.send_spark),
+                icon = painterResource(id = R.drawable.ic_ai_send),
                 modifier = Modifier
                     .height(64.dp)
                     .align(Alignment.CenterHorizontally),
