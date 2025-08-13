@@ -23,6 +23,9 @@
     <string name="account_tags">Account tags</string>
     <string name="chapters">Chapters</string>
     <string name="links">Links</string>
-    <string name="hdr_thumbnail_unsupported_message">HDR thumbnails are only supported on Android U and above.</string>
+    <string name="hdr_thumbnail_unsupported_message">HDR thumbnails are only supported on Android 14 and above.</string>
+
+    <string name="playpause_button_play">play</string>
+    <string name="playpause_button_pause">pause</string>
 
 </resources>

@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.transformer)
+    implementation(libs.androidx.media3.ui.compose)
     implementation(libs.kotlinx.coroutines.guava)
 
     androidTestImplementation(libs.androidx.junit)

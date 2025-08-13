@@ -18,6 +18,7 @@ package com.android.ai.samples.geminivideometadatacreation
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -106,7 +107,8 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
         Column(
             modifier = Modifier
                 .padding(16.dp)
-                .padding(innerPadding),
+                .padding(innerPadding)
+                .fillMaxHeight(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             VideoSelectionDropdown(
@@ -119,7 +121,12 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
                 onDropdownExpanded = { isDropdownExpanded = it },
             )
 
-            VideoPlayer(exoPlayer = exoPlayer, modifier = Modifier.fillMaxWidth())
+            VideoPlayer(
+                player = exoPlayer,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.25f),
+            )
 
             MetadataCreationSection(
                 uiState = uiState,
@@ -128,6 +135,7 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
                     viewModel.onMetadataTypeSelected(it)
                     viewModel.createMetadata(it)
                 },
+                modifier = Modifier.weight(0.75f),
             )
         }
     }
@@ -144,9 +152,11 @@ private fun MetadataCreationSection(
     uiState: VideoMetadataCreationState,
     onDismissError: () -> Unit,
     onMetadataTypeClicked: (MetadataType) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier,
     ) {
         ButtonGrid(
             selectedMetadataType = uiState.selectedMetadataType,
@@ -172,8 +182,10 @@ private fun MetadataCreationSection(
             }
 
             is MetadataCreationState.Success -> {
-                OutputTextDisplay(metadataCreationState.metadataText)
-                ThumbnailScreen(thumbnailState = metadataCreationState.thumbnailState)
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    OutputTextDisplay(metadataCreationState.metadataText)
+                    ThumbnailScreen(thumbnailState = metadataCreationState.thumbnailState)
+                }
             }
 
             MetadataCreationState.Idle -> {
