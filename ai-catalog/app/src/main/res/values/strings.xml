@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">AI Sample Catalog</string>
     <string name="gemini_multimodal_sample_title">Gemini Multimodal Generation</string>
-    <string name="gemini_multimodal_sample_description">A very simple example of multimodal generation using the Gemini 2.0 Flash model.</string>
+    <string name="gemini_multimodal_sample_description">A very simple example of multimodal generation using the Gemini Flash model.</string>
     <string name="gemini_chatbot_sample_title">Gemini Chatbot</string>
-    <string name="gemini_chatbot_sample_description">A simple implementation of chatbot using Gemini 2.0 Flash model.</string>
+    <string name="gemini_chatbot_sample_description">A simple implementation of chatbot using Gemini Flash model.</string>
     <string name="genai_summarization_sample_title">Summarization with Gemini Nano</string>
     <string name="genai_summarization_sample_description">Summarize articles and conversations on-device with GenAI API powered by Gemini Nano</string>
     <string name="genai_image_description_sample_title">Image Description with Gemini Nano</string>

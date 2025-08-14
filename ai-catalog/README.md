@@ -13,14 +13,14 @@ some of Google's models.
 
 Browse the samples inside the `/samples` folder:
 
-- **gemini-chatbot**: a simple chatbot using Gemini 2.0 Flash
-- **gemini-multimodal**: a single screen application leveraging text+image to text generation with Gemini 2.0 Flash
+- **gemini-chatbot**: a simple chatbot using Gemini Flash
+- **gemini-multimodal**: a single screen application leveraging text+image to text generation with Gemini Flash
 - **genai-summarization**: a text summarization sample using Gemini Nano
 - **genai-image-description**: an image description sample using Gemini Nano
 - **genai-writing-assistance**: a proofreading and rewriting sample using Gemini Nano
 - **imagen**: an image generation sample using Imagen
 - **magic-selfie**: an sample using ML Kit subject segmentation and Imagen for image generation
-- **gemini-video-summarization**: a video summarization sample using Gemini 2.0 Flash
+- **gemini-video-summarization**: a video summarization sample using Gemini Flash
 - **gemini-live-todo**: a todo list app using Gemini Live
 - More to come...
 
