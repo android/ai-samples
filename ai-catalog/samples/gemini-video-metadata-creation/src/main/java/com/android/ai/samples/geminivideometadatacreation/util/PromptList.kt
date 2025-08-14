@@ -25,7 +25,8 @@ data class Prompt(
 val promptList = listOf(
     Prompt(
         metadataType = MetadataType.DESCRIPTION,
-        text = "Provide a compelling and concise description for this video, suitable for a YouTube video description in about 7-8 lines." +
+        text = "Provide a compelling and concise description for this video in about 7-8 lines. " +
+            "Return only the description and nothing else. Don't assume if you don't know" +
             " The description should be engaging and accurately reflect the video\'s content. Don't assume if you don't know",
     ),
     Prompt(

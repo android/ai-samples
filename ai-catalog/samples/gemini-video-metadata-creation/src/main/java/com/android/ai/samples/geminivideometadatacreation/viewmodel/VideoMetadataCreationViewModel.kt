@@ -127,6 +127,15 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
         }
     }
 
+    fun resetMetadataState() {
+        _uiState.update {
+            it.copy(
+                metadataCreationState = MetadataCreationState.Idle,
+                selectedMetadataType = null
+            )
+        }
+    }
+
     fun dismissError() {
         _uiState.update { it.copy(metadataCreationState = MetadataCreationState.Idle) }
     }

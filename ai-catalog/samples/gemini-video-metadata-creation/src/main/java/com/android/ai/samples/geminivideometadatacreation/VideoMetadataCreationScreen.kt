@@ -117,6 +117,7 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
                 videoOptions = sampleVideoList,
                 onVideoUriSelected = { uri ->
                     viewModel.onVideoSelected(uri)
+                    viewModel.resetMetadataState()
                 },
                 onDropdownExpanded = { isDropdownExpanded = it },
             )
@@ -189,7 +190,7 @@ private fun MetadataCreationSection(
             }
 
             MetadataCreationState.Idle -> {
-                // Default state - No button is selected unless exp licitly selected
+                // Default state - No button is selected unless explicitly selected
             }
         }
     }
