@@ -131,7 +131,7 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
         _uiState.update {
             it.copy(
                 metadataCreationState = MetadataCreationState.Idle,
-                selectedMetadataType = null
+                selectedMetadataType = null,
             )
         }
     }
