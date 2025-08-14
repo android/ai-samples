@@ -271,46 +271,47 @@ val extendedColorScheme = ExtendedColorScheme(
     imagen = imagen,
     firebase = firebase,
     media3 = media3,
-    mLKit = mLKit,
+    mLKit = mlKit,
 )
 
-private fun isContrastAvailable(): Boolean {
-    return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-}
+enum class Contrast { DEFAULT, MEDIUM, HIGH }
 
 @Composable
-fun selectSchemeForContrast(isDark: Boolean): ColorScheme {
-    val context = LocalContext.current
-    var colorScheme = if (isDark) darkScheme else lightScheme
-    val isPreview = LocalInspectionMode.current
-    if (!isPreview && isContrastAvailable()) {
-        val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+private fun systemContrast(): Contrast {
+    if(Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+        LocalInspectionMode.current) {
+        return Contrast.DEFAULT
+    } else {
+        val uiModeManager = LocalContext.current.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
         val contrastLevel = uiModeManager.contrast
 
-        colorScheme = when (contrastLevel) {
-            in 0.0f..0.33f -> if (isDark)
-                darkScheme else lightScheme
-
-            in 0.34f..0.66f -> if (isDark)
-                mediumContrastDarkColorScheme else mediumContrastLightColorScheme
-
-            in 0.67f..1.0f -> if (isDark)
-                highContrastDarkColorScheme else highContrastLightColorScheme
-
-            else -> if (isDark) darkScheme else lightScheme
+        return when (contrastLevel) {
+            in 0.34f..0.66f -> Contrast.MEDIUM
+            in 0.67f..1.0f -> Contrast.HIGH
+            else -> Contrast.DEFAULT
         }
-        return colorScheme
-    } else return colorScheme
+    }
 }
 
 @Composable
 fun AISampleCatalogTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    content:
-    @Composable()
-    () -> Unit,
+    contrast: Contrast = systemContrast(),
+    content: @Composable () -> Unit,
 ) {
-    val colorScheme = selectSchemeForContrast(darkTheme)
+    val colorScheme = if(darkTheme) {
+        when(contrast) {
+            Contrast.DEFAULT -> darkScheme
+            Contrast.MEDIUM -> mediumContrastDarkColorScheme
+            Contrast.HIGH -> highContrastDarkColorScheme
+        }
+    } else {
+        when(contrast) {
+            Contrast.DEFAULT -> lightScheme
+            Contrast.MEDIUM -> mediumContrastLightColorScheme
+            Contrast.HIGH -> highContrastLightColorScheme
+        }
+    }
 
     MaterialTheme(
         colorScheme = colorScheme,

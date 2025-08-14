@@ -42,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.ai.theme.AISampleCatalogTheme
+import com.android.ai.theme.Contrast
 
 @Composable
 fun PrimaryButton(
@@ -79,8 +80,26 @@ fun PrimaryButton(
 
 @Preview
 @Composable
-fun PrimaryButtonSmallPreview() {
-    AISampleCatalogTheme {
+fun PrimaryButtonLightPreview() {
+    AISampleCatalogTheme (
+        darkTheme = false,
+        contrast = Contrast.HIGH
+    ){
+        PrimaryButton(
+            text = "Primary button",
+            icon = rememberVectorPainter(Icons.Default.AccountBox),
+            onClick = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PrimaryButtonDarkPreview() {
+    AISampleCatalogTheme(
+        darkTheme = true,
+        contrast = Contrast.DEFAULT
+    ) {
         PrimaryButton(
             text = "Primary button",
             icon = rememberVectorPainter(Icons.Default.AccountBox),
