@@ -37,7 +37,7 @@ val sampleCatalog = listOf(
         description = R.string.gemini_multimodal_sample_description,
         route = "GeminiMultimodalScreen",
         sampleEntryScreen = { GeminiMultimodalScreen() },
-        tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE),
+        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
     ),
     SampleCatalogItem(
@@ -45,7 +45,7 @@ val sampleCatalog = listOf(
         description = R.string.gemini_chatbot_sample_description,
         route = "GeminiChitchatScreen",
         sampleEntryScreen = { GeminiChatbotScreen() },
-        tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE),
+        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
     ),
     SampleCatalogItem(
@@ -90,7 +90,7 @@ val sampleCatalog = listOf(
         description = R.string.gemini_video_summarization_sample_description,
         route = "VideoSummarizationScreen",
         sampleEntryScreen = { VideoSummarizationScreen() },
-        tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE, SampleTags.MEDIA3),
+        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE, SampleTags.MEDIA3),
         needsFirebase = true,
     ),
     SampleCatalogItem(
@@ -98,7 +98,7 @@ val sampleCatalog = listOf(
         description = R.string.gemini_video_metadata_creation_sample_description,
         route = "VideoMetadataCreationScreen",
         sampleEntryScreen = { VideoMetadataCreationScreen() },
-        tags = listOf(SampleTags.GEMINI_2_5_FLASH, SampleTags.FIREBASE, SampleTags.MEDIA3),
+        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE, SampleTags.MEDIA3),
         needsFirebase = true,
     ),
     SampleCatalogItem(
@@ -106,7 +106,7 @@ val sampleCatalog = listOf(
         description = R.string.gemini_live_todo_description,
         route = "GeminiLiveTodoScreen",
         sampleEntryScreen = { TodoScreen() },
-        tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE),
+        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
     ),
 
@@ -128,8 +128,7 @@ enum class SampleTags(
     val textColor: Color,
 ) {
     FIREBASE("Firebase", Color(0xFFFF9100), Color.White),
-    GEMINI_2_0_FLASH("Gemini 2.0 Flash", Color(0xFF4285F4), Color.White),
-    GEMINI_2_5_FLASH("Gemini 2.5 Flash", Color(0xFF4285F4), Color.White),
+    GEMINI_FLASH("Gemini Flash", Color(0xFF4285F4), Color.White),
     GEMINI_NANO("Gemini Nano", Color(0xFF7abafe), Color.White),
     IMAGEN("Imagen", Color(0xFF7CB342), Color.White),
     MEDIA3("Media3", Color(0xFF7CB584), Color.White),
