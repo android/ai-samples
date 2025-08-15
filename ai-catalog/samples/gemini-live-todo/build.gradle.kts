@@ -56,7 +56,7 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.material.icons.extended)
     implementation(platform(libs.firebase.bom))
-    implementation(libs.google.firebase.ai)
+    implementation(libs.firebase.ai)
     implementation(libs.androidx.lifecycle.viewmodel.android)
     implementation(libs.material3)
     implementation(libs.hilt.android)

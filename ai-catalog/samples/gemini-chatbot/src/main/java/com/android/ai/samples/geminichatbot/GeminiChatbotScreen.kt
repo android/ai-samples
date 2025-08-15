@@ -167,10 +167,19 @@ fun MessageBubble(message: ChatMessage, modifier: Modifier = Modifier) {
             },
             shape = MaterialTheme.shapes.large,
         ) {
-            Text(
-                modifier = Modifier.padding(16.dp),
-                text = message.text,
-            )
+            Column {
+                Text(
+                    modifier = Modifier.padding(16.dp),
+                    text = message.text,
+                )
+                if (message.groundingMetadata != null) {
+                    Text(
+                        modifier = Modifier.padding(16.dp),
+                        fontSize = 10.sp,
+                        text = "(sources: ${message.groundingMetadata})",
+                    )
+                }
+            }
         }
     }
 }

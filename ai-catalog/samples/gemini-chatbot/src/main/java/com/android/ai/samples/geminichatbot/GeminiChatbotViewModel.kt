@@ -23,6 +23,7 @@ import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.HarmBlockThreshold
 import com.google.firebase.ai.type.HarmCategory
 import com.google.firebase.ai.type.SafetySetting
+import com.google.firebase.ai.type.Tool
 import com.google.firebase.ai.type.content
 import com.google.firebase.ai.type.generationConfig
 import javax.inject.Inject
@@ -65,6 +66,7 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
             systemInstruction = content {
                 text("""You are a friendly assistant. Keep your response short.""")
             },
+            tools = listOf(Tool.googleSearch())
         )
     }
 
@@ -86,10 +88,12 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
 
                 val response = chat.sendMessage(message)
                 val newMessage = response.text?.let {
+                    val groundingMetadata = response.candidates.firstOrNull()?.groundingMetadata
                     ChatMessage(
                         text = it.trim(),
                         timestamp = System.currentTimeMillis(),
                         isIncoming = true,
+                        groundingMetadata = groundingMetadata?.groundingChunks?.map { it.web?.title }?.joinToString()
                     )
                 } ?: error("Model returned an empty response") // This error will be caught by the try/catch
 

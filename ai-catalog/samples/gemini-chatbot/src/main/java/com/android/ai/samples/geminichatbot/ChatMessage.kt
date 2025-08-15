@@ -22,4 +22,5 @@ data class ChatMessage(
     val timestamp: Long,
     val isIncoming: Boolean = false,
     val senderIconUrl: Uri? = null,
+    val groundingMetadata: String? = null
 )
