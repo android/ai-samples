@@ -56,7 +56,7 @@ class GenAIWritingAssistanceViewModel @Inject constructor(val context: Applicati
     private val _uiState = MutableStateFlow<GenAIWritingAssistanceUiState>(GenAIWritingAssistanceUiState.Initial)
     val uiState: StateFlow<GenAIWritingAssistanceUiState> = _uiState.asStateFlow()
 
-    private var proofreader = Proofreading.getClient(
+    private val proofreader = Proofreading.getClient(
         ProofreaderOptions.builder(context)
             .setLanguage(ProofreaderOptions.Language.ENGLISH)
             // If input was transcript of speech-to-text, this should be InputType.SPEECH
@@ -117,7 +117,6 @@ class GenAIWritingAssistanceViewModel @Inject constructor(val context: Applicati
                 } else {
                     runProofreadingInference(text)
                 }
-                return@launch
             }
         }
     }
@@ -190,8 +189,6 @@ class GenAIWritingAssistanceViewModel @Inject constructor(val context: Applicati
                 } else {
                     runRewritingInference(rewriter, text)
                 }
-
-                return@launch
             }
         }
     }
