@@ -69,5 +69,6 @@ dependencies {
     implementation(libs.genai.proofreading)
     implementation(libs.genai.rewrite)
     implementation(libs.kotlinx.coroutines.guava)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     ksp(libs.hilt.compiler)
 }
