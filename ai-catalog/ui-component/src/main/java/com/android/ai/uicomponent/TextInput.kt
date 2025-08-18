@@ -49,6 +49,7 @@ import com.android.ai.theme.AISampleCatalogTheme
 fun TextInput(
     value: String,
     modifier: Modifier = Modifier,
+    maxLines: Int = 2,
     placeholder: String = "",
     primaryButton: @Composable () -> Unit = {},
     secondaryButton: @Composable () -> Unit = {},
@@ -63,7 +64,6 @@ fun TextInput(
                 MaterialTheme.colorScheme.outline,
                 shape = roundCornerShape,
             )
-//            .height(56.dp)
             .clip(
                 shape = roundCornerShape,
             )
@@ -72,6 +72,7 @@ fun TextInput(
         TextField(
             value = value,
             onValueChange = onValueChange,
+            maxLines = maxLines,
             placeholder = { Text(text = placeholder) },
             textStyle = MaterialTheme.typography.bodyLarge
                 .copy(color = MaterialTheme.colorScheme.onSurface),
