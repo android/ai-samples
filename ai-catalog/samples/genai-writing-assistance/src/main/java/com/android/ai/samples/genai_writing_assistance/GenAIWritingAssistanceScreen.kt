@@ -119,7 +119,7 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                 is GenAIWritingAssistanceUiState.Success -> state.generatedOutput
                 is GenAIWritingAssistanceUiState.Generating -> stringResource(id = R.string.generating)
                 GenAIWritingAssistanceUiState.CheckingFeatureStatus -> stringResource(id = R.string.checking_feature_status)
-                GenAIWritingAssistanceUiState.Initial  -> "" // Show nothing for the Initial state
+                GenAIWritingAssistanceUiState.Initial -> "" // Show nothing for the Initial state
             }
 
             // Output box
