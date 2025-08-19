@@ -20,6 +20,7 @@ import android.content.Intent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
@@ -27,6 +28,7 @@ import androidx.core.net.toUri
 @Composable
 fun SeeCodeButton(
     sourceCodeUrl: String,
+    modifier: Modifier = Modifier,
     withText: Boolean = true
 ) {
     val context = LocalContext.current
@@ -38,5 +40,6 @@ fun SeeCodeButton(
             val intent = Intent(Intent.ACTION_VIEW, sourceCodeUrl.toUri())
             context.startActivity(intent)
         },
+        modifier = modifier
     )
 }

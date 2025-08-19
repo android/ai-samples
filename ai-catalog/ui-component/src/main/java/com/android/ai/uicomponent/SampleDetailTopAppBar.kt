@@ -51,38 +51,22 @@ fun SampleDetailTopAppBar(
             subtitleContentColor = MaterialTheme.colorScheme.primary,
         ),
         title = { expanded ->
-            if (expanded) {
-                Text(
-                    text = sampleName,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            } else {
-                Text(
-                    text = sampleName,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
+            Text(
+                text = sampleName,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = if(expanded) 2 else 1,
+                overflow = TextOverflow.Ellipsis
+            )
         },
         subtitle = { expanded ->
-            if (expanded) {
-                Text(
-                    text = sampleDescription,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            } else {
-                Text(
-                    text = sampleDescription,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
+            Text(
+                text = sampleDescription,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = if(expanded) Int.MAX_VALUE else 1,
+                overflow = TextOverflow.Ellipsis
+            )
         },
         navigationIcon = { BackButton {} },
         actions = {
@@ -92,6 +76,7 @@ fun SampleDetailTopAppBar(
             )
         },
         scrollBehavior = scrollBehavior,
+        modifier = modifier
     )
 }
 
