@@ -24,7 +24,6 @@ import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.transformer.ExperimentalFrameExtractor
-import com.android.ai.samples.geminivideometadatacreation.util.convertCommaSeparatedTimeStringsToTimestamps
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.withContext
@@ -72,9 +71,7 @@ suspend fun extractFrame(context: Context, videoUri: Uri, timestamps: Long): Bit
 }
 
 @UnstableApi
-suspend fun extractListOfThumbnails(context: Context, videoUri: Uri, outputContent: String): List<Bitmap> {
-
-    val timestamps: List<Long> = convertCommaSeparatedTimeStringsToTimestamps(outputContent)
+suspend fun extractListOfThumbnails(context: Context, videoUri: Uri, timestamps: List<Long>): List<Bitmap> {
     return withContext(Dispatchers.IO) {
         timestamps.mapNotNull { timestamp ->
             extractFrame(context, videoUri, timestamp)

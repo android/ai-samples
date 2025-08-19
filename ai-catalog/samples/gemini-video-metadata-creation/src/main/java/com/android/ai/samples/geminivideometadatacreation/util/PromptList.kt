@@ -25,25 +25,21 @@ data class Prompt(
 val promptList = listOf(
     Prompt(
         metadataType = MetadataType.DESCRIPTION,
-        text = "Provide a compelling and concise description for this video in about 7-8 lines. " +
-            "Return only the description and nothing else. Don't assume if you don't know" +
-            " The description should be engaging and accurately reflect the video\'s content. Don't assume if you don't know",
+        text = "Provide a compelling and concise description for this video in less than 100 words. " +
+            "Don't assume if you don't know. " +
+            "The description should be engaging and accurately reflect the video\'s content.",
     ),
     Prompt(
         metadataType = MetadataType.THUMBNAILS,
-        text =
-        "Get three  engaging and visually appealing thumbnails for this video. Focus on capturing peak moments that create curiosity." +
-            " Return only a comma separated list of timestamps in format \"hh:mm:ss\". Don\'t return any other text.",
+        text = "Get three engaging and visually appealing thumbnails for this video. Focus on capturing peak moments that create curiosity."
     ),
     Prompt(
         metadataType = MetadataType.HASHTAGS,
-        text = "Generate a list of relevant and trending hashtags for this video to maximize its visibility on social media platforms. " +
-            "Return only the list of hashtags, separated by commas.",
+        text = "Generate a list of relevant and trending hashtags for this video to maximize its visibility on social media platforms."
     ),
     Prompt(
         metadataType = MetadataType.ACCOUNT_TAGS,
-        text = "Suggest relevant accounts to tag in the video\'s description or comments to increase its reach and engagement. " +
-            "Return only the list of accounts, separated by commas.",
+        text = "Suggest relevant accounts to tag in the video\'s description or comments to increase its reach and engagement.",
     ),
     Prompt(
         metadataType = MetadataType.CHAPTERS,

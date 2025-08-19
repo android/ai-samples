@@ -29,14 +29,17 @@ import com.android.ai.samples.geminivideometadatacreation.util.sampleVideoList
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
+import com.google.firebase.ai.type.Schema
 import com.google.firebase.ai.type.content
+import com.google.firebase.ai.type.generationConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import javax.inject.Inject
 
 /**
  * ViewModel class responsible for handling video metadata creation using Gemini API.
@@ -88,7 +91,43 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
             try {
                 val generativeModel =
                     Firebase.ai(backend = GenerativeBackend.vertexAI())
-                        .generativeModel("gemini-2.5-flash")
+                        .generativeModel(
+                            modelName = "gemini-2.5-flash",
+                            generationConfig = generationConfig {
+                                if (metadataType != MetadataType.DESCRIPTION) {
+                                    responseMimeType = "application/json"
+                                    responseSchema = when (metadataType) {
+                                        MetadataType.DESCRIPTION -> null
+                                        MetadataType.THUMBNAILS -> Schema.array(
+                                            items = Schema.long("Timestamp in milliseconds"),
+                                        )
+
+                                        MetadataType.HASHTAGS -> Schema.array(
+                                            items = Schema.string("Hashtag"),
+                                        )
+
+                                        MetadataType.ACCOUNT_TAGS -> Schema.array(
+                                            items = Schema.string("Account tag"),
+                                        )
+
+                                        MetadataType.CHAPTERS -> Schema.array(
+                                            items = Schema.obj(
+                                                properties = mapOf(
+                                                    "Title" to Schema.string(),
+                                                    "Timestamp" to Schema.string(description = "timestamp with format: hh:mm:ss")
+                                                ),
+                                                description = "Chapter"
+                                            ),
+                                        )
+
+                                        MetadataType.LINKS -> Schema.array(
+                                            items = Schema.string("Link"),
+                                        )
+
+                                    }
+                                }
+                            },
+                        )
 
                 // Attach the video with prompt to the Gemini query
                 val requestContent = content {
@@ -109,10 +148,12 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
                 }
 
                 if (metadataType == MetadataType.THUMBNAILS) {
+                    val decoded = Json.decodeFromString<List<Long>>(metadataText)
+
                     // Show progressbar since extracting thumbnails is an aysnc call
                     onThumbnailStateChanged(ThumbnailState.Loading)
                     // Load HDR quality image thumbnails in Media3, based from timestamps returned by Gemini
-                    val bitmaps = extractListOfThumbnails(application.applicationContext, videoSource, metadataText)
+                    val bitmaps = extractListOfThumbnails(application.applicationContext, videoSource, decoded)
                     // Update UI with the thumbnails
                     onThumbnailStateChanged(ThumbnailState.Success(bitmaps))
                 }
