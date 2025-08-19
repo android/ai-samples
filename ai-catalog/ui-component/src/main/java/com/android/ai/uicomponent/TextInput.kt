@@ -15,6 +15,7 @@
  */
 package com.android.ai.uicomponent
 
+import android.R.attr.textStyle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row
@@ -25,7 +26,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -41,21 +44,22 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.ai.theme.AISampleCatalogTheme
+import kotlin.math.max
 
 @Composable
 fun TextInput(
-    value: String,
+    state: TextFieldState,
     modifier: Modifier = Modifier,
     maxLines: Int = 2,
     placeholder: String = "",
     primaryButton: @Composable () -> Unit = {},
     secondaryButton: @Composable () -> Unit = {},
-    onValueChange: (String) -> Unit,
 ) {
-    val roundCornerShape = RoundedCornerShape(30.dp)
+    val roundCornerShape = RoundedCornerShape(40.dp)
 
     Row(
         modifier = modifier
@@ -68,12 +72,19 @@ fun TextInput(
                 shape = roundCornerShape,
             )
             .background(color = MaterialTheme.colorScheme.surfaceContainerHigh),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+
         TextField(
-            value = value,
-            onValueChange = onValueChange,
-            maxLines = maxLines,
-            placeholder = { Text(text = placeholder) },
+            state = state,
+            placeholder = {
+                Text(
+                    text = placeholder,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
+            lineLimits = TextFieldLineLimits.MultiLine(maxHeightInLines = maxLines),
             textStyle = MaterialTheme.typography.bodyLarge
                 .copy(color = MaterialTheme.colorScheme.onSurface),
             modifier = Modifier
@@ -86,37 +97,9 @@ fun TextInput(
                 unfocusedContainerColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
-            )
+                disabledIndicatorColor = Color.Transparent,
+            ),
         )
-
-//        BasicTextField(
-//            state = TextFieldState(
-//                initialText = value.ifEmpty { placeholder }
-//            ),
-//            textStyle = MaterialTheme.typography.bodyLarge
-//                .copy(color = MaterialTheme.colorScheme.onSurface),
-//            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-//            modifier = Modifier.align(Alignment.CenterVertically)
-//        )
-//        OutlinedTextField(
-//            value = value,
-//            label = { Text(text = hint) },
-//            placeholder = { Text(text = placeholder) },
-//            onValueChange = onValueChange,
-//            modifier = Modifier
-//                .weight(1f)
-//                .height(48.dp)
-//                .padding(start = 12.dp),
-//            colors = TextFieldDefaults.colors(
-//                focusedContainerColor = Color.Transparent,
-//                unfocusedContainerColor = Color.Transparent,
-//                disabledContainerColor = Color.Transparent,
-//                focusedIndicatorColor = Color.Transparent,
-//                unfocusedIndicatorColor = Color.Transparent,
-//                disabledIndicatorColor = Color.Transparent,
-//            ),
-//        )
         secondaryButton()
         primaryButton()
     }
@@ -127,13 +110,15 @@ fun TextInput(
 fun TextInputPreview() {
     AISampleCatalogTheme {
         TextInput(
-            value = "Message hint",
-            placeholder = "Placeholder", onValueChange = {},
+            state = TextFieldState("Message hint"),
+            placeholder = "Placeholder",
             primaryButton = {
                 GenerateButton(
                     text = "",
                     icon = painterResource(id = R.drawable.send_spark),
-                    modifier = Modifier.width(72.dp).padding(4.dp),
+                    modifier = Modifier
+                        .width(72.dp)
+                        .padding(4.dp),
                     onClick = {},
                 )
             },
@@ -141,7 +126,9 @@ fun TextInputPreview() {
                 SecondaryButton(
                     text = "",
                     icon = painterResource(id = R.drawable.add_photo),
-                    modifier = Modifier.width(72.dp).padding(4.dp),
+                    modifier = Modifier
+                        .width(72.dp)
+                        .padding(4.dp),
                     onClick = {},
                 )
             },

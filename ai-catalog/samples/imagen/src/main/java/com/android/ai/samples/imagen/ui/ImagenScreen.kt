@@ -20,62 +20,44 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.material3.TwoRowsTopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.imagen.R
 import com.android.ai.theme.AISampleCatalogTheme
-import com.android.ai.uicomponent.BackButton
 import com.android.ai.uicomponent.GenerateButton
-import com.android.ai.uicomponent.SecondaryButton
+import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.TextInput
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ImagenScreen(viewModel: ImagenViewModel = hiltViewModel()) {
-    val uiState: ImagenUIState  by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState: ImagenUIState by viewModel.uiState.collectAsStateWithLifecycle()
 
     ImagenScreen(
         uiState = uiState,
@@ -90,113 +72,78 @@ private fun ImagenScreen(
     onGenerateClick: (String) -> Unit,
 ) {
     val isGenerating = uiState is ImagenUIState.Loading
-
     Scaffold(
+        modifier = Modifier
+            .paint(
+                painter = painterResource(id = com.android.ai.uicomponent.R.drawable.bg),
+                contentScale = ContentScale.Crop,
+            ),
+        containerColor = Color.Transparent,
         topBar = {
-            TwoRowsTopAppBar(
-                modifier = Modifier.padding(start = 4.dp, end = 4.dp),
-                colors = topAppBarColors(
-                    containerColor = Color.Transparent,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                navigationIcon = {
-                    BackButton {}
-                },
-                title = {
-                        Text(
-                            text = stringResource(R.string.title_image_generation_screen),
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier
-                        )
-                },
-                subtitle = {
-                    Text(
-                        text = "Generate images with Imagen, Google image generation model.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier
-                    )
-                },
-                actions = {
-                    SeeCodeButton()
-                }
+            SampleDetailTopAppBar(
+                sampleName = stringResource(R.string.title_image_generation_screen),
+                sampleDescription = "Generate images with Imagen, Google image generation model.",
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/imagen",
             )
         },
-
     ) { innerPadding ->
-        Image(
-            painter = painterResource(id = com.android.ai.uicomponent.R.drawable.bg),
-            contentDescription = "Background Image",
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.FillWidth,
-        )
-        Column {
-            Box(
-                Modifier
-                    .aspectRatio(.5f)
-                    .fillMaxWidth(1f)
-                    .height(150.dp)
-                    .padding(16.dp)
-                    .padding(innerPadding)
-                    .clip(
-                        shape = RoundedCornerShape(40.dp),
-                    )
-                    .imePadding()
-                    .border(
-                        1.dp,
-                        MaterialTheme.colorScheme.outline,
-                        shape = RoundedCornerShape(40.dp),
-                    )
-                    .background(color = MaterialTheme.colorScheme.surfaceContainerHigh)
-            ) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp)
+                .imePadding()
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.outline,
+                    shape = RoundedCornerShape(40.dp),
+                )
+                .clip(RoundedCornerShape(40.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+        ) {
 
-                when (uiState) {
-                    is ImagenUIState.Error -> Toast.makeText(LocalContext.current, uiState.message, Toast.LENGTH_SHORT).show()
-                    is ImagenUIState.ImageGenerated -> Image(
-                        bitmap = uiState.bitmap.asImageBitmap(),
-                        contentDescription = uiState.contentDescription,
-                        contentScale = ContentScale.FillHeight,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                    ImagenUIState.Loading -> {}
-                    else -> {}
-                }
-
-                var textFieldValue by rememberSaveable { mutableStateOf("") }
-                val keyboardController = LocalSoftwareKeyboardController.current
-
-                TextInput(
-                    value = textFieldValue,
-                    placeholder = stringResource(R.string.placeholder_prompt),
-                    primaryButton = {
-                        GenerateButton(
-                            text = "",
-                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.send_spark),
-                            modifier = Modifier
-                                .width(72.dp)
-                                .height(72.dp)
-                                .padding(4.dp),
-                            enabled = !isGenerating,
-                            onClick = {
-//                                viewModel.generateImage(textFieldValue)
-                                onGenerateClick(textFieldValue)
-                                keyboardController?.hide()
-                            },
-                        )
-                    },
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .align(Alignment.BottomCenter)
-                ) {
-                    textFieldValue = it
-                }
+            when (uiState) {
+                is ImagenUIState.Error -> Toast.makeText(LocalContext.current, uiState.message, Toast.LENGTH_SHORT).show()
+                is ImagenUIState.ImageGenerated -> Image(
+                    bitmap = uiState.bitmap.asImageBitmap(),
+                    contentDescription = uiState.contentDescription,
+                    contentScale = ContentScale.FillHeight,
+                    modifier = Modifier.fillMaxSize(),
+                )
+                ImagenUIState.Loading -> {}
+                else -> {}
             }
+
+            val textFieldState = rememberTextFieldState()
+            val keyboardController = LocalSoftwareKeyboardController.current
+
+            TextInput(
+                state = textFieldState,
+                placeholder = stringResource(R.string.placeholder_prompt),
+                primaryButton = {
+                    GenerateButton(
+                        text = "",
+                        icon = painterResource(id = com.android.ai.uicomponent.R.drawable.send_spark),
+                        modifier = Modifier
+                            .width(72.dp)
+                            .height(72.dp)
+                            .padding(4.dp),
+                        enabled = !isGenerating,
+                        onClick = {
+                            onGenerateClick(textFieldState.text.toString())
+                            keyboardController?.hide()
+                        },
+                    )
+                },
+                modifier = Modifier
+                    .padding(10.dp)
+                    .align(Alignment.BottomCenter),
+            )
         }
     }
 }
 
-@Preview
+@PreviewScreenSizes
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun ImagenScreenPreview() {
