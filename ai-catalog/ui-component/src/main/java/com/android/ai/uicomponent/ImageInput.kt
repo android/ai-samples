@@ -30,9 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -60,7 +58,7 @@ fun ImageInput(buttonText: String, modifier: Modifier = Modifier, image: Bitmap?
             PrimaryButton(
                 text = buttonText,
                 onClick = onAddImage,
-                icon = painterResource(id = R.drawable.send_spark),
+                icon = painterResource(id = R.drawable.ic_ai_send),
                 modifier = Modifier
                     .height(64.dp)
                     .align(Alignment.CenterHorizontally),

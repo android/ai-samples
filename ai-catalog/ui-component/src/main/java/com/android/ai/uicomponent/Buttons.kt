@@ -42,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.ai.theme.AISampleCatalogTheme
+import com.android.ai.theme.Contrast
 
 @Composable
 fun PrimaryButton(
@@ -79,8 +80,26 @@ fun PrimaryButton(
 
 @Preview
 @Composable
-fun PrimaryButtonSmallPreview() {
-    AISampleCatalogTheme {
+fun PrimaryButtonLightPreview() {
+    AISampleCatalogTheme (
+        darkTheme = false,
+        contrast = Contrast.HIGH
+    ){
+        PrimaryButton(
+            text = "Primary button",
+            icon = rememberVectorPainter(Icons.Default.AccountBox),
+            onClick = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PrimaryButtonDarkPreview() {
+    AISampleCatalogTheme(
+        darkTheme = true,
+        contrast = Contrast.DEFAULT
+    ) {
         PrimaryButton(
             text = "Primary button",
             icon = rememberVectorPainter(Icons.Default.AccountBox),
@@ -96,7 +115,7 @@ fun GenerateButton(
     contentColor: Color = MaterialTheme.colorScheme.onTertiary,
     containerColor: Color = MaterialTheme.colorScheme.tertiary,
     enabled: Boolean = true,
-    icon: Painter? = painterResource(id = R.drawable.draw_auto),
+    icon: Painter? = painterResource(id = R.drawable.ic_ai_edit),
     onClick: () -> Unit,
 ) {
     Button(
@@ -195,7 +214,7 @@ fun SecondaryButtonPreview() {
     AISampleCatalogTheme {
         SecondaryButton(
             text = "Outlined button",
-            icon = painterResource(id = R.drawable.add_photo),
+            icon = painterResource(id = R.drawable.ic_ai_img),
             onClick = {},
         )
     }

@@ -77,7 +77,7 @@ fun CatalogApp(modifier: Modifier = Modifier) {
                 },
             ) { innerPadding ->
                 Image(
-                    painter = painterResource(id = R.drawable.bg),
+                    painter = painterResource(id = R.drawable.img_bg_landing),
                     contentDescription = "Background Image",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.FillWidth,

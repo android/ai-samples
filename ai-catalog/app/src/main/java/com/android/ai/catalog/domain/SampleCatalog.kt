@@ -16,6 +16,7 @@
 package com.android.ai.catalog.domain
 
 import android.Manifest
+import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresPermission
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
@@ -33,12 +34,7 @@ import com.android.ai.samples.genai_writing_assistance.GenAIWritingAssistanceScr
 import com.android.ai.samples.imagen.ui.ImagenScreen
 import com.android.ai.samples.imagenediting.ui.ImagenEditingScreen
 import com.android.ai.samples.magicselfie.ui.MagicSelfieScreen
-import com.android.ai.theme.Firebase
-import com.android.ai.theme.GeminiNano
-import com.android.ai.theme.GeminiProFlash
-import com.android.ai.theme.Imagen
-import com.android.ai.theme.Media3
-import com.android.ai.theme.MlKit
+import com.android.ai.theme.extendedColorScheme
 
 @RequiresPermission(Manifest.permission.RECORD_AUDIO)
 val sampleCatalog = listOf(
@@ -58,6 +54,7 @@ val sampleCatalog = listOf(
         tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
         isFeatured = true,
+        keyArt = R.drawable.img_keyart_multimodal,
     ),
     SampleCatalogItem(
         title = R.string.gemini_chatbot_sample_title,
@@ -66,6 +63,7 @@ val sampleCatalog = listOf(
         sampleEntryScreen = { GeminiChatbotScreen() },
         tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
+        keyArt = R.drawable.img_keyart_chatbot,
     ),
     SampleCatalogItem(
         title = R.string.genai_summarization_sample_title,
@@ -73,6 +71,7 @@ val sampleCatalog = listOf(
         route = "GenAISummarizationScreen",
         sampleEntryScreen = { GenAISummarizationScreen() },
         tags = listOf(SampleTags.GEMINI_NANO, SampleTags.ML_KIT),
+        keyArt = R.drawable.img_keyart_summary,
     ),
     SampleCatalogItem(
         title = R.string.genai_image_description_sample_title,
@@ -80,6 +79,7 @@ val sampleCatalog = listOf(
         route = "GenAIImageDescriptionScreen",
         sampleEntryScreen = { GenAIImageDescriptionScreen() },
         tags = listOf(SampleTags.GEMINI_NANO, SampleTags.ML_KIT),
+        keyArt = R.drawable.img_keyart_img_desc,
     ),
     SampleCatalogItem(
         title = R.string.genai_writing_assistance_sample_title,
@@ -87,6 +87,7 @@ val sampleCatalog = listOf(
         route = "GenAIWritingAssistanceScreen",
         sampleEntryScreen = { GenAIWritingAssistanceScreen() },
         tags = listOf(SampleTags.GEMINI_NANO, SampleTags.ML_KIT),
+        keyArt = R.drawable.img_keyart_text,
     ),
     SampleCatalogItem(
         title = R.string.imagen_sample_title,
@@ -95,6 +96,7 @@ val sampleCatalog = listOf(
         sampleEntryScreen = { ImagenScreen() },
         tags = listOf(SampleTags.IMAGEN, SampleTags.FIREBASE),
         needsFirebase = true,
+        keyArt = R.drawable.img_keyart_imagen,
     ),
     SampleCatalogItem(
         title = R.string.imagen_editing_sample_title,
@@ -111,6 +113,7 @@ val sampleCatalog = listOf(
         sampleEntryScreen = { MagicSelfieScreen() },
         tags = listOf(SampleTags.IMAGEN, SampleTags.FIREBASE, SampleTags.ML_KIT),
         needsFirebase = true,
+        keyArt = R.drawable.img_keyart_magic_selfie,
     ),
     SampleCatalogItem(
         title = R.string.gemini_video_summarization_sample_title,
@@ -127,6 +130,7 @@ val sampleCatalog = listOf(
         sampleEntryScreen = { VideoMetadataCreationScreen() },
         tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE, SampleTags.MEDIA3),
         needsFirebase = true,
+        keyArt = R.drawable.img_keyart_video_summary,
     ),
     SampleCatalogItem(
         title = R.string.gemini_live_todo_title,
@@ -135,6 +139,7 @@ val sampleCatalog = listOf(
         sampleEntryScreen = { TodoScreen() },
         tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
+        keyArt = R.drawable.img_keyart_todo,
     ),
 
     // To create a new sample entry, add a new SampleCatalogItem here.
@@ -148,16 +153,17 @@ data class SampleCatalogItem(
     val tags: List<SampleTags> = emptyList(),
     val needsFirebase: Boolean = false,
     val isFeatured: Boolean = false,
+    @DrawableRes val keyArt: Int? = null,
 )
 
 enum class SampleTags(
     val label: String,
     val backgroundColor: Color,
 ) {
-    FIREBASE("Firebase", Firebase),
-    GEMINI_2_0_FLASH("Gemini 2.0 Flash", GeminiProFlash),
-    GEMINI_NANO("Gemini Nano", GeminiNano),
-    IMAGEN("Imagen", Imagen),
-    MEDIA3("Media3", Media3),
-    ML_KIT("ML Kit", MlKit),
+    FIREBASE("Firebase", extendedColorScheme.firebase),
+    GEMINI_2_0_FLASH("Gemini 2.0 Flash", extendedColorScheme.geminiProFlash),
+    GEMINI_NANO("Gemini Nano", extendedColorScheme.geminiNano),
+    IMAGEN("Imagen", extendedColorScheme.imagen),
+    MEDIA3("Media3", extendedColorScheme.media3),
+    ML_KIT("ML Kit", extendedColorScheme.mLKit),
 }

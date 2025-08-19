@@ -16,110 +16,49 @@
 package com.android.ai.theme
 
 import androidx.compose.material3.Typography
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.googlefonts.Font
+import androidx.compose.ui.text.googlefonts.GoogleFont
 import com.android.ai.uicomponent.R
 
-val Typography = Typography(
-    displayLarge = TextStyle(
-        fontSize = 57.sp,
-        lineHeight = 64.sp,
-        fontFamily = FontFamily(Font(R.font.space_grotesk)),
-        fontWeight = FontWeight(400),
+val provider = GoogleFont.Provider(
+    providerAuthority = "com.google.android.gms.fonts",
+    providerPackage = "com.google.android.gms",
+    certificates = R.array.com_google_android_gms_fonts_certs,
+)
+
+val bodyFontFamily = FontFamily(
+    Font(
+        googleFont = GoogleFont("Space Grotesk"),
+        fontProvider = provider,
     ),
-    displayMedium = TextStyle(
-        fontSize = 45.sp,
-        lineHeight = 52.sp,
-        fontFamily = FontFamily(Font(R.font.space_grotesk)),
-        fontWeight = FontWeight(400),
+)
+
+val displayFontFamily = FontFamily(
+    Font(
+        googleFont = GoogleFont("Space Grotesk"),
+        fontProvider = provider,
     ),
-    displaySmall = TextStyle(
-        fontSize = 36.sp,
-        lineHeight = 44.sp,
-        fontFamily = FontFamily(Font(R.font.space_grotesk)),
-        fontWeight = FontWeight(400),
-    ),
-    headlineLarge = TextStyle(
-        fontSize = 32.sp,
-        lineHeight = 40.sp,
-        fontFamily = FontFamily(Font(R.font.space_grotesk)),
-        fontWeight = FontWeight(400),
-    ),
-    headlineMedium = TextStyle(
-        fontSize = 28.sp,
-        lineHeight = 36.sp,
-        fontFamily = FontFamily(Font(R.font.space_grotesk)),
-        fontWeight = FontWeight(400),
-    ),
-    headlineSmall = TextStyle(
-        fontSize = 24.sp,
-        lineHeight = 32.sp,
-        fontFamily = FontFamily(Font(R.font.space_grotesk)),
-        fontWeight = FontWeight(400),
-    ),
-    titleLarge = TextStyle(
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        fontFamily = FontFamily(Font(R.font.space_grotesk)),
-        fontWeight = FontWeight(400),
-    ),
-    titleMedium = TextStyle(
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        fontFamily = FontFamily(Font(R.font.space_grotesk)),
-        fontWeight = FontWeight(500),
-        letterSpacing = 0.15.sp,
-    ),
-    titleSmall = TextStyle(
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-        fontFamily = FontFamily(Font(R.font.space_grotesk)),
-        fontWeight = FontWeight(500),
-        letterSpacing = 0.1.sp,
-    ),
-    labelLarge = TextStyle(
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-        fontFamily = FontFamily(Font(R.font.space_grotesk)),
-        fontWeight = FontWeight(700),
-        letterSpacing = 0.1.sp,
-    ),
-    labelMedium = TextStyle(
-        fontSize = 12.sp,
-        lineHeight = 16.sp,
-        fontFamily = FontFamily(Font(R.font.space_grotesk)),
-        fontWeight = FontWeight(700),
-        letterSpacing = 0.5.sp,
-    ),
-    labelSmall = TextStyle(
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        fontFamily = FontFamily(Font(R.font.space_grotesk)),
-        fontWeight = FontWeight(700),
-        letterSpacing = 0.5.sp,
-    ),
-    bodyLarge = TextStyle(
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        fontFamily = FontFamily(Font(R.font.space_grotesk)),
-        fontWeight = FontWeight(400),
-        letterSpacing = 0.5.sp,
-    ),
-    bodyMedium = TextStyle(
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-        fontFamily = FontFamily(Font(R.font.space_grotesk)),
-        fontWeight = FontWeight(400),
-        letterSpacing = 0.25.sp,
-    ),
-    bodySmall = TextStyle(
-        fontSize = 12.sp,
-        lineHeight = 16.sp,
-        fontFamily = FontFamily(Font(R.font.space_grotesk)),
-        fontWeight = FontWeight(400),
-        letterSpacing = 0.4.sp,
-    ),
+)
+
+// Default Material 3 typography values
+val baseline = Typography()
+
+val AppTypography = Typography(
+    displayLarge = baseline.displayLarge.copy(fontFamily = displayFontFamily),
+    displayMedium = baseline.displayMedium.copy(fontFamily = displayFontFamily),
+    displaySmall = baseline.displaySmall.copy(fontFamily = displayFontFamily),
+    headlineLarge = baseline.headlineLarge.copy(fontFamily = displayFontFamily),
+    headlineMedium = baseline.headlineMedium.copy(fontFamily = displayFontFamily),
+    headlineSmall = baseline.headlineSmall.copy(fontFamily = displayFontFamily),
+    titleLarge = baseline.titleLarge.copy(fontFamily = displayFontFamily),
+    titleMedium = baseline.titleMedium.copy(fontFamily = displayFontFamily),
+    titleSmall = baseline.titleSmall.copy(fontFamily = displayFontFamily),
+    bodyLarge = baseline.bodyLarge.copy(fontFamily = bodyFontFamily),
+    bodyMedium = baseline.bodyMedium.copy(fontFamily = bodyFontFamily),
+    bodySmall = baseline.bodySmall.copy(fontFamily = bodyFontFamily),
+    labelLarge = baseline.labelLarge.copy(fontFamily = bodyFontFamily),
+    labelMedium = baseline.labelMedium.copy(fontFamily = bodyFontFamily),
+    labelSmall = baseline.labelSmall.copy(fontFamily = bodyFontFamily),
 )
