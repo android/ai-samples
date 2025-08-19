@@ -1,3 +1,18 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.android.ai.uicomponent
 
 import androidx.compose.foundation.background
@@ -55,8 +70,8 @@ fun SampleDetailTopAppBar(
                 text = sampleName,
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                maxLines = if(expanded) 2 else 1,
-                overflow = TextOverflow.Ellipsis
+                maxLines = if (expanded) 2 else 1,
+                overflow = TextOverflow.Ellipsis,
             )
         },
         subtitle = { expanded ->
@@ -64,8 +79,8 @@ fun SampleDetailTopAppBar(
                 text = sampleDescription,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                maxLines = if(expanded) Int.MAX_VALUE else 1,
-                overflow = TextOverflow.Ellipsis
+                maxLines = if (expanded) Int.MAX_VALUE else 1,
+                overflow = TextOverflow.Ellipsis,
             )
         },
         navigationIcon = { BackButton {} },
@@ -76,7 +91,7 @@ fun SampleDetailTopAppBar(
             )
         },
         scrollBehavior = scrollBehavior,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -88,7 +103,7 @@ fun SampleDetailTopAppBarPreview() {
         SampleDetailTopAppBar(
             sampleName = "Sample Name",
             sampleDescription = "Sample Description",
-            sourceCodeUrl = "https://example.com/source-code"
+            sourceCodeUrl = "https://example.com/source-code",
         )
     }
 }
@@ -108,9 +123,9 @@ fun SampleDetailTopAppBarPreview_CollapseWhenContentIsScrolled() {
                     sampleDescription = "Sample Description",
                     sourceCodeUrl = "https://example.com/source-code",
                     topAppBarState = topAppBarState,
-                    scrollBehavior = scrollBehavior
+                    scrollBehavior = scrollBehavior,
                 )
-            }
+            },
         ) { innerPadding ->
             val gradient = Brush.verticalGradient(listOf(Color.LightGray, Color.DarkGray))
             Box(
@@ -119,10 +134,9 @@ fun SampleDetailTopAppBarPreview_CollapseWhenContentIsScrolled() {
                     .verticalScroll(rememberScrollState())
                     .fillMaxWidth()
                     .requiredHeight(1000.dp)
-                    .background(brush = gradient)
+                    .background(brush = gradient),
             )
         }
-
     }
 }
 
@@ -138,17 +152,15 @@ fun SampleDetailTopAppBarPreview_CollapseWhenToolbarIsScrolled() {
                     sampleDescription = "Sample Description",
                     sourceCodeUrl = "https://example.com/source-code",
                 )
-            }
+            },
         ) { innerPadding ->
             val gradient = Brush.verticalGradient(listOf(Color.LightGray, Color.DarkGray))
             Box(
                 Modifier
                     .padding(innerPadding)
                     .fillMaxSize()
-                    .background(brush = gradient)
+                    .background(brush = gradient),
             )
         }
-
     }
 }
-

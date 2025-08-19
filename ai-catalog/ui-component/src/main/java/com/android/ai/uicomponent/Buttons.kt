@@ -86,7 +86,7 @@ fun PrimaryButton(
             )
         }
         AnimatedContent(text.isNotEmpty()) { hasText ->
-            if(hasText) {
+            if (hasText) {
                 Text(
                     text = text,
                     style = MaterialTheme.typography.labelLarge,
@@ -100,10 +100,10 @@ fun PrimaryButton(
 @Preview
 @Composable
 fun PrimaryButtonLightPreview() {
-    AISampleCatalogTheme (
+    AISampleCatalogTheme(
         darkTheme = false,
-        contrast = Contrast.HIGH
-    ){
+        contrast = Contrast.HIGH,
+    ) {
         PrimaryButton(
             text = "Primary button",
             icon = rememberVectorPainter(Icons.Default.AccountBox),
@@ -117,7 +117,7 @@ fun PrimaryButtonLightPreview() {
 fun PrimaryButtonDarkPreview() {
     AISampleCatalogTheme(
         darkTheme = true,
-        contrast = Contrast.DEFAULT
+        contrast = Contrast.DEFAULT,
     ) {
         PrimaryButton(
             text = "Primary button",
@@ -250,15 +250,12 @@ fun SecondaryButtonPreview() {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BackButton(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
+fun BackButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.outline) {
         OutlinedIconButton(
             shape = IconButtonDefaults.smallSquareShape,
             onClick = { onClick() },
-            modifier = modifier
+            modifier = modifier,
         ) {
             CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
                 Icon(
@@ -270,7 +267,6 @@ fun BackButton(
     }
 }
 
-
 @Preview
 @Composable
 fun BackButtonPreview() {
@@ -280,4 +276,3 @@ fun BackButtonPreview() {
         )
     }
 }
-

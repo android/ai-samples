@@ -67,10 +67,7 @@ fun ImagenScreen(viewModel: ImagenViewModel = hiltViewModel()) {
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
-private fun ImagenScreen(
-    uiState: ImagenUIState,
-    onGenerateClick: (String) -> Unit,
-) {
+private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Unit) {
     val isGenerating = uiState is ImagenUIState.Loading
     Scaffold(
         modifier = Modifier
@@ -99,7 +96,7 @@ private fun ImagenScreen(
                     shape = RoundedCornerShape(40.dp),
                 )
                 .clip(RoundedCornerShape(40.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
         ) {
 
             when (uiState) {
@@ -123,7 +120,7 @@ private fun ImagenScreen(
                 primaryButton = {
                     GenerateButton(
                         text = "",
-                        icon = painterResource(id = com.android.ai.uicomponent.R.drawable.send_spark),
+                        icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
                         modifier = Modifier
                             .width(72.dp)
                             .height(72.dp)
