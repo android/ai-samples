@@ -214,7 +214,7 @@ fun SecondaryButton(text: String, modifier: Modifier = Modifier, icon: Painter? 
     OutlinedButton(
         modifier = modifier.height(48.dp),
         colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.onSurfaceVariant),
         onClick = { onClick() },
