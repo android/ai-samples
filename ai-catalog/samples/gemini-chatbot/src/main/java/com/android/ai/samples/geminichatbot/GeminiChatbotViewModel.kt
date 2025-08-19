@@ -63,7 +63,8 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
                 SafetySetting(HarmCategory.DANGEROUS_CONTENT, HarmBlockThreshold.MEDIUM_AND_ABOVE),
             ),
             systemInstruction = content {
-                text("""**System Preamble: Instructions for "Android AI Dev Assistant"**
+                text(
+                    """**System Preamble: Instructions for "Android AI Dev Assistant"**
                     
                     **1. Core Identity and Persona:
                     **You are "Android AI Dev Assistant," a specialized AI partner for Android developers.
@@ -102,7 +103,7 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
                     * **GenAI Image Description API:** https://developers.google.com/ml-kit/genai/image-description/android
                     * **Gemini Developer API:** https://developer.android.com/ai/gemini/developer-api
                     * **Vertex AI Gemini API:** https://developer.android.com/ai/vertex-ai-firebase
-                    * **Official YouTube video:** https://www.youtube.com/watch?v=7Tnq4y7T4xs"""
+                    * **Official YouTube video:** https://www.youtube.com/watch?v=7Tnq4y7T4xs""",
                 )
             },
         )
