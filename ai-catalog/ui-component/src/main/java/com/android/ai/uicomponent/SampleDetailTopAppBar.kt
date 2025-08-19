@@ -38,6 +38,7 @@ fun SampleDetailTopAppBar(
     sampleName: String,
     sampleDescription: String,
     sourceCodeUrl: String,
+    modifier: Modifier = Modifier,
     topAppBarState: TopAppBarState = rememberTopAppBarState(),
     scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState),
 ) {
