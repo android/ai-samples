@@ -75,12 +75,7 @@ fun ImagenScreen(viewModel: ImagenViewModel = hiltViewModel()) {
 private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Unit) {
     val isGenerating = uiState is ImagenUIState.Loading
     Scaffold(
-        modifier = Modifier
-            .paint(
-                painter = painterResource(id = com.android.ai.uicomponent.R.drawable.bg),
-                contentScale = ContentScale.Crop,
-            ),
-        containerColor = Color.Transparent,
+        containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.title_image_generation_screen),
@@ -143,8 +138,7 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
                         icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
                         modifier = Modifier
                             .width(72.dp)
-                            .height(72.dp)
-                            .padding(4.dp),
+                            .height(72.dp),
                         enabled = !isGenerating,
                         onClick = {
                             onGenerateClick(textFieldState.text.toString())
@@ -154,6 +148,7 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
                 },
                 modifier = Modifier
                     .padding(10.dp)
+                    .height(80.dp)
                     .align(Alignment.BottomCenter),
             )
         }

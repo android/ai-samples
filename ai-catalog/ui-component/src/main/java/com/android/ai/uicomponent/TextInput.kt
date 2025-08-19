@@ -51,6 +51,7 @@ fun TextInput(
     val roundCornerShape = RoundedCornerShape(30.dp)
 
     Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .border(
                 1.dp,
