@@ -15,6 +15,7 @@
  */
 package com.android.ai.samples.imagen.ui
 
+import android.graphics.BitmapFactory
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,11 +34,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageShader
+import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -79,11 +84,26 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.title_image_generation_screen),
-                sampleDescription = "Generate images with Imagen, Google image generation model.",
+                sampleDescription = stringResource(R.string.subtitle_image_generation_screen),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/imagen",
             )
         },
     ) { innerPadding ->
+
+        val context = LocalContext.current
+        val imageBitmap = remember {
+            val bitmap = BitmapFactory.decodeResource(context.resources, com.android.ai.uicomponent.R.drawable.img_fill)
+            bitmap.asImageBitmap()
+        }
+
+        val imageShader = remember {
+            ImageShader(
+                image = imageBitmap,
+                tileModeX = TileMode.Repeated,
+                tileModeY = TileMode.Repeated,
+            )
+        }
+
         Box(
             Modifier
                 .fillMaxSize()
@@ -96,7 +116,7 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
                     shape = RoundedCornerShape(40.dp),
                 )
                 .clip(RoundedCornerShape(40.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                .background(ShaderBrush(imageShader)),
         ) {
 
             when (uiState) {
