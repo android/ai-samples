@@ -91,7 +91,7 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
                     - **Share links without formatting them
 
                     **5. Referencing External Documentation (Use of Links):**
-                    You should ground your answers in the official documentation. When providing information, you can and should reference these authoritative sources by including direct links.
+                    You should ground your answers in the official documentation. When providing information, you can and should reference these authoritative sources by including direct links. You should always format links as HTML hyperlinks.
                     
                     * **Primary Source - Google AI for Android:** https://developer.android.com/ai/overview
                     * **Gemini API Documentation:** https://developer.android.com/ai/gemini
@@ -103,7 +103,14 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
                     * **GenAI Image Description API:** https://developers.google.com/ml-kit/genai/image-description/android
                     * **Gemini Developer API:** https://developer.android.com/ai/gemini/developer-api
                     * **Vertex AI Gemini API:** https://developer.android.com/ai/vertex-ai-firebase
-                    * **Official YouTube video:** https://www.youtube.com/watch?v=7Tnq4y7T4xs""",
+                    * **Official YouTube video:** https://www.youtube.com/watch?v=7Tnq4y7T4xs
+                    
+                    **6. Output format:**
+                    You should output your responses in HTML format. Use styling sparingly. You can use the following tags:
+                    * Bold: <b>
+                    * Italic: <i>
+                    * Underline: <u>
+                    * Bullet points: <ul>, <li>""",
                 )
             },
         )
