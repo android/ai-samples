@@ -54,7 +54,6 @@ fun TextInput(
     placeholder: String = "",
     primaryButton: @Composable () -> Unit = {},
     secondaryButton: @Composable () -> Unit = {},
-    onValueChange: (String) -> Unit,
 ) {
     val roundCornerShape = RoundedCornerShape(30.dp)
 
@@ -87,8 +86,8 @@ fun TextInput(
                 unfocusedContainerColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
-            )
+                disabledIndicatorColor = Color.Transparent,
+            ),
         )
         secondaryButton()
         primaryButton()
@@ -101,7 +100,8 @@ fun TextInputPreview() {
     AISampleCatalogTheme {
         TextInput(
             value = "Message hint",
-            placeholder = "Placeholder", onValueChange = {},
+            placeholder = "Placeholder",
+            onValueChange = {},
             primaryButton = {
                 GenerateButton(
                     text = "",

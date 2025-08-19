@@ -15,6 +15,7 @@
  */
 package com.android.ai.uicomponent
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -22,18 +23,26 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidthIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -45,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.theme.Contrast
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PrimaryButton(
     text: String,
@@ -55,11 +65,16 @@ fun PrimaryButton(
     onClick: () -> Unit,
 ) {
     Button(
-        modifier = modifier.height(48.dp),
+        modifier = modifier
+            .height(40.dp)
+            .requiredWidthIn(min = 40.dp),
         colors = ButtonDefaults.buttonColors(
             contentColor = contentColor,
             containerColor = containerColor,
         ),
+        contentPadding = if (text.isEmpty())
+            PaddingValues(0.dp) else
+            ButtonDefaults.TextButtonWithIconContentPadding,
         onClick = { onClick() },
     ) {
         if (icon != null) {
@@ -70,13 +85,14 @@ fun PrimaryButton(
                 modifier = Modifier.size(width = 24.dp, height = 24.dp),
             )
         }
-        if (text.isNotEmpty()) {
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(end = 8.dp),
-            )
+        AnimatedContent(text.isNotEmpty()) { hasText ->
+            if(hasText) {
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            }
         }
     }
 }
@@ -117,7 +133,7 @@ fun PrimaryButtonWithIconPreview() {
     AISampleCatalogTheme {
         PrimaryButton(
             text = "",
-            icon = rememberVectorPainter(Icons.Default.AccountBox),
+            icon = rememberVectorPainter(Icons.Filled.Code),
             onClick = {},
         )
     }
@@ -199,7 +215,7 @@ fun SecondaryButton(text: String, modifier: Modifier = Modifier, icon: Painter? 
     OutlinedButton(
         modifier = modifier.height(48.dp),
         colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ),
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.onSurfaceVariant),
         onClick = { onClick() },
@@ -232,30 +248,25 @@ fun SecondaryButtonPreview() {
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BackButton(
     modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
-    OutlinedButton(
-        modifier = modifier.height(48.dp).width(48.dp),
-        colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-        ),
-        contentPadding = PaddingValues(0.dp),
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        ),
-        shape = RoundedCornerShape(12.dp),
-        onClick = { onClick() },
-    ) {
-        Image(
-            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant),
-            modifier = Modifier.size(width = 24.dp, height = 24.dp),
-            )
+    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.outline) {
+        OutlinedIconButton(
+            shape = IconButtonDefaults.smallSquareShape,
+            onClick = { onClick() },
+            modifier = modifier
+        ) {
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = null,
+                )
+            }
+        }
     }
 }
 
