@@ -33,13 +33,13 @@ import com.google.firebase.ai.type.Schema
 import com.google.firebase.ai.type.content
 import com.google.firebase.ai.type.generationConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import javax.inject.Inject
 
 /**
  * ViewModel class responsible for handling video metadata creation using Gemini API.
@@ -114,16 +114,15 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
                                             items = Schema.obj(
                                                 properties = mapOf(
                                                     "Title" to Schema.string(),
-                                                    "Timestamp" to Schema.string(description = "timestamp with format: hh:mm:ss")
+                                                    "Timestamp" to Schema.string(description = "timestamp with format: hh:mm:ss"),
                                                 ),
-                                                description = "Chapter"
+                                                description = "Chapter",
                                             ),
                                         )
 
                                         MetadataType.LINKS -> Schema.array(
                                             items = Schema.string("Link"),
                                         )
-
                                     }
                                 }
                             },
