@@ -141,7 +141,7 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                     onClick = {
                         viewModel.proofread(textInput, context)
                     },
-                    Modifier.padding(10.dp),
+                    Modifier.padding(8.dp),
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_proofread_btn),
@@ -151,7 +151,7 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                     onClick = {
                         showRewriteOptionsDialog = true
                     },
-                    Modifier.padding(10.dp),
+                    Modifier.padding(8.dp),
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_rewrite_btn),
@@ -169,7 +169,7 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                     onClick = { textInput = proofreadSampleTextOptions.random() },
                     Modifier
                         .weight(1f)
-                        .padding(5.dp),
+                        .padding(4.dp),
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_proofread_sample_text_btn),
@@ -181,7 +181,7 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                     onClick = { textInput = rewriteSampleTextOptions.random() },
                     Modifier
                         .weight(1f)
-                        .padding(5.dp),
+                        .padding(4.dp),
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_rewrite_sample_text_btn),
@@ -196,7 +196,7 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                     },
                     Modifier
                         .weight(1f)
-                        .padding(5.dp),
+                        .padding(4.dp),
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_reset_btn),

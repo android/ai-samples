@@ -47,6 +47,7 @@ sealed class GenAIWritingAssistanceUiState {
         val bytesToDownload: Long,
         val bytesDownloaded: Long,
     ) : GenAIWritingAssistanceUiState()
+
     data object Generating : GenAIWritingAssistanceUiState()
     data class Success(val generatedOutput: String) : GenAIWritingAssistanceUiState()
     data class Error(@StringRes val errorMessageStringRes: Int) : GenAIWritingAssistanceUiState()
@@ -73,50 +74,48 @@ class GenAIWritingAssistanceViewModel @Inject constructor(val context: Applicati
         }
 
         viewModelScope.launch {
-            proofreader.let { proofreader ->
-                var proofreadFeatureStatus = FeatureStatus.UNAVAILABLE
+            var proofreadFeatureStatus = FeatureStatus.UNAVAILABLE
 
-                try {
-                    _uiState.value = GenAIWritingAssistanceUiState.CheckingFeatureStatus
-                    proofreadFeatureStatus = proofreader.checkFeatureStatus().await()
-                } catch (error: Exception) {
-                    _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.feature_check_fail)
-                    Log.e("GenAIImageDesc", "Error checking feature status", error)
-                }
+            try {
+                _uiState.value = GenAIWritingAssistanceUiState.CheckingFeatureStatus
+                proofreadFeatureStatus = proofreader.checkFeatureStatus().await()
+            } catch (error: Exception) {
+                _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.feature_check_fail)
+                Log.e("GenAIImageDesc", "Error checking feature status", error)
+            }
 
-                if (proofreadFeatureStatus == FeatureStatus.UNAVAILABLE) {
-                    _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.genai_writing_assistance_not_available)
-                    return@launch
-                }
+            if (proofreadFeatureStatus == FeatureStatus.UNAVAILABLE) {
+                _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.genai_writing_assistance_not_available)
+                return@launch
+            }
 
-                if (proofreadFeatureStatus == FeatureStatus.DOWNLOADABLE || proofreadFeatureStatus == FeatureStatus.DOWNLOADING) {
-                    proofreader.downloadFeature(
-                        object : DownloadCallback {
-                            override fun onDownloadStarted(bytesToDownload: Long) {
-                                _uiState.value = GenAIWritingAssistanceUiState.DownloadingFeature(bytesToDownload, 0)
+            if (proofreadFeatureStatus == FeatureStatus.DOWNLOADABLE || proofreadFeatureStatus == FeatureStatus.DOWNLOADING) {
+                proofreader.downloadFeature(
+                    object : DownloadCallback {
+                        override fun onDownloadStarted(bytesToDownload: Long) {
+                            _uiState.value = GenAIWritingAssistanceUiState.DownloadingFeature(bytesToDownload, 0)
+                        }
+
+                        override fun onDownloadProgress(bytesDownloaded: Long) {
+                            _uiState.update {
+                                (it as? GenAIWritingAssistanceUiState.DownloadingFeature)?.copy(bytesDownloaded = bytesDownloaded) ?: it
                             }
+                        }
 
-                            override fun onDownloadProgress(bytesDownloaded: Long) {
-                                _uiState.update {
-                                    (it as? GenAIWritingAssistanceUiState.DownloadingFeature)?.copy(bytesDownloaded = bytesDownloaded) ?: it
-                                }
+                        override fun onDownloadCompleted() {
+                            viewModelScope.launch {
+                                runProofreadingInference(text)
                             }
+                        }
 
-                            override fun onDownloadCompleted() {
-                                viewModelScope.launch {
-                                    runProofreadingInference(text)
-                                }
-                            }
-
-                            override fun onDownloadFailed(exception: GenAiException) {
-                                Log.e("GenAIWriting", "Download failed", exception)
-                                _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.feature_download_failed)
-                            }
-                        },
-                    )
-                } else {
-                    runProofreadingInference(text)
-                }
+                        override fun onDownloadFailed(exception: GenAiException) {
+                            Log.e("GenAIWriting", "Download failed", exception)
+                            _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.feature_download_failed)
+                        }
+                    },
+                )
+            } else {
+                runProofreadingInference(text)
             }
         }
     }
