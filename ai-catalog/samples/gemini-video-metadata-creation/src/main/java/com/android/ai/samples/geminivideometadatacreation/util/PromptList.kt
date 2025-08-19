@@ -31,7 +31,8 @@ val promptList = listOf(
     ),
     Prompt(
         metadataType = MetadataType.THUMBNAILS,
-        text = "Get three engaging and visually appealing thumbnails for this video. Focus on capturing peak moments that create curiosity."
+        text = "Get three engaging and visually appealing thumbnails for this video. " +
+            "Focus on capturing peak moments that create curiosity."
     ),
     Prompt(
         metadataType = MetadataType.HASHTAGS,
