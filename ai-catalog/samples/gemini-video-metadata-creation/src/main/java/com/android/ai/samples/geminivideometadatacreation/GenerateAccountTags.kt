@@ -15,20 +15,10 @@
  */
 package com.android.ai.samples.geminivideometadatacreation
 
-import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
+import com.android.ai.samples.geminivideometadatacreation.ui.AccountTagsUi
+import com.android.ai.samples.geminivideometadatacreation.ui.ErrorText
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerateContentResponse
@@ -101,32 +91,4 @@ suspend fun generateAccountTags(videoUri: Uri): @Composable () -> Unit {
             ErrorText(response.promptFeedback?.blockReasonMessage)
         }
     }
-}
-
-@Composable
-private fun AccountTagsUi(accountTags: AccountTags) {
-    val context = LocalContext.current
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        accountTags.forEach { accountTag ->
-            AssistChip(
-                onClick = {
-                    val browserIntent = Intent(Intent.ACTION_VIEW, accountTag.url.toUri())
-                    context.startActivity(browserIntent)
-                },
-                label = { Text(text = accountTag.tag) },
-                leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
-            )
-        }
-    }
-}
-
-@Composable
-private fun ErrorText(blockReasonMessage: String?) {
-    Text(
-        """
-                    There was a problem generating the description. Here is some information that might help you debug:
-                    Block reason message: $blockReasonMessage
-        """.trimIndent(),
-        color = MaterialTheme.colorScheme.error,
-    )
 }

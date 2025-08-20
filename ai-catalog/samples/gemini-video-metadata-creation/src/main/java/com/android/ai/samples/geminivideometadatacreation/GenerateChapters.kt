@@ -33,6 +33,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.android.ai.samples.geminivideometadatacreation.ui.ChaptersUi
+import com.android.ai.samples.geminivideometadatacreation.ui.ErrorText
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
@@ -118,55 +120,7 @@ suspend fun generateChapters(videoUri: Uri, onChapterClicked: (timestamp: Long) 
     } else {
         // Failure - display an error text
         return {
-            ErrorText(
-                promptFeedback?.blockReasonMessage,
-            )
+            ErrorText(promptFeedback?.blockReasonMessage,)
         }
     }
-}
-
-@Composable
-private fun ChaptersUi(chapters: Chapters, onChapterClicked: (timestamp: Long) -> Unit) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.width(IntrinsicSize.Max),
-    ) {
-        chapters.forEach { chapter ->
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = { onChapterClicked(chapter.timestamp) })
-                    .padding(16.dp),
-            ) {
-                Text(
-                    DateUtils.formatElapsedTime(chapter.timestamp / 1000),
-                    textDecoration = TextDecoration.Underline,
-                )
-                Spacer(Modifier.width(12.dp))
-                Text(chapter.title)
-            }
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun ChaptersUiPreview() {
-    val chapters = listOf(
-        Chapter(timestamp = 0L, title = "Introduction"),
-        Chapter(timestamp = 60000L, title = "Main Content"),
-        Chapter(timestamp = 120000L, title = "Conclusion"),
-    )
-    ChaptersUi(chapters = chapters, onChapterClicked = {})
-}
-
-@Composable
-private fun ErrorText(blockReasonMessage: String?) {
-    Text(
-        """
-                    There was a problem generating the description. Here is some information that might help you debug:
-                    Block reason message: $blockReasonMessage
-        """.trimIndent(),
-        color = MaterialTheme.colorScheme.error,
-    )
 }

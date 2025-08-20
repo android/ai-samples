@@ -24,6 +24,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
+import com.android.ai.samples.geminivideometadatacreation.ui.ErrorText
+import com.android.ai.samples.geminivideometadatacreation.ui.HashtagsUi
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerateContentResponse
@@ -80,33 +82,8 @@ suspend fun generateHashtags(videoUri: Uri): @Composable () -> Unit {
         }
     } else {
         // Failure - display an error text
-        return {
-            ErrorText(response.promptFeedback?.blockReasonMessage)
-        }
+        return { ErrorText(response.promptFeedback?.blockReasonMessage) }
     }
 }
 
-@Composable
-private fun HashtagsUi(hashtags: List<String>) {
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.CenterHorizontally),
-    ) {
-        hashtags.forEach { tag ->
-            AssistChip(
-                onClick = {},
-                label = { Text(text = "#$tag") },
-            )
-        }
-    }
-}
 
-@Composable
-private fun ErrorText(blockReasonMessage: String?) {
-    Text(
-        """
-            There was a problem generating the description. Here is some information that might help you debug:
-            Block reason message: $blockReasonMessage
-        """.trimIndent(),
-        color = MaterialTheme.colorScheme.error,
-    )
-}

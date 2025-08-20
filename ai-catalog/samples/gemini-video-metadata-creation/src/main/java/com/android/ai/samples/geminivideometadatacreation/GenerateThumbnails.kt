@@ -36,6 +36,8 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.android.ai.samples.geminivideometadatacreation.player.extractListOfThumbnails
+import com.android.ai.samples.geminivideometadatacreation.ui.ErrorText
+import com.android.ai.samples.geminivideometadatacreation.ui.ThumbnailsUi
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerateContentResponse
@@ -87,35 +89,4 @@ suspend fun generateThumbnails(videoUri: Uri, context: Context): @Composable () 
             ErrorText(response.promptFeedback?.blockReasonMessage)
         }
     }
-}
-
-@Composable
-private fun ThumbnailsUi(thumbnailTimestamps: List<Long>, thumbnailImages: List<Bitmap>) {
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.CenterHorizontally),
-    ) {
-        thumbnailTimestamps.forEachIndexed { i, timestamp ->
-            Column {
-                Text(DateUtils.formatElapsedTime(timestamp / 1000))
-                Spacer(Modifier.height(8.dp))
-                Image(
-                    bitmap = thumbnailImages[i].asImageBitmap(),
-                    contentDescription = null,
-                    modifier = Modifier.size(120.dp).background(MaterialTheme.colorScheme.surfaceContainer),
-                    contentScale = ContentScale.Fit,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ErrorText(blockReasonMessage: String?) {
-    Text(
-        """
-            There was a problem generating the description. Here is some information that might help you debug:
-            Block reason message: $blockReasonMessage
-        """.trimIndent(),
-        color = MaterialTheme.colorScheme.error,
-    )
 }

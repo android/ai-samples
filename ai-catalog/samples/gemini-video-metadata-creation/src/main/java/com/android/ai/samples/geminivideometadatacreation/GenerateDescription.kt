@@ -21,6 +21,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
+import com.android.ai.samples.geminivideometadatacreation.ui.DescriptionUi
+import com.android.ai.samples.geminivideometadatacreation.ui.ErrorText
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
@@ -49,16 +51,8 @@ suspend fun generateDescription(videoUri: Uri): @Composable () -> Unit {
 
     val responseText = response.text
     return if (responseText != null) {
-        { Text(AnnotatedString.fromHtml(responseText)) }
+        { DescriptionUi(responseText) }
     } else {
-        {
-            Text(
-                """
-                    There was a problem generating the description. Here is some information that might help you debug:
-                     Block reason message: ${response.promptFeedback?.blockReasonMessage}
-                """.trimIndent(),
-                color = MaterialTheme.colorScheme.error,
-            )
-        }
+        { ErrorText(response.promptFeedback?.blockReasonMessage) }
     }
 }

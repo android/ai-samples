@@ -15,19 +15,10 @@
  */
 package com.android.ai.samples.geminivideometadatacreation
 
-import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
+import com.android.ai.samples.geminivideometadatacreation.ui.ErrorText
+import com.android.ai.samples.geminivideometadatacreation.ui.LinksUi
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerateContentResponse
@@ -88,32 +79,4 @@ suspend fun generateLinks(videoUri: Uri): @Composable () -> Unit {
             ErrorText(response.promptFeedback?.blockReasonMessage)
         }
     }
-}
-
-@Composable
-private fun LinksUi(links: List<String>) {
-    val context = LocalContext.current
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        links.forEach { link ->
-            Text(
-                text = link,
-                textDecoration = TextDecoration.Underline,
-                modifier = Modifier.clickable {
-                    val browserIntent = Intent(Intent.ACTION_VIEW, link.toUri())
-                    context.startActivity(browserIntent)
-                },
-            )
-        }
-    }
-}
-
-@Composable
-private fun ErrorText(blockReasonMessage: String?) {
-    Text(
-        """
-            There was a problem generating the description. Here is some information that might help you debug:
-            Block reason message: $blockReasonMessage
-        """.trimIndent(),
-        color = MaterialTheme.colorScheme.error,
-    )
 }
