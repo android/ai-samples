@@ -68,7 +68,7 @@ fun PrimaryButton(
         modifier = modifier
             .height(40.dp)
             .requiredWidthIn(min = 40.dp),
-        colors = ButtonDefaults.buttonColors(
+        colors = ButtonDefaults.outlinedButtonColors(
             contentColor = contentColor,
             containerColor = containerColor,
         ),
@@ -161,7 +161,7 @@ fun GenerateButton(
                 shape = RoundedCornerShape(30.dp),
             ),
         enabled = enabled,
-        colors = ButtonDefaults.buttonColors(
+        colors = ButtonDefaults.outlinedButtonColors(
             contentColor = contentColor,
             containerColor = containerColor,
             disabledContentColor = MaterialTheme.colorScheme.onSurface,
