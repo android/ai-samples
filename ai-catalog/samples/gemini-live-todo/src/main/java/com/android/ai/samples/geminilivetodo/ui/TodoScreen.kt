@@ -16,70 +16,58 @@
 package com.android.ai.samples.geminilivetodo.ui
 
 import android.app.Activity
-import android.content.Intent
 import androidx.activity.compose.LocalActivity
-import androidx.compose.animation.Animatable
-import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.MicNone
-import androidx.compose.material.icons.filled.MicOff
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.geminilivetodo.R
 import com.android.ai.samples.geminilivetodo.data.Todo
-import kotlin.collections.reversed
+import com.android.ai.uicomponent.GenerateButton
+import com.android.ai.uicomponent.SampleDetailTopAppBar
+import com.android.ai.uicomponent.SecondaryButton
+import com.android.ai.uicomponent.TextInput
 
 /**
  * The main screen for the To-do list application.
@@ -89,7 +77,6 @@ import kotlin.collections.reversed
 @Composable
 fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var text by remember { mutableStateOf("") }
 
     val activity = LocalActivity.current as Activity
 
@@ -97,23 +84,18 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
         viewModel.initializeGeminiLive(activity)
     }
 
+    val topAppBarState = rememberTopAppBarState()
+    val scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
+
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                ),
-                title = { Text(stringResource(R.string.gemini_live_title)) },
-                actions = {
-                    SeeCodeButton()
-                },
-            )
-        },
-        floatingActionButton = {
-            MicButton(
-                uiState = uiState,
-                onToggle = { viewModel.toggleLiveSession(activity) },
+            SampleDetailTopAppBar(
+                sampleName = stringResource(R.string.gemini_live_title),
+                sampleDescription = stringResource(R.string.gemini_live_subtitle),
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-live-todo",
+                topAppBarState = topAppBarState,
+                scrollBehavior = scrollBehavior,
             )
         },
         floatingActionButtonPosition = FabPosition.Center,
@@ -126,147 +108,100 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                 .imePadding()
                 .fillMaxSize(),
         ) {
-            TodoInput(
-                text = text,
-                onTextChange = { text = it },
-                onAddClick = {
-                    viewModel.addTodo(text)
-                    text = ""
-                },
-            )
-
-            when (uiState) {
-                is TodoScreenUiState.Initial -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        CircularProgressIndicator()
+                when (uiState) {
+                    is TodoScreenUiState.Initial -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
-                }
-                is TodoScreenUiState.Success -> {
-                    val todos = (uiState as TodoScreenUiState.Success).todos
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        itemsIndexed(todos.reversed(), key = { index: Int, item: Todo -> item.id }) { index, todo ->
-                            TodoItem(
-                                modifier = Modifier,
-                                task = todo,
-                                onToggle = { viewModel.toggleTodoStatus(todo.id) },
-                                onDelete = { viewModel.removeTodo(todo.id) },
-                            )
-                            if (index != todos.size - 1) {
-                                HorizontalDivider()
+                    is TodoScreenUiState.Success -> {
+                        val todos = (uiState as TodoScreenUiState.Success).todos
+                        LazyColumn(modifier = Modifier.weight(1f)) {
+                            itemsIndexed(todos.reversed(), key = { index: Int, item: Todo -> item.id }) { index, todo ->
+                                TodoItem(
+                                    task = todo,
+                                    onToggle = { viewModel.toggleTodoStatus(todo.id) },
+                                    onDelete = { viewModel.removeTodo(todo.id) },
+                                )
+                            }
+                        }
+                    }
+                    is TodoScreenUiState.Error -> {
+                        val todos = (uiState as TodoScreenUiState.Error).todos
+                        LazyColumn(modifier = Modifier.weight(1f)) {
+                            itemsIndexed(todos.reversed(), key = { index: Int, item: Todo -> item.id }) { index, todo ->
+                                TodoItem(
+                                    task = todo,
+                                    onToggle = { viewModel.toggleTodoStatus(todo.id) },
+                                    onDelete = { viewModel.removeTodo(todo.id) },
+                                )
+                                if (index != todos.size - 1) {
+                                    HorizontalDivider()
+                                }
                             }
                         }
                     }
                 }
-                is TodoScreenUiState.Error -> {
-                    val todos = (uiState as TodoScreenUiState.Error).todos
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        itemsIndexed(todos.reversed(), key = { index: Int, item: Todo -> item.id }) { index, todo ->
-                            TodoItem(
-                                modifier = Modifier,
-                                task = todo,
-                                onToggle = { viewModel.toggleTodoStatus(todo.id) },
-                                onDelete = { viewModel.removeTodo(todo.id) },
-                            )
-                            if (index != todos.size - 1) {
-                                HorizontalDivider()
-                            }
+
+            val textFieldState = rememberTextFieldState()
+            val textInputEnabled = remember { mutableStateOf(true) }
+            if (uiState is TodoScreenUiState.Success) {
+                when {
+                    (uiState as TodoScreenUiState.Success).liveSessionState is LiveSessionState.Running -> {
+                        LaunchedEffect(Unit) {
+                            textFieldState.setTextAndPlaceCursorAtEnd("I am listening...")
+                            textInputEnabled.value = false
+                        }
+                    }
+                    else -> {
+                        LaunchedEffect(Unit) {
+                            textFieldState.clearText()
+                            textInputEnabled.value = true
                         }
                     }
                 }
             }
-        }
-    }
-}
 
-@Composable
-fun TodoInput(text: String, onTextChange: (String) -> Unit, onAddClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        OutlinedTextField(
-            value = text,
-            onValueChange = onTextChange,
-            label = { Text(stringResource(R.string.new_task_placeholder)) },
-            modifier = Modifier.weight(1f),
-            singleLine = true,
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Button(
-            enabled = text.isNotBlank(),
-            onClick = onAddClick,
-        ) {
-            Text(stringResource(R.string.add_button))
-        }
-    }
-}
-
-@Composable
-fun MicButton(uiState: TodoScreenUiState, onToggle: () -> Unit) {
-    if (uiState is TodoScreenUiState.Success) {
-        val micIcon = when {
-            uiState.liveSessionState is LiveSessionState.Ready -> Icons.Filled.MicOff
-            uiState.liveSessionState is LiveSessionState.Running -> Icons.Filled.Mic
-            uiState.liveSessionState is LiveSessionState.NotReady -> Icons.Filled.MicNone
-            uiState.liveSessionState is LiveSessionState.Error -> Icons.Filled.MicNone
-            else -> Icons.Filled.MicNone
-        }
-
-        val containerColor = if (uiState.liveSessionState is LiveSessionState.Running) {
-            val infiniteTransition =
-                rememberInfiniteTransition(label = "mic_color_transition")
-            infiniteTransition.animateColor(
-                initialValue = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                targetValue = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
-                animationSpec = infiniteRepeatable(
-                    animation = tween(1000, easing = LinearEasing),
-                    repeatMode = RepeatMode.Reverse,
-                ),
-                label = "mic_color",
-            ).value
-        } else {
-            MaterialTheme.colorScheme.primaryContainer
-        }
-
-        FloatingActionButton(
-            onClick = { if (uiState.liveSessionState !is LiveSessionState.NotReady) onToggle() },
-            containerColor = containerColor,
-        ) {
-            Icon(micIcon, stringResource(R.string.interact_with_todolist_by_voice))
-        }
-    } else if (uiState is TodoScreenUiState.Error) {
-        val isDialogDisplayed = remember { mutableStateOf(true) }
-        if (isDialogDisplayed.value) {
-            AlertDialog(
-                onDismissRequest = { isDialogDisplayed.value = false },
-                title = { Text(text = stringResource(R.string.error_title)) },
-                text = { Text(text = stringResource(R.string.error_message)) },
-                confirmButton = {
-                    Button(onClick = { isDialogDisplayed.value = false }) {
-                        Text(text = stringResource(R.string.dismiss_button))
-                    }
+            TextInput(
+                state = textFieldState,
+                enabled = textInputEnabled.value,
+                placeholder = stringResource(R.string.new_task_placeholder),
+                primaryButton = {
+                    GenerateButton(
+                        text = "",
+                        icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_mic),
+                        modifier = Modifier
+                            .width(72.dp)
+                            .height(72.dp),
+                        onClick = {
+                            viewModel.toggleLiveSession(activity)
+                        },
+                    )
                 },
+                secondaryButton = {
+                    SecondaryButton(
+                        text = "",
+                        icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add),
+                    ) {
+                        viewModel.addTodo(textFieldState.text.toString())
+                        textFieldState.clearText()
+                    }
+                }
             )
         }
     }
 }
 
 @Composable
-fun TodoItem(modifier: Modifier, task: Todo, onToggle: () -> Unit, onDelete: () -> Unit) {
-    val defaultBackgroundColor = Color.Transparent
-    val backgroundColor = remember { Animatable(defaultBackgroundColor) }
-
+fun TodoItem(task: Todo, onToggle: () -> Unit, onDelete: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp, horizontal = 8.dp)
-            .background(backgroundColor.value),
+            .padding(vertical = 12.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(
@@ -276,38 +211,99 @@ fun TodoItem(modifier: Modifier, task: Todo, onToggle: () -> Unit, onDelete: () 
         Text(
             text = task.task,
             style = if (task.isCompleted) {
-                TextStyle(fontSize = 16.sp, textDecoration = TextDecoration.LineThrough)
+                MaterialTheme.typography.bodyLarge.copy(textDecoration = TextDecoration.LineThrough)
             } else {
-                TextStyle(fontSize = 16.sp, textDecoration = TextDecoration.None)
+                MaterialTheme.typography.bodyLarge.copy(textDecoration = TextDecoration.None)
             },
             modifier = Modifier.weight(1f),
         )
-        IconButton(onClick = onDelete) {
+        IconButton(
+            onClick = onDelete,
+            modifier = Modifier.background(
+                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                shape = RoundedCornerShape(10.dp)
+            ).size(32.dp)
+        ) {
             Icon(
-                imageVector = Icons.Default.Delete,
+                painterResource(com.android.ai.uicomponent.R.drawable.ic_delete),
+                modifier = Modifier.size(20.dp),
                 contentDescription = "Delete",
             )
         }
     }
 }
 
-@Composable
-fun SeeCodeButton() {
-    val context = LocalContext.current
-    val githubLink = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-live-todo"
+//@Composable
+//fun TodoInput(text: String, onTextChange: (String) -> Unit, onAddClick: () -> Unit) {
+//    Row(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(bottom = 16.dp),
+//        verticalAlignment = Alignment.CenterVertically,
+//    ) {
+//        OutlinedTextField(
+//            value = text,
+//            onValueChange = onTextChange,
+//            label = { Text(stringResource(R.string.new_task_placeholder)) },
+//            modifier = Modifier.weight(1f),
+//            singleLine = true,
+//        )
+//        Spacer(modifier = Modifier.width(8.dp))
+//        Button(
+//            enabled = text.isNotBlank(),
+//            onClick = onAddClick,
+//        ) {
+//            Text(stringResource(R.string.add_button))
+//        }
+//    }
+//}
 
-    Button(
-        onClick = {
-            val intent = Intent(Intent.ACTION_VIEW, githubLink.toUri())
-            context.startActivity(intent)
-        },
-        modifier = Modifier.padding(end = 8.dp),
-    ) {
-        Icon(Icons.Filled.Code, contentDescription = "See code")
-        Text(
-            modifier = Modifier.padding(start = 8.dp),
-            fontSize = 12.sp,
-            text = stringResource(R.string.see_code),
-        )
-    }
-}
+//@Composable
+//fun MicButton(uiState: TodoScreenUiState, onToggle: () -> Unit) {
+//    if (uiState is TodoScreenUiState.Success) {
+//        val micIcon = when {
+//            uiState.liveSessionState is LiveSessionState.Ready -> Icons.Filled.MicOff
+//            uiState.liveSessionState is LiveSessionState.Running -> Icons.Filled.Mic
+//            uiState.liveSessionState is LiveSessionState.NotReady -> Icons.Filled.MicNone
+//            uiState.liveSessionState is LiveSessionState.Error -> Icons.Filled.MicNone
+//            else -> Icons.Filled.MicNone
+//        }
+//
+//        val containerColor = if (uiState.liveSessionState is LiveSessionState.Running) {
+//            val infiniteTransition =
+//                rememberInfiniteTransition(label = "mic_color_transition")
+//            infiniteTransition.animateColor(
+//                initialValue = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+//                targetValue = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+//                animationSpec = infiniteRepeatable(
+//                    animation = tween(1000, easing = LinearEasing),
+//                    repeatMode = RepeatMode.Reverse,
+//                ),
+//                label = "mic_color",
+//            ).value
+//        } else {
+//            MaterialTheme.colorScheme.primaryContainer
+//        }
+//
+//        FloatingActionButton(
+//            onClick = { if (uiState.liveSessionState !is LiveSessionState.NotReady) onToggle() },
+//            containerColor = containerColor,
+//        ) {
+//            Icon(micIcon, stringResource(R.string.interact_with_todolist_by_voice))
+//        }
+//    } else if (uiState is TodoScreenUiState.Error) {
+//        val isDialogDisplayed = remember { mutableStateOf(true) }
+//        if (isDialogDisplayed.value) {
+//            AlertDialog(
+//                onDismissRequest = { isDialogDisplayed.value = false },
+//                title = { Text(text = stringResource(R.string.error_title)) },
+//                text = { Text(text = stringResource(R.string.error_message)) },
+//                confirmButton = {
+//                    Button(onClick = { isDialogDisplayed.value = false }) {
+//                        Text(text = stringResource(R.string.dismiss_button))
+//                    }
+//                },
+//            )
+//        }
+//    }
+//}

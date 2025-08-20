@@ -23,8 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
-import com.android.ai.samples.imagen.R
-import com.android.ai.uicomponent.PrimaryButton
 
 @Composable
 fun SeeCodeButton(sourceCodeUrl: String, modifier: Modifier = Modifier, withText: Boolean = true) {
