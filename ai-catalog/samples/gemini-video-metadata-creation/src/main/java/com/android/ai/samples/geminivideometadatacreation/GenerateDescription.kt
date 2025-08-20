@@ -16,11 +16,7 @@
 package com.android.ai.samples.geminivideometadatacreation
 
 import android.net.Uri
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.fromHtml
 import com.android.ai.samples.geminivideometadatacreation.ui.DescriptionUi
 import com.android.ai.samples.geminivideometadatacreation.ui.ErrorText
 import com.google.firebase.Firebase

@@ -16,14 +16,7 @@
 package com.android.ai.samples.geminivideometadatacreation
 
 import android.net.Uri
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
 import com.android.ai.samples.geminivideometadatacreation.ui.ErrorText
 import com.android.ai.samples.geminivideometadatacreation.ui.HashtagsUi
 import com.google.firebase.Firebase
@@ -85,5 +78,3 @@ suspend fun generateHashtags(videoUri: Uri): @Composable () -> Unit {
         return { ErrorText(response.promptFeedback?.blockReasonMessage) }
     }
 }
-
-
