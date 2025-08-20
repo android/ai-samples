@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerateContentResponse
@@ -37,7 +38,6 @@ import com.google.firebase.ai.type.content
 import com.google.firebase.ai.type.generationConfig
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import androidx.core.net.toUri
 
 typealias AccountTags = List<AccountTag>
 
@@ -126,7 +126,7 @@ private fun ErrorText(blockReasonMessage: String?) {
         """
                     There was a problem generating the description. Here is some information that might help you debug:
                     Block reason message: $blockReasonMessage
-            """.trimIndent(),
+        """.trimIndent(),
         color = MaterialTheme.colorScheme.error,
     )
 }

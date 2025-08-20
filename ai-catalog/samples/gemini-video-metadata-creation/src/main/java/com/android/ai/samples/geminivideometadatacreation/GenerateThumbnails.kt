@@ -53,7 +53,7 @@ private val thumbnailsModel = Firebase.ai(backend = GenerativeBackend.vertexAI()
         generationConfig {
             responseMimeType = "application/json"
             responseSchema = Schema.array(items = Schema.long("thumbnail timestamp in milliseconds"))
-        }
+        },
     )
 
 suspend fun generateThumbnails(videoUri: Uri, context: Context): @Composable () -> Unit {
@@ -79,7 +79,7 @@ suspend fun generateThumbnails(videoUri: Uri, context: Context): @Composable () 
             val thumbnailBitmaps = extractListOfThumbnails(context, videoUri, thumbnails)
             return { ThumbnailsUi(thumbnails, thumbnailBitmaps) }
         } catch (e: Exception) {
-            return { ErrorText("The model returned invalid data. Debug info: ${e.message}")}
+            return { ErrorText("The model returned invalid data. Debug info: ${e.message}") }
         }
     } else {
         // Failure - display an error text
@@ -115,7 +115,7 @@ private fun ErrorText(blockReasonMessage: String?) {
         """
             There was a problem generating the description. Here is some information that might help you debug:
             Block reason message: $blockReasonMessage
-            """.trimIndent(),
-        color = MaterialTheme.colorScheme.error
+        """.trimIndent(),
+        color = MaterialTheme.colorScheme.error,
     )
 }

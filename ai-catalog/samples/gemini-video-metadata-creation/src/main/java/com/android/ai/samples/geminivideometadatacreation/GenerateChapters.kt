@@ -35,7 +35,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
-import com.google.firebase.ai.type.GenerateContentResponse
 import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.PromptFeedback
 import com.google.firebase.ai.type.Schema
@@ -90,10 +89,7 @@ private val chaptersModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
  * @return A Composable function that displays either the chapters UI or an
  *         error message.
  */
-suspend fun generateChapters(
-    videoUri: Uri,
-    onChapterClicked: (timestamp: Long) -> Unit
-): @Composable () -> Unit {
+suspend fun generateChapters(videoUri: Uri, onChapterClicked: (timestamp: Long) -> Unit): @Composable () -> Unit {
 
     // Execute the model call with our custom prompt
     var promptFeedback: PromptFeedback? = null
@@ -106,11 +102,11 @@ suspend fun generateChapters(
                         Analyze the video and create a list of around 3-7 chapters with timestamps and descriptive titles (of max 3 words).
                         Each chapter should be at least 10 seconds long.
                         Make sure to evenly divide the chapters over the video.
-                    """.trimIndent(),
+                """.trimIndent(),
             )
         },
     ).collect { response ->
-        if(response.promptFeedback != null) promptFeedback = response.promptFeedback
+        if (response.promptFeedback != null) promptFeedback = response.promptFeedback
         outputStringBuilder.append(response.text)
     }
     val responseText = outputStringBuilder.toString()
@@ -123,7 +119,7 @@ suspend fun generateChapters(
         // Failure - display an error text
         return {
             ErrorText(
-                promptFeedback?.blockReasonMessage
+                promptFeedback?.blockReasonMessage,
             )
         }
     }
@@ -164,14 +160,13 @@ private fun ChaptersUiPreview() {
     ChaptersUi(chapters = chapters, onChapterClicked = {})
 }
 
-
 @Composable
 private fun ErrorText(blockReasonMessage: String?) {
     Text(
         """
                     There was a problem generating the description. Here is some information that might help you debug:
                     Block reason message: $blockReasonMessage
-            """.trimIndent(),
+        """.trimIndent(),
         color = MaterialTheme.colorScheme.error,
     )
 }

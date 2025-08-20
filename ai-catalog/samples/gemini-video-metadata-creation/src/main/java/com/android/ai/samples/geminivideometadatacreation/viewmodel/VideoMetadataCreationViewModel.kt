@@ -18,7 +18,6 @@ package com.android.ai.samples.geminivideometadatacreation.viewmodel
 import android.app.Application
 import android.graphics.Bitmap
 import android.net.Uri
-import android.util.Log
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
@@ -35,12 +34,12 @@ import com.android.ai.samples.geminivideometadatacreation.generateLinks
 import com.android.ai.samples.geminivideometadatacreation.generateThumbnails
 import com.android.ai.samples.geminivideometadatacreation.util.sampleVideoList
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * ViewModel class responsible for handling video metadata creation using Gemini API.
@@ -50,8 +49,7 @@ import javax.inject.Inject
  * [StateFlow].
  */
 @HiltViewModel
-class VideoMetadataCreationViewModel @Inject constructor(private val application: Application) :
-    ViewModel() {
+class VideoMetadataCreationViewModel @Inject constructor(private val application: Application) : ViewModel() {
 
     private val _uiState = MutableStateFlow(VideoMetadataCreationState())
     val uiState: StateFlow<VideoMetadataCreationState> = _uiState.asStateFlow()
@@ -69,10 +67,11 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
                     MetadataType.THUMBNAILS -> generateThumbnails(videoUri, application)
                     MetadataType.HASHTAGS -> generateHashtags(videoUri)
                     MetadataType.ACCOUNT_TAGS -> generateAccountTags(videoUri)
-                    MetadataType.CHAPTERS -> generateChapters(videoUri,
-                        onChapterClicked = {
-                                timestamp -> uiState.value.player?.seekTo(timestamp)
-                        }
+                    MetadataType.CHAPTERS -> generateChapters(
+                        videoUri,
+                        onChapterClicked = { timestamp ->
+                            uiState.value.player?.seekTo(timestamp)
+                        },
                     )
                     MetadataType.LINKS -> generateLinks(videoUri)
                 }
@@ -81,13 +80,12 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
                         metadataCreationState = MetadataCreationState.Success(generatedUI),
                     )
                 }
-
             } catch (e: Exception) {
                 // If something went wrong, show an error
                 _uiState.update {
                     it.copy(
                         metadataCreationState = MetadataCreationState.Error(
-                            e.localizedMessage ?: "An unknown error occurred"
+                            e.localizedMessage ?: "An unknown error occurred",
                         ),
                     )
                 }
@@ -101,7 +99,8 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
                 player = ExoPlayer.Builder(application).build().apply {
                     playWhenReady = true
                     playVideo(this, uiState.value.selectedVideoUri)
-                })
+                },
+            )
         }
     }
 
@@ -109,9 +108,9 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
         uiState.value.player?.release()
         _uiState.update { it.copy(player = null) }
     }
-    
+
     private fun playVideo(player: Player?, uri: Uri?) {
-        if(player == null || uri == null) return
+        if (player == null || uri == null) return
         player.apply {
             setMediaItem(MediaItem.fromUri(uri))
             prepare()
@@ -171,5 +170,5 @@ data class VideoMetadataCreationState(
     val selectedVideoUri: Uri? = sampleVideoList.first().uri,
     val metadataCreationState: MetadataCreationState = MetadataCreationState.Idle,
     val selectedMetadataType: MetadataType? = null,
-    val player: Player? = null
+    val player: Player? = null,
 )

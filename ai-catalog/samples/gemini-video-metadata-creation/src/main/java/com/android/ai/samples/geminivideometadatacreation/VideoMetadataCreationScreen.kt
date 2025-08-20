@@ -114,7 +114,7 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
 
             VideoPlayer(
                 player = uiState.player,
-                modifier = Modifier.aspectRatio(16f/9f)
+                modifier = Modifier.aspectRatio(16f / 9f),
             )
 
             MetadataCreationSection(

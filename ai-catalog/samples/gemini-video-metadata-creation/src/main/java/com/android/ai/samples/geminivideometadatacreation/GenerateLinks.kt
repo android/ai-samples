@@ -20,12 +20,9 @@ import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextDecoration
@@ -104,7 +101,7 @@ private fun LinksUi(links: List<String>) {
                 modifier = Modifier.clickable {
                     val browserIntent = Intent(Intent.ACTION_VIEW, link.toUri())
                     context.startActivity(browserIntent)
-                }
+                },
             )
         }
     }
@@ -116,7 +113,7 @@ private fun ErrorText(blockReasonMessage: String?) {
         """
             There was a problem generating the description. Here is some information that might help you debug:
             Block reason message: $blockReasonMessage
-            """.trimIndent(),
+        """.trimIndent(),
         color = MaterialTheme.colorScheme.error,
     )
 }
