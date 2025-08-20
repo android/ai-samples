@@ -20,26 +20,27 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import androidx.annotation.OptIn
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import com.android.ai.samples.geminivideometadatacreation.player.extractListOfThumbnails
-import com.android.ai.samples.geminivideometadatacreation.util.promptList
+import androidx.media3.exoplayer.ExoPlayer
+import com.android.ai.samples.geminivideometadatacreation.generateAccountTags
+import com.android.ai.samples.geminivideometadatacreation.generateChapters
+import com.android.ai.samples.geminivideometadatacreation.generateDescription
+import com.android.ai.samples.geminivideometadatacreation.generateHashtags
+import com.android.ai.samples.geminivideometadatacreation.generateLinks
+import com.android.ai.samples.geminivideometadatacreation.generateThumbnails
 import com.android.ai.samples.geminivideometadatacreation.util.sampleVideoList
-import com.google.firebase.Firebase
-import com.google.firebase.ai.ai
-import com.google.firebase.ai.type.GenerativeBackend
-import com.google.firebase.ai.type.Schema
-import com.google.firebase.ai.type.content
-import com.google.firebase.ai.type.generationConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
+import javax.inject.Inject
 
 /**
  * ViewModel class responsible for handling video metadata creation using Gemini API.
@@ -49,122 +50,81 @@ import kotlinx.serialization.json.Json
  * [StateFlow].
  */
 @HiltViewModel
-class VideoMetadataCreationViewModel @Inject constructor(private val application: Application) : ViewModel() {
-
-    private val tag = "VideoMetadataVM"
+class VideoMetadataCreationViewModel @Inject constructor(private val application: Application) :
+    ViewModel() {
 
     private val _uiState = MutableStateFlow(VideoMetadataCreationState())
     val uiState: StateFlow<VideoMetadataCreationState> = _uiState.asStateFlow()
 
-    fun onVideoSelected(uri: Uri) {
-        _uiState.update {
-            it.copy(
-                selectedVideoUri = uri,
-            )
+    @OptIn(UnstableApi::class)
+    fun generateMetadata(metadataType: MetadataType) {
+        val videoUri = _uiState.value.selectedVideoUri ?: return
+        // Since we will start an async call, show a progressbar
+        _uiState.update { it.copy(metadataCreationState = MetadataCreationState.InProgress) }
+        // Start the right async call based on the selected metadata type
+        viewModelScope.launch {
+            try {
+                val generatedUI = when (metadataType) {
+                    MetadataType.DESCRIPTION -> generateDescription(videoUri)
+                    MetadataType.THUMBNAILS -> generateThumbnails(videoUri, application)
+                    MetadataType.HASHTAGS -> generateHashtags(videoUri)
+                    MetadataType.ACCOUNT_TAGS -> generateAccountTags(videoUri)
+                    MetadataType.CHAPTERS -> generateChapters(videoUri,
+                        onChapterClicked = {
+                                timestamp -> uiState.value.player?.seekTo(timestamp)
+                        }
+                    )
+                    MetadataType.LINKS -> generateLinks(videoUri)
+                }
+                _uiState.update {
+                    it.copy(
+                        metadataCreationState = MetadataCreationState.Success(generatedUI),
+                    )
+                }
+
+            } catch (e: Exception) {
+                // If something went wrong, show an error
+                _uiState.update {
+                    it.copy(
+                        metadataCreationState = MetadataCreationState.Error(
+                            e.localizedMessage ?: "An unknown error occurred"
+                        ),
+                    )
+                }
+            }
         }
     }
 
-    fun onThumbnailStateChanged(newThumbnailState: ThumbnailState) {
-        val currentState = _uiState.value.metadataCreationState
-        if (currentState is MetadataCreationState.Success) {
-            _uiState.update {
-                it.copy(metadataCreationState = currentState.copy(thumbnailState = newThumbnailState))
-            }
+    fun createPlayer() {
+        _uiState.update { it ->
+            it.copy(
+                player = ExoPlayer.Builder(application).build().apply {
+                    playWhenReady = true
+                    playVideo(this, uiState.value.selectedVideoUri)
+                })
         }
+    }
+
+    fun releasePlayer() {
+        uiState.value.player?.release()
+        _uiState.update { it.copy(player = null) }
+    }
+    
+    private fun playVideo(player: Player?, uri: Uri?) {
+        if(player == null || uri == null) return
+        player.apply {
+            setMediaItem(MediaItem.fromUri(uri))
+            prepare()
+        }
+    }
+
+    fun onVideoSelected(uri: Uri) {
+        playVideo(uiState.value.player, uri)
+        _uiState.update { it.copy(selectedVideoUri = uri) }
     }
 
     fun onMetadataTypeSelected(metadataType: MetadataType) {
         _uiState.update { it.copy(selectedMetadataType = metadataType) }
-    }
-
-    @OptIn(UnstableApi::class)
-    fun createMetadata(metadataType: MetadataType) {
-        val videoSource = _uiState.value.selectedVideoUri ?: return
-        viewModelScope.launch {
-            // Create a prompt for the selected metadata type
-            val promptData = promptList.find { it.metadataType == metadataType }?.text
-                ?: throw IllegalArgumentException("Prompt not found for $metadataType")
-
-            // Since we will start an async call, show a progressbar
-            _uiState.update { it.copy(metadataCreationState = MetadataCreationState.InProgress) }
-
-            try {
-                val generativeModel =
-                    Firebase.ai(backend = GenerativeBackend.vertexAI())
-                        .generativeModel(
-                            modelName = "gemini-2.5-flash",
-                            generationConfig = generationConfig {
-                                if (metadataType != MetadataType.DESCRIPTION) {
-                                    responseMimeType = "application/json"
-                                    responseSchema = when (metadataType) {
-                                        MetadataType.DESCRIPTION -> null
-                                        MetadataType.THUMBNAILS -> Schema.array(
-                                            items = Schema.long("Timestamp in milliseconds"),
-                                        )
-
-                                        MetadataType.HASHTAGS -> Schema.array(
-                                            items = Schema.string("Hashtag"),
-                                        )
-
-                                        MetadataType.ACCOUNT_TAGS -> Schema.array(
-                                            items = Schema.string("Account tag"),
-                                        )
-
-                                        MetadataType.CHAPTERS -> Schema.array(
-                                            items = Schema.obj(
-                                                properties = mapOf(
-                                                    "Title" to Schema.string(),
-                                                    "Timestamp" to Schema.string(description = "timestamp with format: hh:mm:ss"),
-                                                ),
-                                                description = "Chapter",
-                                            ),
-                                        )
-
-                                        MetadataType.LINKS -> Schema.array(
-                                            items = Schema.string("Link"),
-                                        )
-                                    }
-                                }
-                            },
-                        )
-
-                // Attach the video with prompt to the Gemini query
-                val requestContent = content {
-                    fileData(videoSource.toString(), "video/mp4")
-                    text(promptData)
-                }
-
-                // Collect the response from gemini and update UI accordingly
-                val outputStringBuilder = StringBuilder()
-                generativeModel.generateContentStream(requestContent).collect { response ->
-                    outputStringBuilder.append(response.text)
-                }
-                val metadataText = outputStringBuilder.toString()
-                _uiState.update {
-                    it.copy(
-                        metadataCreationState = MetadataCreationState.Success(metadataText),
-                    )
-                }
-
-                if (metadataType == MetadataType.THUMBNAILS) {
-                    val decoded = Json.decodeFromString<List<Long>>(metadataText)
-
-                    // Show progressbar since extracting thumbnails is an aysnc call
-                    onThumbnailStateChanged(ThumbnailState.Loading)
-                    // Load HDR quality image thumbnails in Media3, based from timestamps returned by Gemini
-                    val bitmaps = extractListOfThumbnails(application.applicationContext, videoSource, decoded)
-                    // Update UI with the thumbnails
-                    onThumbnailStateChanged(ThumbnailState.Success(bitmaps))
-                }
-            } catch (error: Exception) {
-                _uiState.update {
-                    it.copy(
-                        metadataCreationState = MetadataCreationState.Error(error.localizedMessage ?: "An unknown error occurred"),
-                    )
-                }
-                Log.e(tag, "Error processing prompt : $error")
-            }
-        }
     }
 
     fun resetMetadataState() {
@@ -195,7 +155,7 @@ sealed interface MetadataCreationState {
     data object InProgress : MetadataCreationState
     data class Error(val message: String) : MetadataCreationState
     data class Success(
-        val metadataText: String,
+        val generatedUi: @Composable () -> Unit,
         val thumbnailState: ThumbnailState = ThumbnailState.Idle,
     ) : MetadataCreationState
 }
@@ -211,4 +171,5 @@ data class VideoMetadataCreationState(
     val selectedVideoUri: Uri? = sampleVideoList.first().uri,
     val metadataCreationState: MetadataCreationState = MetadataCreationState.Idle,
     val selectedMetadataType: MetadataType? = null,
+    val player: Player? = null
 )
