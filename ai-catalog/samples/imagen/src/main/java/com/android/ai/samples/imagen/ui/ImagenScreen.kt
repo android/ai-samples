@@ -155,7 +155,6 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
         ) {
 
             when (uiState) {
-                is ImagenUIState.Error -> Toast.makeText(LocalContext.current, uiState.message, Toast.LENGTH_SHORT).show()
                 is ImagenUIState.ImageGenerated -> Image(
                     bitmap = uiState.bitmap.asImageBitmap(),
                     contentDescription = uiState.contentDescription,
