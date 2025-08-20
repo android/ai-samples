@@ -22,7 +22,6 @@ import com.android.ai.samples.geminivideometadatacreation.ui.ErrorUi
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
-import com.google.firebase.ai.type.PromptFeedback
 import com.google.firebase.ai.type.Schema
 import com.google.firebase.ai.type.content
 import com.google.firebase.ai.type.generationConfig
@@ -94,9 +93,7 @@ private val chaptersModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
 suspend fun generateChapters(videoUri: Uri, onChapterClicked: (timestamp: Long) -> Unit): @Composable () -> Unit {
 
     // Execute the model call with our custom prompt
-    var promptFeedback: PromptFeedback? = null
-    val outputStringBuilder = StringBuilder()
-    chaptersModel.generateContentStream(
+    val response = chaptersModel.generateContent(
         content {
             fileData(videoUri.toString(), "video/mp4")
             text(
@@ -107,12 +104,9 @@ suspend fun generateChapters(videoUri: Uri, onChapterClicked: (timestamp: Long) 
                 """.trimIndent(),
             )
         },
-    ).collect { response ->
-        if (response.promptFeedback != null) promptFeedback = response.promptFeedback
-        outputStringBuilder.append(response.text)
-    }
-    val responseText = outputStringBuilder.toString()
-    if (responseText.isNotEmpty()) {
+    )
+    val responseText = response.text
+    if (responseText != null) {
         // Successful response - parse the JSON and display the chapters
         val chapters: Chapters =
             Json.decodeFromString<Chapters>(responseText)
@@ -120,7 +114,7 @@ suspend fun generateChapters(videoUri: Uri, onChapterClicked: (timestamp: Long) 
     } else {
         // Failure - display an error text
         return {
-            ErrorUi(promptFeedback?.blockReasonMessage)
+            ErrorUi(response.promptFeedback?.blockReasonMessage)
         }
     }
 }
