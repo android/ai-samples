@@ -18,12 +18,28 @@ package com.android.ai.samples.geminivideometadatacreation
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import com.android.ai.samples.geminivideometadatacreation.ui.DescriptionUi
-import com.android.ai.samples.geminivideometadatacreation.ui.ErrorText
+import com.android.ai.samples.geminivideometadatacreation.ui.ErrorUi
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.content
 
+/**
+ * Generates a compelling and concise description for a video using a generative AI model.
+ *
+ * This function takes a video URI as input, sends it to the Gemini 1.5 Flash model
+ * along with a prompt to generate a description. The description should be less than
+ * 100 words, engaging, accurate, and formatted in HTML with limited styling options
+ * (bold, italic, underline, bullet points).
+ *
+ * If the model successfully generates a description, a Composable function that displays
+ * the description using `DescriptionUi` is returned.
+ * If there's an error or the model fails to generate a description (e.g., due to safety
+ * filters), a Composable function that displays an error message using `ErrorText` is returned.
+ *
+ * @param videoUri The URI of the video for which to generate the description.
+ * @return A Composable function that will render either the generated description or an error message.
+ */
 suspend fun generateDescription(videoUri: Uri): @Composable () -> Unit {
     val response = Firebase.ai(backend = GenerativeBackend.vertexAI())
         .generativeModel(modelName = "gemini-2.5-flash")
@@ -49,6 +65,6 @@ suspend fun generateDescription(videoUri: Uri): @Composable () -> Unit {
     return if (responseText != null) {
         { DescriptionUi(responseText) }
     } else {
-        { ErrorText(response.promptFeedback?.blockReasonMessage) }
+        { ErrorUi(response.promptFeedback?.blockReasonMessage) }
     }
 }

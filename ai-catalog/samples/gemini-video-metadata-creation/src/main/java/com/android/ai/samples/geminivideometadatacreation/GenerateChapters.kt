@@ -18,7 +18,7 @@ package com.android.ai.samples.geminivideometadatacreation
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import com.android.ai.samples.geminivideometadatacreation.ui.ChaptersUi
-import com.android.ai.samples.geminivideometadatacreation.ui.ErrorText
+import com.android.ai.samples.geminivideometadatacreation.ui.ErrorUi
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
@@ -37,21 +37,37 @@ data class Chapter(
     val title: String,
 )
 
-// The configured model that includes the desired output format.
+/**
+ * Schema defining the structure of the chapters data.
+ *
+ * This schema specifies that the output should be an array of objects,
+ * where each object represents a chapter and contains:
+ * - `timestamp`: A long value representing the chapter start time in milliseconds.
+ * - `title`: A string representing the chapter title.
+ */
+private val chaptersSchema = Schema.array(
+    items = Schema.obj(
+        mapOf(
+            "timestamp" to Schema.long("chapter start in milliseconds"),
+            "title" to Schema.string(),
+        ),
+    ),
+)
+
+/**
+ * The configured generative model for creating video chapters.
+ *
+ * This model is initialized with the "gemini-2.5-flash" model name and
+ * configured to expect a JSON response. The `responseSchema` ensures that
+ * the output conforms to the `Chapters` data structure.
+ */
 private val chaptersModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
     .generativeModel(
         modelName = "gemini-2.5-flash",
         // Tell Firebase AI the exact format of the response.
         generationConfig {
             responseMimeType = "application/json"
-            responseSchema = Schema.array(
-                items = Schema.obj(
-                    mapOf(
-                        "timestamp" to Schema.long("chapter start in milliseconds"),
-                        "title" to Schema.string(),
-                    ),
-                ),
-            )
+            responseSchema = chaptersSchema
         },
     )
 
@@ -104,7 +120,7 @@ suspend fun generateChapters(videoUri: Uri, onChapterClicked: (timestamp: Long) 
     } else {
         // Failure - display an error text
         return {
-            ErrorText(promptFeedback?.blockReasonMessage)
+            ErrorUi(promptFeedback?.blockReasonMessage)
         }
     }
 }

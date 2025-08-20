@@ -156,7 +156,7 @@ fun ThumbnailsUi(thumbnailTimestamps: List<Long>, thumbnailImages: List<Bitmap>)
 }
 
 @Composable
-fun ErrorText(blockReasonMessage: String?) {
+fun ErrorUi(blockReasonMessage: String?) {
     Text(
         """
                     There was a problem generating the description. Here is some information that might help you debug:
@@ -221,5 +221,5 @@ fun ThumbnailsUiPreview() {
 @Preview(widthDp = 320)
 @Composable
 fun ErrorTextPreview() {
-    ErrorText(blockReasonMessage = "Something went wrong")
+    ErrorUi(blockReasonMessage = "Something went wrong")
 }

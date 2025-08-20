@@ -17,7 +17,7 @@ package com.android.ai.samples.geminivideometadatacreation
 
 import android.net.Uri
 import androidx.compose.runtime.Composable
-import com.android.ai.samples.geminivideometadatacreation.ui.ErrorText
+import com.android.ai.samples.geminivideometadatacreation.ui.ErrorUi
 import com.android.ai.samples.geminivideometadatacreation.ui.HashtagsUi
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
@@ -28,14 +28,30 @@ import com.google.firebase.ai.type.content
 import com.google.firebase.ai.type.generationConfig
 import kotlinx.serialization.json.Json
 
-// The configured model that includes the desired output format.
+/**
+ * Defines the expected schema for the hashtag generation response.
+ *
+ * This schema specifies that the model should return a JSON array of strings,
+ * where each string represents a hashtag. This ensures that the response
+ * can be easily parsed and used in the application.
+ */
+private val hashtagSchema = Schema.array(items = Schema.string("Hashtag"))
+
+/**
+ * A generative model instance configured to generate hashtags for video content.
+ *
+ * This model uses the "gemini-2.5-flash" model from Vertex AI and is specifically configured
+ * to return a JSON array of strings, where each string represents a hashtag.
+ * The `responseMimeType` is set to "application/json" and the `responseSchema` defines
+ * the expected output format as an array of strings with the item name "Hashtag".
+ */
 private val hashtagsModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
     .generativeModel(
         modelName = "gemini-2.5-flash",
         // Tell Firebase AI the exact format of the response.
         generationConfig {
             responseMimeType = "application/json"
-            responseSchema = Schema.array(items = Schema.string("Hashtag"))
+            responseSchema = hashtagSchema
         },
     )
 
@@ -71,10 +87,10 @@ suspend fun generateHashtags(videoUri: Uri): @Composable () -> Unit {
             val hashtags: List<String> = Json.decodeFromString(responseText)
             return { HashtagsUi(hashtags) }
         } catch (e: Exception) {
-            return { ErrorText("The model returned invalid data. Debug info: ${e.message}") }
+            return { ErrorUi("The model returned invalid data. Debug info: ${e.message}") }
         }
     } else {
         // Failure - display an error text
-        return { ErrorText(response.promptFeedback?.blockReasonMessage) }
+        return { ErrorUi(response.promptFeedback?.blockReasonMessage) }
     }
 }

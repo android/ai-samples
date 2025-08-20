@@ -7,7 +7,7 @@
  *
  *     https://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless required by applicable law_ or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -18,7 +18,7 @@ package com.android.ai.samples.geminivideometadatacreation
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import com.android.ai.samples.geminivideometadatacreation.ui.AccountTagsUi
-import com.android.ai.samples.geminivideometadatacreation.ui.ErrorText
+import com.android.ai.samples.geminivideometadatacreation.ui.ErrorUi
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerateContentResponse
@@ -37,21 +37,43 @@ data class AccountTag(
     val url: String,
 )
 
-// The configured model that includes the desired output format.
+/**
+ * Schema for the expected JSON output format when generating account tags.
+ * It defines an array of objects, where each object has two properties:
+ * - "tag": A string representing the account tag (e.g., "@username").
+ * - "url": A string representing the URL to the account's profile (e.g., a YouTube channel URL).
+ */
+private val accountTagsSchema = Schema.array(
+    items = Schema.obj(
+        mapOf(
+            "tag" to Schema.string(),
+            "url" to Schema.string("The YouTube profile url for this account"),
+        ),
+    ),
+)
+
+/**
+ * A generative model instance configured to interact with the Vertex AI Gemini API
+ * for generating account tags.
+ *
+ * This model is specifically set up with:
+ * - `modelName = "gemini-2.5-flash"`: Specifies the underlying Gemini model to use.
+ * - `responseMimeType = "application/json"`:  Indicates that the model is expected to
+ *   return its response in JSON format.
+ * - `responseSchema = accountTagsSchema`: Defines the expected structure of the JSON
+ *   response. This ensures that the output can be reliably parsed into a list of
+ *   `AccountTag` objects.
+ *
+ * This configuration allows for structured data extraction from the model's output,
+ * making it easier to integrate the generated tags into the application.
+ */
 private val accountTagsModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
     .generativeModel(
         modelName = "gemini-2.5-flash",
         // Tell Firebase AI the exact format of the response.
         generationConfig {
             responseMimeType = "application/json"
-            responseSchema = Schema.array(
-                items = Schema.obj(
-                    mapOf(
-                        "tag" to Schema.string(),
-                        "url" to Schema.string("The YouTube profile url for this account"),
-                    ),
-                ),
-            )
+            responseSchema = accountTagsSchema
         },
     )
 
@@ -88,7 +110,7 @@ suspend fun generateAccountTags(videoUri: Uri): @Composable () -> Unit {
     } else {
         // Failure - display an error text
         return {
-            ErrorText(response.promptFeedback?.blockReasonMessage)
+            ErrorUi(response.promptFeedback?.blockReasonMessage)
         }
     }
 }

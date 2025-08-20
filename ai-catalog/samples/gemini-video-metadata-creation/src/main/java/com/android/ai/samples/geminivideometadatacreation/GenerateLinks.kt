@@ -17,7 +17,7 @@ package com.android.ai.samples.geminivideometadatacreation
 
 import android.net.Uri
 import androidx.compose.runtime.Composable
-import com.android.ai.samples.geminivideometadatacreation.ui.ErrorText
+import com.android.ai.samples.geminivideometadatacreation.ui.ErrorUi
 import com.android.ai.samples.geminivideometadatacreation.ui.LinksUi
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
@@ -28,14 +28,28 @@ import com.google.firebase.ai.type.content
 import com.google.firebase.ai.type.generationConfig
 import kotlinx.serialization.json.Json
 
-// The configured model that includes the desired output format.
+/**
+ * Schema defining the expected output format for the links generation.
+ * It specifies that the model should return a JSON array of strings,
+ * where each string represents a "Link".
+ */
+private val linksSchema = Schema.array(items = Schema.string("Link"))
+
+/**
+ * The configured generative model for extracting links.
+ *
+ * This model is specifically configured to:
+ * - Use the "gemini-2.5-flash" model.
+ * - Expect a response in "application/json" format.
+ * - Adhere to the `linksSchema`, which defines the expected JSON structure as an array of strings (links).
+ */
 private val linksModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
     .generativeModel(
         modelName = "gemini-2.5-flash",
         // Tell Firebase AI the exact format of the response.
         generationConfig {
             responseMimeType = "application/json"
-            responseSchema = Schema.array(items = Schema.string("Link"))
+            responseSchema = linksSchema
         },
     )
 
@@ -71,12 +85,12 @@ suspend fun generateLinks(videoUri: Uri): @Composable () -> Unit {
             val links: List<String> = Json.decodeFromString(responseText)
             return { LinksUi(links) }
         } catch (e: Exception) {
-            return { ErrorText("The model returned invalid data. Debug info: ${e.message}") }
+            return { ErrorUi("The model returned invalid data. Debug info: ${e.message}") }
         }
     } else {
         // Failure - display an error text
         return {
-            ErrorText(response.promptFeedback?.blockReasonMessage)
+            ErrorUi(response.promptFeedback?.blockReasonMessage)
         }
     }
 }
