@@ -15,24 +15,34 @@
  */
 package com.android.ai.uicomponent
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidthIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -44,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.theme.Contrast
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PrimaryButton(
     text: String,
@@ -54,11 +65,16 @@ fun PrimaryButton(
     onClick: () -> Unit,
 ) {
     Button(
-        modifier = modifier.height(48.dp),
-        colors = ButtonDefaults.buttonColors(
+        modifier = modifier
+            .height(40.dp)
+            .requiredWidthIn(min = 40.dp),
+        colors = ButtonDefaults.outlinedButtonColors(
             contentColor = contentColor,
             containerColor = containerColor,
         ),
+        contentPadding = if (text.isEmpty())
+            PaddingValues(0.dp) else
+            ButtonDefaults.TextButtonWithIconContentPadding,
         onClick = { onClick() },
     ) {
         if (icon != null) {
@@ -68,23 +84,26 @@ fun PrimaryButton(
                 colorFilter = ColorFilter.tint(contentColor),
                 modifier = Modifier.size(width = 24.dp, height = 24.dp),
             )
-            Spacer(modifier = Modifier.width(8.dp))
         }
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.padding(end = 8.dp),
-        )
+        AnimatedContent(text.isNotEmpty()) { hasText ->
+            if (hasText) {
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            }
+        }
     }
 }
 
 @Preview
 @Composable
 fun PrimaryButtonLightPreview() {
-    AISampleCatalogTheme (
+    AISampleCatalogTheme(
         darkTheme = false,
-        contrast = Contrast.HIGH
-    ){
+        contrast = Contrast.HIGH,
+    ) {
         PrimaryButton(
             text = "Primary button",
             icon = rememberVectorPainter(Icons.Default.AccountBox),
@@ -98,11 +117,23 @@ fun PrimaryButtonLightPreview() {
 fun PrimaryButtonDarkPreview() {
     AISampleCatalogTheme(
         darkTheme = true,
-        contrast = Contrast.DEFAULT
+        contrast = Contrast.DEFAULT,
     ) {
         PrimaryButton(
             text = "Primary button",
             icon = rememberVectorPainter(Icons.Default.AccountBox),
+            onClick = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PrimaryButtonWithIconPreview() {
+    AISampleCatalogTheme {
+        PrimaryButton(
+            text = "",
+            icon = rememberVectorPainter(Icons.Filled.Code),
             onClick = {},
         )
     }
@@ -130,7 +161,7 @@ fun GenerateButton(
                 shape = RoundedCornerShape(30.dp),
             ),
         enabled = enabled,
-        colors = ButtonDefaults.buttonColors(
+        colors = ButtonDefaults.outlinedButtonColors(
             contentColor = contentColor,
             containerColor = containerColor,
             disabledContentColor = MaterialTheme.colorScheme.onSurface,
@@ -183,11 +214,8 @@ fun GenerateButtonDisabledPreview() {
 fun SecondaryButton(text: String, modifier: Modifier = Modifier, icon: Painter? = null, onClick: () -> Unit) {
     OutlinedButton(
         modifier = modifier.height(48.dp),
-        colors = ButtonColors(
+        colors = ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            containerColor = Color.Transparent,
-            disabledContentColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent,
         ),
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.onSurfaceVariant),
         onClick = { onClick() },
@@ -215,6 +243,35 @@ fun SecondaryButtonPreview() {
         SecondaryButton(
             text = "Outlined button",
             icon = painterResource(id = R.drawable.ic_ai_img),
+            onClick = {},
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun BackButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
+    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.outline) {
+        OutlinedIconButton(
+            shape = IconButtonDefaults.smallSquareShape,
+            onClick = { onClick() },
+            modifier = modifier,
+        ) {
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = null,
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun BackButtonPreview() {
+    AISampleCatalogTheme {
+        BackButton(
             onClick = {},
         )
     }

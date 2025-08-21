@@ -13,39 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ai.samples.imagen.ui
+package com.android.ai.uicomponent
 
 import android.content.Intent
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
-import com.android.ai.samples.imagen.R
 
 @Composable
-fun SeeCodeButton() {
+fun SeeCodeButton(sourceCodeUrl: String, modifier: Modifier = Modifier, withText: Boolean = true) {
     val context = LocalContext.current
-    val githubLink = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/imagen"
-    Button(
+
+    PrimaryButton(
+        text = if (withText) "SOURCE" else "",
+        icon = rememberVectorPainter(Icons.Filled.Code),
         onClick = {
-            val intent = Intent(Intent.ACTION_VIEW, githubLink.toUri())
+            val intent = Intent(Intent.ACTION_VIEW, sourceCodeUrl.toUri())
             context.startActivity(intent)
         },
-        contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
-    ) {
-        Icon(Icons.Filled.Code, contentDescription = null)
-        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-        Text(
-            text = stringResource(R.string.see_code),
-        )
-    }
+        modifier = modifier,
+    )
 }

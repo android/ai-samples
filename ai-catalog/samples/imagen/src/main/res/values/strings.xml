@@ -19,6 +19,7 @@
     <string name="see_code">See Code</string>
     <string name="placeholder_prompt">An oil painting of Alcatraz</string>
     <string name="title_image_generation_screen">Imagen image generation</string>
+    <string name="subtitle_image_generation_screen">Generate images with Imagen, Google image generation model</string>
     <string name="generate_button">Generate</string>
     <string name="generating_label">Generating…</string>
     <string name="prompt_label">Prompt</string>

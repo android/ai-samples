@@ -19,7 +19,6 @@ import android.app.UiModeManager
 import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -278,8 +277,9 @@ enum class Contrast { DEFAULT, MEDIUM, HIGH }
 
 @Composable
 private fun systemContrast(): Contrast {
-    if(Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
-        LocalInspectionMode.current) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+        LocalInspectionMode.current
+    ) {
         return Contrast.DEFAULT
     } else {
         val uiModeManager = LocalContext.current.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
@@ -299,14 +299,14 @@ fun AISampleCatalogTheme(
     contrast: Contrast = systemContrast(),
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = if(darkTheme) {
-        when(contrast) {
+    val colorScheme = if (darkTheme) {
+        when (contrast) {
             Contrast.DEFAULT -> darkScheme
             Contrast.MEDIUM -> mediumContrastDarkColorScheme
             Contrast.HIGH -> highContrastDarkColorScheme
         }
     } else {
-        when(contrast) {
+        when (contrast) {
             Contrast.DEFAULT -> lightScheme
             Contrast.MEDIUM -> mediumContrastLightColorScheme
             Contrast.HIGH -> highContrastLightColorScheme
