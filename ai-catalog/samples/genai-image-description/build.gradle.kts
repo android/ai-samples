@@ -72,5 +72,6 @@ dependencies {
     implementation(libs.genai.image.description)
     implementation(libs.coil.compose)
     implementation(libs.kotlinx.coroutines.guava)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     ksp(libs.hilt.compiler)
 }

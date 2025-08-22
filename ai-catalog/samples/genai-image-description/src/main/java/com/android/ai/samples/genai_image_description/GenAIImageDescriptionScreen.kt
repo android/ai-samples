@@ -22,6 +22,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -31,14 +32,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,19 +50,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.android.ai.samples.geminimultimodal.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hiltViewModel()) {
-
-    val sheetState = rememberModalBottomSheetState()
-    var showBottomSheet by remember { mutableStateOf(false) }
-
-    val context = LocalContext.current
-
-    val imageDescriptionResult = viewModel.resultGenerated.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val photoPickerLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
@@ -74,7 +67,8 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
     }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(), topBar = {
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
             TopAppBar(
                 colors = topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -111,7 +105,9 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
                 onClick = {
                     photoPickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
                 },
-                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                modifier = Modifier
+                    .padding(10.dp)
+                    .align(Alignment.CenterHorizontally),
             ) {
                 Text(
                     text = stringResource(id = R.string.genai_image_description_add_image),
@@ -121,26 +117,40 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
             // Generate image description button
             Button(
                 onClick = {
-                    showBottomSheet = true
-                    viewModel.getImageDescription(imageUri, context)
-                }, modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                    viewModel.getImageDescription(imageUri)
+                },
+                modifier = Modifier
+                    .padding(10.dp)
+                    .align(Alignment.CenterHorizontally),
             ) {
                 Text(
                     text = stringResource(id = R.string.genai_image_description_run_inference),
                 )
             }
-        }
 
-        if (showBottomSheet) {
-            ModalBottomSheet(
-                onDismissRequest = {
-                    showBottomSheet = false
-                    viewModel.clearGeneratedText()
-                }, sheetState = sheetState,
+            val outputText = when (val state = uiState) {
+                is GenAIImageDescriptionUiState.DownloadingFeature -> stringResource(
+                    id = R.string.image_desc_downloading,
+                    state.bytesDownloaded,
+                    state.bytesToDownload,
+                )
+
+                is GenAIImageDescriptionUiState.Error -> stringResource(state.errorMessageStringRes)
+                is GenAIImageDescriptionUiState.Generating -> state.partialOutput
+                is GenAIImageDescriptionUiState.Success -> state.generatedOutput
+                GenAIImageDescriptionUiState.CheckingFeatureStatus -> stringResource(id = R.string.image_desc_checking_feature_status)
+                else -> "" // Show nothing for the Initial state
+            }
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
             ) {
                 Text(
-                    text = imageDescriptionResult.value,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp),
+                    text = outputText,
+                    modifier = Modifier.padding(16.dp),
                 )
             }
         }
