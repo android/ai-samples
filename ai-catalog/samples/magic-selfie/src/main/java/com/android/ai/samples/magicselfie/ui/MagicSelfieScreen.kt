@@ -19,37 +19,28 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.provider.MediaStore
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.SmartToy
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.SecureTextField
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -57,16 +48,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageShader
+import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.android.ai.samples.magicselfie.R
+import com.android.ai.uicomponent.GenerateButton
+import com.android.ai.uicomponent.PrimaryButton
+import com.android.ai.uicomponent.SampleDetailTopAppBar
+import com.android.ai.uicomponent.SecondaryButton
+import com.android.ai.uicomponent.SecondaryButtonPreview
+import com.android.ai.uicomponent.TextInput
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,8 +95,6 @@ fun MagicSelfieScreen(viewModel: MagicSelfieViewModel = hiltViewModel()) {
     cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
     var selfieBitmap by remember { mutableStateOf<Bitmap?>(null) }
-    var editTextValue by remember { mutableStateOf("A very scenic view from the edge of the grand canyon") }
-
     val resultLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -107,114 +109,114 @@ fun MagicSelfieScreen(viewModel: MagicSelfieViewModel = hiltViewModel()) {
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            TopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                title = {
-                    Text(text = stringResource(id = R.string.magic_selfie))
-                },
-                actions = {
-                    SeeCodeButton(context)
-                },
+            SampleDetailTopAppBar(
+                sampleName = stringResource(R.string.magic_selfie_title),
+                sampleDescription = stringResource(R.string.magic_selfie_subtitle),
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/magic-selfie",
             )
         },
     ) { innerPadding ->
-        Column(
+        val imageBitmap = remember {
+            val bitmap = BitmapFactory.decodeResource(context.resources, com.android.ai.uicomponent.R.drawable.img_fill)
+            bitmap.asImageBitmap()
+        }
+        val imageShader = remember {
+            ImageShader(
+                image = imageBitmap,
+                tileModeX = TileMode.Repeated,
+                tileModeY = TileMode.Repeated,
+            )
+        }
+
+        Box(
             Modifier
-                .padding(12.dp)
+                .fillMaxSize()
                 .padding(innerPadding)
+                .padding(16.dp)
                 .imePadding()
-                .verticalScroll(rememberScrollState()),
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.outline,
+                    shape = RoundedCornerShape(40.dp),
+                )
+                .clip(RoundedCornerShape(40.dp))
+                .background(ShaderBrush(imageShader)),
         ) {
-            Card(
-                modifier = Modifier
-                    .size(
-                        width = 450.dp,
-                        height = 450.dp,
-                    ),
-            ) {
+
+            if (selfieBitmap == null) {
+                PrimaryButton(
+                    text = stringResource(R.string.add_image),
+                    icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
+                    modifier = Modifier
+                        .height(96.dp)
+                        .padding(start = 24.dp, end = 24.dp)
+                        .align(Alignment.Center),
+                    onClick = {
+                        resultLauncher.launch(cameraIntent)
+                    },
+                )
+            } else {
                 if (uiState is MagicSelfieUiState.Success) {
                     val successState = uiState as MagicSelfieUiState.Success
                     Image(
                         bitmap = successState.bitmap.asImageBitmap(),
-                        contentDescription = "Picture",
+                        contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),
                     )
                 } else if (selfieBitmap != null) {
                     Image(
                         bitmap = selfieBitmap!!.asImageBitmap(),
-                        contentDescription = "Picture",
-                        contentScale = ContentScale.Fit,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-            }
-            Spacer(modifier = Modifier.height(6.dp))
-            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                Button(
-                    onClick = {
-                        resultLauncher.launch(cameraIntent)
-                    },
-                ) {
-                    Icon(Icons.Default.CameraAlt, contentDescription = "Camera")
+
+                val textFieldState = rememberTextFieldState()
+                val keyboardController = LocalSoftwareKeyboardController.current
+
+                TextInput(
+                    state = textFieldState,
+                    placeholder = stringResource(R.string.prompt_placeholder),
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .height(80.dp)
+                        .align(Alignment.BottomCenter),
+                    primaryButton = {
+                        GenerateButton(
+                            text = "",
+                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_bg),
+                            enabled = textFieldState.text.isNotEmpty() &&
+                                (uiState !is MagicSelfieUiState.RemovingBackground) &&
+                                (uiState !is MagicSelfieUiState.GeneratingBackground),
+                        ) {
+                            if (selfieBitmap != null) {
+                                viewModel.createMagicSelfie(selfieBitmap!!, textFieldState.text.toString())
+                                keyboardController?.hide()
+                            }
+                        } },
+                    secondaryButton = {
+                        SecondaryButton(
+                            text = "",
+                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
+                            enabled = (uiState !is MagicSelfieUiState.RemovingBackground) &&
+                                    (uiState !is MagicSelfieUiState.GeneratingBackground),
+                        ) {
+                            resultLauncher.launch(cameraIntent)
+                        }
+                    })
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
 
-            TextField(
-                value = editTextValue,
-                onValueChange = { editTextValue = it },
-                label = { Text("Prompt") },
-            )
-
-            Button(
-                modifier = Modifier.padding(vertical = 8.dp),
-                onClick = {
-                    if (selfieBitmap != null) {
-                        viewModel.createMagicSelfie(selfieBitmap!!, editTextValue)
-                    }
-                },
-                enabled = (uiState !is MagicSelfieUiState.RemovingBackground) &&
-                    (uiState !is MagicSelfieUiState.GeneratingBackground),
-            ) {
-                Icon(Icons.Default.SmartToy, contentDescription = "Robot")
-                Text(modifier = Modifier.padding(start = 8.dp), text = "Generate")
-            }
-
-            if (uiState is MagicSelfieUiState.RemovingBackground) {
-                Spacer(
-                    modifier = Modifier
-                        .height(30.dp)
-                        .padding(12.dp),
-                )
-                Text(
-                    text = stringResource(R.string.removing_background),
-                )
-            } else if (uiState is MagicSelfieUiState.GeneratingBackground) {
-                Spacer(
-                    modifier = Modifier
-                        .height(30.dp)
-                        .padding(12.dp),
-                )
-                Text(
-                    text = stringResource(R.string.generating_new_background),
-                )
-            } else if (uiState is MagicSelfieUiState.Error) {
-                val errorState = uiState as MagicSelfieUiState.Error
-                Spacer(
-                    modifier = Modifier
-                        .height(30.dp)
-                        .padding(12.dp),
-                )
-                Text(
-                    text = errorState.message ?: stringResource(R.string.unknown_error),
-                    color = MaterialTheme.colorScheme.error,
-                )
+            if (uiState is MagicSelfieUiState.Error) {
+                Toast.makeText(
+                    context,
+                    (uiState as MagicSelfieUiState.Error).message ?: context.getString(R.string.unknown_error),
+                    Toast.LENGTH_SHORT,
+                ).show()
             }
         }
     }
-}
