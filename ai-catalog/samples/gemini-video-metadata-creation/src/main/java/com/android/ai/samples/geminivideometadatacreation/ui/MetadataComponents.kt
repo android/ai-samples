@@ -54,7 +54,6 @@ import androidx.core.net.toUri
 import com.android.ai.samples.geminivideometadatacreation.AccountTag
 import com.android.ai.samples.geminivideometadatacreation.AccountTags
 import com.android.ai.samples.geminivideometadatacreation.Chapter
-import com.android.ai.samples.geminivideometadatacreation.Chapters
 
 @Composable
 fun AccountTagsUi(accountTags: AccountTags) {
@@ -74,7 +73,7 @@ fun AccountTagsUi(accountTags: AccountTags) {
 }
 
 @Composable
-fun ChaptersUi(chapters: Chapters, onChapterClicked: (timestamp: Long) -> Unit) {
+fun ChaptersUi(chapters: List<Chapter>, onChapterClicked: (timestamp: Long) -> Unit) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.width(IntrinsicSize.Max),

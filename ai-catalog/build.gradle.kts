@@ -25,6 +25,7 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.spotless) apply false
+    kotlin("jvm") version libs.versions.kotlin apply false
 }
 
 subprojects {
@@ -43,5 +44,11 @@ subprojects {
             // Look for the first line that doesn't have a block comment (assumed to be the license)
             licenseHeaderFile(rootProject.file("spotless/copyright.kt"), "(^(?![\\/ ]\\*).*$)")
         }
+    }
+}
+
+buildscript {
+    dependencies {
+        classpath(kotlin("gradle-plugin", version = "2.1.0"))
     }
 }

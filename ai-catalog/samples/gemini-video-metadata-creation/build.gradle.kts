@@ -53,7 +53,9 @@ android {
 }
 
 dependencies {
-
+    implementation(project(":firebase-ai"))
+    ksp(project(":firebase-ai-processor"))
+    implementation(project(":annotations"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
