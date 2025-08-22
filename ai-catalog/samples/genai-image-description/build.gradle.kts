@@ -74,4 +74,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.guava)
     implementation(libs.androidx.lifecycle.runtime.compose)
     ksp(libs.hilt.compiler)
+
+    implementation(project(":ui-component"))
 }
