@@ -62,6 +62,7 @@ fun PrimaryButton(
     contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     containerColor: Color = MaterialTheme.colorScheme.primary,
     icon: Painter? = null,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
     Button(
@@ -76,6 +77,7 @@ fun PrimaryButton(
             PaddingValues(0.dp) else
             ButtonDefaults.TextButtonWithIconContentPadding,
         onClick = { onClick() },
+        enabled = enabled,
     ) {
         if (icon != null) {
             Image(
@@ -211,12 +213,13 @@ fun GenerateButtonDisabledPreview() {
 }
 
 @Composable
-fun SecondaryButton(text: String, modifier: Modifier = Modifier, icon: Painter? = null, onClick: () -> Unit) {
+fun SecondaryButton(text: String, modifier: Modifier = Modifier, icon: Painter? = null, enabled: Boolean = true, onClick: () -> Unit) {
     OutlinedButton(
         modifier = modifier.height(48.dp),
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ),
+        enabled = enabled,
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.onSurfaceVariant),
         onClick = { onClick() },
     ) {
