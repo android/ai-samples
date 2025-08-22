@@ -19,6 +19,8 @@ import android.net.Uri
 import androidx.compose.runtime.Composable
 import com.android.ai.samples.geminivideometadatacreation.ui.AccountTagsUi
 import com.android.ai.samples.geminivideometadatacreation.ui.ErrorUi
+import com.example.annotations.Generable
+import com.example.firebase_ai.generativeModelForList
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerateContentResponse
@@ -29,28 +31,13 @@ import com.google.firebase.ai.type.generationConfig
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-typealias AccountTags = List<AccountTag>
-
+@Generable
 @Serializable
 data class AccountTag(
     val tag: String,
     val url: String,
 )
 
-/**
- * Schema for the expected JSON output format when generating account tags.
- * It defines an array of objects, where each object has two properties:
- * - "tag": A string representing the account tag (e.g., "@username").
- * - "url": A string representing the URL to the account's profile (e.g., a YouTube channel URL).
- */
-private val accountTagsSchema = Schema.array(
-    items = Schema.obj(
-        mapOf(
-            "tag" to Schema.string(),
-            "url" to Schema.string("The YouTube profile url for this account"),
-        ),
-    ),
-)
 
 /**
  * A generative model instance configured to interact with the Vertex AI Gemini API
@@ -68,14 +55,7 @@ private val accountTagsSchema = Schema.array(
  * making it easier to integrate the generated tags into the application.
  */
 private val accountTagsModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
-    .generativeModel(
-        modelName = "gemini-2.5-flash",
-        // Tell Firebase AI the exact format of the response.
-        generationConfig {
-            responseMimeType = "application/json"
-            responseSchema = accountTagsSchema
-        },
-    )
+    .generativeModelForList<AccountTag>(modelName = "gemini-2.5-flash")
 
 /**
  * Calls the Vertex AI Gemini API to generate relevant account tags for the given video.
@@ -88,7 +68,7 @@ private val accountTagsModel = Firebase.ai(backend = GenerativeBackend.vertexAI(
  */
 suspend fun generateAccountTags(videoUri: Uri): @Composable () -> Unit {
     // Execute the model call with our custom prompt
-    val response: GenerateContentResponse = accountTagsModel
+    val response = accountTagsModel
         .generateContent(
             content {
                 fileData(videoUri.toString(), "video/mp4")
@@ -101,11 +81,8 @@ suspend fun generateAccountTags(videoUri: Uri): @Composable () -> Unit {
             },
         )
 
-    val responseText = response.text
-    if (responseText != null) {
-        // Successful response - parse the JSON and display the accountTags
-        val accountTags: AccountTags =
-            Json.decodeFromString<AccountTags>(responseText)
+    val accountTags = response.typedContent
+    if (accountTags != null) {
         return { AccountTagsUi(accountTags) }
     } else {
         // Failure - display an error text

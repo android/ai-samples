@@ -52,11 +52,10 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import com.android.ai.samples.geminivideometadatacreation.AccountTag
-import com.android.ai.samples.geminivideometadatacreation.AccountTags
 import com.android.ai.samples.geminivideometadatacreation.Chapter
 
 @Composable
-fun AccountTagsUi(accountTags: AccountTags) {
+fun AccountTagsUi(accountTags: List<AccountTag>) {
     val context = LocalContext.current
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         accountTags.forEach { accountTag ->

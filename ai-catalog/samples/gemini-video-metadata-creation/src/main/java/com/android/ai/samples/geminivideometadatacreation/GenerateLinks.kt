@@ -19,6 +19,7 @@ import android.net.Uri
 import androidx.compose.runtime.Composable
 import com.android.ai.samples.geminivideometadatacreation.ui.ErrorUi
 import com.android.ai.samples.geminivideometadatacreation.ui.LinksUi
+import com.example.firebase_ai.generativeModelForList
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerateContentResponse
@@ -29,13 +30,6 @@ import com.google.firebase.ai.type.generationConfig
 import kotlinx.serialization.json.Json
 
 /**
- * Schema defining the expected output format for the links generation.
- * It specifies that the model should return a JSON array of strings,
- * where each string represents a "Link".
- */
-private val linksSchema = Schema.array(items = Schema.string("Link"))
-
-/**
  * The configured generative model for extracting links.
  *
  * This model is specifically configured to:
@@ -44,14 +38,7 @@ private val linksSchema = Schema.array(items = Schema.string("Link"))
  * - Adhere to the `linksSchema`, which defines the expected JSON structure as an array of strings (links).
  */
 private val linksModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
-    .generativeModel(
-        modelName = "gemini-2.5-flash",
-        // Tell Firebase AI the exact format of the response.
-        generationConfig {
-            responseMimeType = "application/json"
-            responseSchema = linksSchema
-        },
-    )
+    .generativeModelForList<String>(modelName = "gemini-2.5-flash")
 
 /**
  * Analyzes a video and generates a list of relevant links to be tagged.
@@ -65,7 +52,7 @@ private val linksModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
  */
 suspend fun generateLinks(videoUri: Uri): @Composable () -> Unit {
     // Execute the model call with our custom prompt
-    val response: GenerateContentResponse = linksModel
+    val response = linksModel
         .generateContent(
             content {
                 fileData(videoUri.toString(), "video/mp4")
@@ -78,15 +65,9 @@ suspend fun generateLinks(videoUri: Uri): @Composable () -> Unit {
             },
         )
 
-    val responseText = response.text
-    if (responseText != null) {
-        // Successful response - parse the JSON and display the links
-        try {
-            val links: List<String> = Json.decodeFromString(responseText)
-            return { LinksUi(links) }
-        } catch (e: Exception) {
-            return { ErrorUi("The model returned invalid data. Debug info: ${e.message}") }
-        }
+    val links = response.typedContent
+    if (links != null) {
+        return { LinksUi(links) }
     } else {
         // Failure - display an error text
         return {

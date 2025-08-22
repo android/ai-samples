@@ -19,56 +19,25 @@ import android.net.Uri
 import androidx.compose.runtime.Composable
 import com.android.ai.samples.geminivideometadatacreation.ui.ChaptersUi
 import com.android.ai.samples.geminivideometadatacreation.ui.ErrorUi
+import com.example.annotations.Generable
+import com.example.annotations.Guide
+import com.example.firebase_ai.generativeModelForList
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
-import com.google.firebase.ai.type.Schema
 import com.google.firebase.ai.type.content
-import com.google.firebase.ai.type.generationConfig
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 
-typealias Chapters = List<Chapter>
-
+@Generable("Self-contained section of the video")
 @Serializable
 data class Chapter(
+    @Guide(description = "Chapter start in milliseconds")
     val timestamp: Long,
     val title: String,
 )
 
-/**
- * Schema defining the structure of the chapters data.
- *
- * This schema specifies that the output should be an array of objects,
- * where each object represents a chapter and contains:
- * - `timestamp`: A long value representing the chapter start time in milliseconds.
- * - `title`: A string representing the chapter title.
- */
-private val chaptersSchema = Schema.array(
-    items = Schema.obj(
-        mapOf(
-            "timestamp" to Schema.long("chapter start in milliseconds"),
-            "title" to Schema.string(),
-        ),
-    ),
-)
-
-/**
- * The configured generative model for creating video chapters.
- *
- * This model is initialized with the "gemini-2.5-flash" model name and
- * configured to expect a JSON response. The `responseSchema` ensures that
- * the output conforms to the `Chapters` data structure.
- */
 private val chaptersModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
-    .generativeModel(
-        modelName = "gemini-2.5-flash",
-        // Tell Firebase AI the exact format of the response.
-        generationConfig {
-            responseMimeType = "application/json"
-            responseSchema = chaptersSchema
-        },
-    )
+    .generativeModelForList<Chapter>("gemini-2.5-flash")
 
 /**
  * Generates chapters for a given video URI.
@@ -105,11 +74,9 @@ suspend fun generateChapters(videoUri: Uri, onChapterClicked: (timestamp: Long) 
             )
         },
     )
-    val responseText = response.text
-    if (responseText != null) {
-        // Successful response - parse the JSON and display the chapters
-        val chapters: Chapters =
-            Json.decodeFromString<Chapters>(responseText)
+
+    val chapters: List<Chapter>? = response.typedContent
+    if (chapters != null) {
         return { ChaptersUi(chapters, onChapterClicked) }
     } else {
         // Failure - display an error text

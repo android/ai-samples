@@ -19,6 +19,7 @@ import android.net.Uri
 import androidx.compose.runtime.Composable
 import com.android.ai.samples.geminivideometadatacreation.ui.ErrorUi
 import com.android.ai.samples.geminivideometadatacreation.ui.HashtagsUi
+import com.example.firebase_ai.generativeModelForList
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerateContentResponse
@@ -29,15 +30,6 @@ import com.google.firebase.ai.type.generationConfig
 import kotlinx.serialization.json.Json
 
 /**
- * Defines the expected schema for the hashtag generation response.
- *
- * This schema specifies that the model should return a JSON array of strings,
- * where each string represents a hashtag. This ensures that the response
- * can be easily parsed and used in the application.
- */
-private val hashtagSchema = Schema.array(items = Schema.string("Hashtag"))
-
-/**
  * A generative model instance configured to generate hashtags for video content.
  *
  * This model uses the "gemini-2.5-flash" model from Vertex AI and is specifically configured
@@ -46,14 +38,7 @@ private val hashtagSchema = Schema.array(items = Schema.string("Hashtag"))
  * the expected output format as an array of strings with the item name "Hashtag".
  */
 private val hashtagsModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
-    .generativeModel(
-        modelName = "gemini-2.5-flash",
-        // Tell Firebase AI the exact format of the response.
-        generationConfig {
-            responseMimeType = "application/json"
-            responseSchema = hashtagSchema
-        },
-    )
+    .generativeModelForList<String>(modelName = "gemini-2.5-flash")
 
 /**
  * Generates a list of relevant and trending hashtags for the given video URI.
@@ -67,7 +52,7 @@ private val hashtagsModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
  */
 suspend fun generateHashtags(videoUri: Uri): @Composable () -> Unit {
     // Execute the model call with our custom prompt
-    val response: GenerateContentResponse = hashtagsModel
+    val response = hashtagsModel
         .generateContent(
             content {
                 fileData(videoUri.toString(), "video/mp4")
@@ -80,15 +65,9 @@ suspend fun generateHashtags(videoUri: Uri): @Composable () -> Unit {
             },
         )
 
-    val responseText = response.text
-    if (responseText != null) {
-        // Successful response - parse the JSON and display the hashtags
-        try {
-            val hashtags: List<String> = Json.decodeFromString(responseText)
-            return { HashtagsUi(hashtags) }
-        } catch (e: Exception) {
-            return { ErrorUi("The model returned invalid data. Debug info: ${e.message}") }
-        }
+    val hashtags = response.typedContent
+    if (hashtags != null) {
+        return { HashtagsUi(hashtags) }
     } else {
         // Failure - display an error text
         return { ErrorUi(response.promptFeedback?.blockReasonMessage) }

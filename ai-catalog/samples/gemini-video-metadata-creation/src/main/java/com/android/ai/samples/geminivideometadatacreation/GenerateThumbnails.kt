@@ -21,6 +21,8 @@ import androidx.compose.runtime.Composable
 import com.android.ai.samples.geminivideometadatacreation.player.extractListOfThumbnails
 import com.android.ai.samples.geminivideometadatacreation.ui.ErrorUi
 import com.android.ai.samples.geminivideometadatacreation.ui.ThumbnailsUi
+import com.example.annotations.Generable
+import com.example.firebase_ai.generativeModelForList
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerateContentResponse
@@ -28,14 +30,14 @@ import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.Schema
 import com.google.firebase.ai.type.content
 import com.google.firebase.ai.type.generationConfig
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-/**
- * Defines the schema for the expected response from the generative model.
- * The model is expected to return a JSON array of long integers,
- * where each long represents a timestamp in milliseconds for a suggested thumbnail.
- */
-private val thumbnailsSchema = Schema.array(items = Schema.long("thumbnail timestamp in milliseconds"))
+@Generable("thumbnail timestamp in milliseconds")
+@Serializable
+data class Thumbnail(
+    val timestamp: Long
+)
 
 /**
  * Initializes the generative model for thumbnail generation.
@@ -44,14 +46,7 @@ private val thumbnailsSchema = Schema.array(items = Schema.long("thumbnail times
  * defining an array of long integers representing thumbnail timestamps.
  */
 private val thumbnailsModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
-    .generativeModel(
-        modelName = "gemini-2.5-flash",
-        // Tell Firebase AI the exact format of the response.
-        generationConfig {
-            responseMimeType = "application/json"
-            responseSchema = thumbnailsSchema
-        },
-    )
+    .generativeModelForList<Thumbnail>(modelName = "gemini-2.5-flash")
 
 /**
  * Generates thumbnail suggestions for a given video using a generative model.
@@ -74,7 +69,7 @@ private val thumbnailsModel = Firebase.ai(backend = GenerativeBackend.vertexAI()
  */
 suspend fun generateThumbnails(videoUri: Uri, context: Context): @Composable () -> Unit {
     // Execute the model call with our custom prompt
-    val response: GenerateContentResponse = thumbnailsModel
+    val response = thumbnailsModel
         .generateContent(
             content {
                 fileData(videoUri.toString(), "video/mp4")
@@ -87,16 +82,11 @@ suspend fun generateThumbnails(videoUri: Uri, context: Context): @Composable () 
             },
         )
 
-    val responseText = response.text
-    if (responseText != null) {
-        // Successful response - parse the JSON and download the thumbnails asynchronously
-        try {
-            val thumbnails: List<Long> = Json.decodeFromString(responseText)
-            val thumbnailBitmaps = extractListOfThumbnails(context, videoUri, thumbnails)
-            return { ThumbnailsUi(thumbnails, thumbnailBitmaps) }
-        } catch (e: Exception) {
-            return { ErrorUi("The model returned invalid data. Debug info: ${e.message}") }
-        }
+    val thumbnails = response.typedContent
+    if (thumbnails != null) {
+        val timestamps = thumbnails.map { it.timestamp }
+        val thumbnailBitmaps = extractListOfThumbnails(context, videoUri, timestamps)
+        return { ThumbnailsUi(timestamps, thumbnailBitmaps) }
     } else {
         // Failure - display an error text
         return {
