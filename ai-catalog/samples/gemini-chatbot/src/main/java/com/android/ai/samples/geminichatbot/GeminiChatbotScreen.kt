@@ -177,8 +177,8 @@ fun MessageBubble(message: ChatMessage, modifier: Modifier = Modifier) {
                 AnnotatedString.fromHtml(
                     message.text,
                     linkStyles = TextLinkStyles(
-                        style = SpanStyle(textDecoration = TextDecoration.Underline)
-                    )
+                        style = SpanStyle(textDecoration = TextDecoration.Underline),
+                    ),
                 )
             }
             Text(
