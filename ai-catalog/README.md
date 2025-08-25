@@ -1,6 +1,6 @@
 # Android AI Sample Catalog
 
-![Android AI Sample Catalog screenshots](https://developer.android.com/static/ai/assets/images/ai_sample_catalog_1440.png)
+![Android AI Sample Catalog screenshots](https://developer.android.com/static/ai/assets/images/ai_catalog_screenshot_1440.png)
 
 This folder contains the Android AI Sample catalog, a stand alone application giving you access to 
 individual self-contained samples illustrating some of the Generative AI capabilities unlocked by 
@@ -21,6 +21,7 @@ Browse the samples inside the `/samples` folder:
 - **imagen**: an image generation sample using Imagen
 - **magic-selfie**: an sample using ML Kit subject segmentation and Imagen for image generation
 - **gemini-video-summarization**: a video summarization sample using Gemini Flash
+- **gemini-video-metadata-creation**: a sample using Gemini Flash to generate a video description, hashtags, chapters, etc...
 - **gemini-live-todo**: a todo list app using Gemini Live
 - More to come...
 
