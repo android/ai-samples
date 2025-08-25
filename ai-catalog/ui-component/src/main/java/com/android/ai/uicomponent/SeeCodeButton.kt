@@ -27,7 +27,7 @@ import androidx.core.net.toUri
 @Composable
 fun SeeCodeButton(sourceCodeUrl: String, modifier: Modifier = Modifier, withText: Boolean = true) {
     val context = LocalContext.current
-    val githubLink = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/imagen"
+    val githubLink = sourceCodeUrl
     PrimaryButton(
         text= "SOURCE",
         icon = rememberVectorPainter(Icons.Filled.Code),
