@@ -56,10 +56,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.geminilivetodo.R
@@ -69,10 +67,6 @@ import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.SecondaryButton
 import com.android.ai.uicomponent.TextInput
 
-/**
- * The main screen for the To-do list application.
- * This composable is stateful, connecting to the ViewModel to manage UI state and events.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
@@ -232,78 +226,3 @@ fun TodoItem(task: Todo, onToggle: () -> Unit, onDelete: () -> Unit) {
         }
     }
 }
-
-//@Composable
-//fun TodoInput(text: String, onTextChange: (String) -> Unit, onAddClick: () -> Unit) {
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(bottom = 16.dp),
-//        verticalAlignment = Alignment.CenterVertically,
-//    ) {
-//        OutlinedTextField(
-//            value = text,
-//            onValueChange = onTextChange,
-//            label = { Text(stringResource(R.string.new_task_placeholder)) },
-//            modifier = Modifier.weight(1f),
-//            singleLine = true,
-//        )
-//        Spacer(modifier = Modifier.width(8.dp))
-//        Button(
-//            enabled = text.isNotBlank(),
-//            onClick = onAddClick,
-//        ) {
-//            Text(stringResource(R.string.add_button))
-//        }
-//    }
-//}
-
-//@Composable
-//fun MicButton(uiState: TodoScreenUiState, onToggle: () -> Unit) {
-//    if (uiState is TodoScreenUiState.Success) {
-//        val micIcon = when {
-//            uiState.liveSessionState is LiveSessionState.Ready -> Icons.Filled.MicOff
-//            uiState.liveSessionState is LiveSessionState.Running -> Icons.Filled.Mic
-//            uiState.liveSessionState is LiveSessionState.NotReady -> Icons.Filled.MicNone
-//            uiState.liveSessionState is LiveSessionState.Error -> Icons.Filled.MicNone
-//            else -> Icons.Filled.MicNone
-//        }
-//
-//        val containerColor = if (uiState.liveSessionState is LiveSessionState.Running) {
-//            val infiniteTransition =
-//                rememberInfiniteTransition(label = "mic_color_transition")
-//            infiniteTransition.animateColor(
-//                initialValue = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-//                targetValue = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
-//                animationSpec = infiniteRepeatable(
-//                    animation = tween(1000, easing = LinearEasing),
-//                    repeatMode = RepeatMode.Reverse,
-//                ),
-//                label = "mic_color",
-//            ).value
-//        } else {
-//            MaterialTheme.colorScheme.primaryContainer
-//        }
-//
-//        FloatingActionButton(
-//            onClick = { if (uiState.liveSessionState !is LiveSessionState.NotReady) onToggle() },
-//            containerColor = containerColor,
-//        ) {
-//            Icon(micIcon, stringResource(R.string.interact_with_todolist_by_voice))
-//        }
-//    } else if (uiState is TodoScreenUiState.Error) {
-//        val isDialogDisplayed = remember { mutableStateOf(true) }
-//        if (isDialogDisplayed.value) {
-//            AlertDialog(
-//                onDismissRequest = { isDialogDisplayed.value = false },
-//                title = { Text(text = stringResource(R.string.error_title)) },
-//                text = { Text(text = stringResource(R.string.error_message)) },
-//                confirmButton = {
-//                    Button(onClick = { isDialogDisplayed.value = false }) {
-//                        Text(text = stringResource(R.string.dismiss_button))
-//                    }
-//                },
-//            )
-//        }
-//    }
-//}

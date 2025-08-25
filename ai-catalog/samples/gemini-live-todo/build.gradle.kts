@@ -61,7 +61,6 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.hilt.android)
     implementation(libs.ui.tooling.preview)
-    debugImplementation(libs.ui.tooling)
     ksp(libs.hilt.compiler)
     implementation(project(":ui-component"))
     implementation(libs.hilt.navigation.compose)

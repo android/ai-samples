@@ -143,13 +143,13 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
             val removeTodo = FunctionDeclaration(
                 "removeTodo",
                 "Remove a task from the todo list",
-                mapOf("todoId" to Schema.string("The id of the task to remove from the todo list")),
+                mapOf("todoId" to Schema.integer("The id of the task to remove from the todo list")),
             )
 
             val toggleTodoStatus = FunctionDeclaration(
                 "toggleTodoStatus",
                 "Change the status of the task",
-                mapOf("todoId" to Schema.string("The id of the task to remove from the todo list")),
+                mapOf("todoId" to Schema.integer("The id of the task to remove from the todo list")),
             )
 
             val getTodoList = FunctionDeclaration(
