@@ -21,6 +21,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -39,10 +40,12 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SecureTextField
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,7 +72,6 @@ import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.PrimaryButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.SecondaryButton
-import com.android.ai.uicomponent.SecondaryButtonPreview
 import com.android.ai.uicomponent.TextInput
 import java.io.File
 
@@ -82,6 +84,8 @@ fun MagicSelfieScreen(viewModel: MagicSelfieViewModel = hiltViewModel()) {
 
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
+
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
     cameraIntent.putExtra("android.intent.extras.CAMERA_FACING", android.hardware.camera2.CameraCharacteristics.LENS_FACING_FRONT)
@@ -110,6 +114,7 @@ fun MagicSelfieScreen(viewModel: MagicSelfieViewModel = hiltViewModel()) {
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surface,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.magic_selfie_title),
@@ -211,12 +216,13 @@ fun MagicSelfieScreen(viewModel: MagicSelfieViewModel = hiltViewModel()) {
                 }
             }
 
+            Log.e("MagicSelfieScreen", "uiState: $uiState")
             if (uiState is MagicSelfieUiState.Error) {
-                Toast.makeText(
-                    context,
-                    (uiState as MagicSelfieUiState.Error).message ?: context.getString(R.string.unknown_error),
-                    Toast.LENGTH_SHORT,
-                ).show()
+                val errorMessage = (uiState as MagicSelfieUiState.Error).message ?: context.getString(R.string.unknown_error)
+                LaunchedEffect(uiState) {
+                    snackbarHostState.showSnackbar(errorMessage)
+                    viewModel.resetError()
+                }
             }
         }
     }
