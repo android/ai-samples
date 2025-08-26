@@ -41,6 +41,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -79,9 +80,6 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val promptPlaceHolder = stringResource(id = R.string.geminimultimodal_prompt_placeholder)
-    var editTextValue by remember {
-        mutableStateOf(promptPlaceHolder)
-    }
 
     val cameraLauncher = rememberLauncherForActivityResult(TakePicturePreview()) { result ->
         result?.let {
@@ -184,12 +182,15 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
                 }
 
                 is GeminiMultimodalUiState.Error -> {
-                    Toast.makeText(
-                        context,
-                        (uiState as GeminiMultimodalUiState.Error).errorMessage
-                            ?: stringResource(R.string.unknown_error),
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    val errorMessage = (uiState as GeminiMultimodalUiState.Error).errorMessage
+                        ?: stringResource(R.string.unknown_error)
+                    LaunchedEffect(uiState) {
+                        Toast.makeText(
+                            context,
+                            errorMessage,
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    }
                 }
 
                 else -> {}
@@ -208,11 +209,11 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
                         modifier = Modifier
                             .width(72.dp)
                             .height(72.dp),
-                        enabled = uiState !is GeminiMultimodalUiState.Loading,
+                        enabled = uiState !is GeminiMultimodalUiState.Loading && bitmap != null,
                         onClick = {
                             val currentBitmap = bitmap
                             if (currentBitmap != null) {
-                                viewModel.generate(currentBitmap, editTextValue)
+                                viewModel.generate(currentBitmap, textFieldState.text.toString())
                             }
 
                             keyboardController?.hide()
