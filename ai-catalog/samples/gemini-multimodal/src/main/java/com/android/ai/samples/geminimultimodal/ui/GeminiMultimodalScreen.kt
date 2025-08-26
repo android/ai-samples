@@ -46,7 +46,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,10 +62,12 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.geminimultimodal.R
+import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.PrimaryButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
@@ -77,10 +78,8 @@ import com.android.ai.uicomponent.TextInput
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel()) {
-    val context = LocalContext.current
-    var bitmap by rememberSaveable { mutableStateOf<Bitmap?>(null) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
+    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     val cameraLauncher = rememberLauncherForActivityResult(TakePicturePreview()) { result ->
@@ -88,6 +87,37 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
             bitmap = it
         }
     }
+
+    if (uiState is GeminiMultimodalUiState.Error) {
+        val errorMessage = (uiState as GeminiMultimodalUiState.Error).errorMessage
+            ?: stringResource(R.string.unknown_error)
+        LaunchedEffect(uiState) {
+            snackbarHostState.showSnackbar(errorMessage)
+            viewModel.resetError()
+        }
+    }
+
+    GeminiMultimodalScreen(
+        uiState = uiState,
+        bitmap = bitmap,
+        snackbarHostState = snackbarHostState,
+        onGenerateClick = viewModel::generate,
+        onTakePictureClick = {
+            cameraLauncher.launch(null)
+        }
+    )
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun GeminiMultimodalScreen(
+    uiState: GeminiMultimodalUiState,
+    bitmap: Bitmap?,
+    snackbarHostState: SnackbarHostState,
+    onGenerateClick: (Bitmap, String) -> Unit,
+    onTakePictureClick: () -> Unit
+) {
+    val context = LocalContext.current
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -134,11 +164,9 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
                 .clip(RoundedCornerShape(40.dp))
                 .background(ShaderBrush(imageShader)),
         ) {
-
-            val currentBitmap = bitmap
-            if (currentBitmap != null) {
+            if (bitmap != null) {
                 Image(
-                    bitmap = currentBitmap.asImageBitmap(),
+                    bitmap = bitmap.asImageBitmap(),
                     contentDescription = "Picture",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
@@ -151,9 +179,7 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
                         .height(96.dp)
                         .padding(start = 24.dp, end = 24.dp)
                         .align(Alignment.Center),
-                    onClick = {
-                        cameraLauncher.launch(null)
-                    },
+                    onClick = onTakePictureClick,
                 )
             }
 
@@ -186,15 +212,6 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
                     }
                 }
 
-                is GeminiMultimodalUiState.Error -> {
-                    val errorMessage = (uiState as GeminiMultimodalUiState.Error).errorMessage
-                        ?: stringResource(R.string.unknown_error)
-                    LaunchedEffect(uiState) {
-                        snackbarHostState.showSnackbar(errorMessage)
-                        viewModel.resetError()
-                    }
-                }
-
                 else -> {}
             }
 
@@ -213,24 +230,20 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
                             .height(72.dp),
                         enabled = uiState !is GeminiMultimodalUiState.Loading && bitmap != null,
                         onClick = {
-                            val currentBitmap = bitmap
-                            if (currentBitmap != null) {
-                                viewModel.generate(currentBitmap, textFieldState.text.toString())
+                            if (bitmap != null) {
+                                onGenerateClick(bitmap, textFieldState.text.toString())
                             }
-
                             keyboardController?.hide()
                         },
                     )
                 },
                 secondaryButton = {
-                    if (currentBitmap != null) {
+                    if (bitmap != null) {
                         SecondaryButton(
                             text = "",
                             enabled = uiState !is GeminiMultimodalUiState.Loading,
                             icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add),
-                            onClick = {
-                                cameraLauncher.launch(null)
-                            },
+                            onClick = onTakePictureClick,
                         )
                     }
                 },
@@ -240,5 +253,20 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
                     .align(Alignment.BottomCenter),
             )
         }
+    }
+}
+
+@PreviewScreenSizes
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun GeminiMultimodalScreenPreview() {
+    AISampleCatalogTheme {
+        GeminiMultimodalScreen(
+            uiState = GeminiMultimodalUiState.Initial,
+            bitmap = null,
+            snackbarHostState = remember { SnackbarHostState() },
+            onGenerateClick = { _, _ -> },
+            onTakePictureClick = {}
+        )
     }
 }
