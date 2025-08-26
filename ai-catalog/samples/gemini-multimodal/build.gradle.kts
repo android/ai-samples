@@ -71,8 +71,9 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.runtime.livedata)
+    debugImplementation(libs.ui.tooling)
     ksp(libs.hilt.compiler)
-
+    implementation(project(":ui-component"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
