@@ -18,7 +18,6 @@ package com.android.ai.samples.geminimultimodal.ui
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.TakePicturePreview
 import androidx.compose.foundation.Image
@@ -39,12 +38,15 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,10 +78,10 @@ import com.android.ai.uicomponent.TextInput
 @Composable
 fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel()) {
     val context = LocalContext.current
-    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var bitmap by rememberSaveable { mutableStateOf<Bitmap?>(null) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val promptPlaceHolder = stringResource(id = R.string.geminimultimodal_prompt_placeholder)
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val cameraLauncher = rememberLauncherForActivityResult(TakePicturePreview()) { result ->
         result?.let {
@@ -89,6 +91,7 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.geminimultimodal_title),
@@ -109,6 +112,13 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
                 tileModeY = TileMode.Repeated,
             )
         }
+
+        val gradientBrush = Brush.radialGradient(
+            colors = listOf(
+                Color.Transparent,
+                Color(0x88000000),
+            ),
+        )
 
         Box(
             Modifier
@@ -159,12 +169,7 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color(0x88000000),
-                                    ),
-                                ),
+                                brush = gradientBrush,
                             ),
                     )
                     Column(
@@ -185,11 +190,8 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
                     val errorMessage = (uiState as GeminiMultimodalUiState.Error).errorMessage
                         ?: stringResource(R.string.unknown_error)
                     LaunchedEffect(uiState) {
-                        Toast.makeText(
-                            context,
-                            errorMessage,
-                            Toast.LENGTH_SHORT,
-                        ).show()
+                        snackbarHostState.showSnackbar(errorMessage)
+                        viewModel.resetError()
                     }
                 }
 
