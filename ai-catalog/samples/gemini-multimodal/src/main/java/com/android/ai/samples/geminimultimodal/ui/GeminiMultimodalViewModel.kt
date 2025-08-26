@@ -42,4 +42,8 @@ class GeminiMultimodalViewModel @Inject constructor(private val geminiDataSource
             }
         }
     }
+
+    fun resetError() {
+        _uiState.value = GeminiMultimodalUiState.Initial
+    }
 }
