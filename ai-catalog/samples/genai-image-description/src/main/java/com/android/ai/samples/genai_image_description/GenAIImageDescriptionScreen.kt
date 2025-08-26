@@ -51,11 +51,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.android.ai.samples.geminimultimodal.R
+import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.PrimaryButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
@@ -65,24 +67,48 @@ import com.android.ai.uicomponent.SecondaryButton
 @Composable
 fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+
     val photoPickerLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
         uri?.let {
             imageUri = it
         }
     }
 
+    GenAIImageDescriptionScreen(
+        uiState = uiState,
+        imageUri = imageUri,
+        onGenerateClick = viewModel::getImageDescription,
+        onImagePickerClick = {
+            photoPickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+        },
+        onClearClick = {
+            viewModel.clearGeneratedText()
+            imageUri = null
+        }
+    )
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun GenAIImageDescriptionScreen(
+    uiState: GenAIImageDescriptionUiState,
+    imageUri: Uri?,
+    onGenerateClick: (Uri?) -> Unit,
+    onImagePickerClick: () -> Unit,
+    onClearClick: () -> Unit
+) {
+    val context = LocalContext.current
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-            topBar = {
-                SampleDetailTopAppBar(
-                    sampleName = stringResource(R.string.genai_image_description_title),
-                    sampleDescription = stringResource(R.string.genai_image_description_subtitle),
-                    sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-image-description",
-                )
-            }
+        topBar = {
+            SampleDetailTopAppBar(
+                sampleName = stringResource(R.string.genai_image_description_title),
+                sampleDescription = stringResource(R.string.genai_image_description_subtitle),
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-image-description",
+            )
+        }
     ) { innerPadding ->
         val imageBitmap = remember {
             val bitmap = BitmapFactory.decodeResource(context.resources, com.android.ai.uicomponent.R.drawable.img_fill)
@@ -128,7 +154,7 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
                             .align(Alignment.BottomStart)
                             .padding(start = 24.dp, bottom = 24.dp),
                     ) {
-                        viewModel.getImageDescription(imageUri)
+                        onGenerateClick(imageUri)
                     }
                 }
             } else {
@@ -139,61 +165,72 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
                         .height(96.dp)
                         .padding(start = 24.dp, end = 24.dp)
                         .align(Alignment.Center),
-                    onClick = {
-                        photoPickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
-                    },
+                    onClick = onImagePickerClick,
                 )
             }
 
-            if  (
+            if (
                 uiState !is GenAIImageDescriptionUiState.Initial
                 && uiState !is GenAIImageDescriptionUiState.CheckingFeatureStatus
-                ) {
-                    val outputText = when (val state = uiState) {
-                        is GenAIImageDescriptionUiState.DownloadingFeature -> stringResource(
-                            id = R.string.image_desc_downloading,
-                            state.bytesDownloaded,
-                            state.bytesToDownload,
-                        )
-                        is GenAIImageDescriptionUiState.Error -> stringResource(state.errorMessageStringRes)
-                        is GenAIImageDescriptionUiState.Generating -> state.partialOutput
-                        is GenAIImageDescriptionUiState.Success -> state.generatedOutput
-                        else -> "" // Show nothing for the Initial state
-                    }
+            ) {
+                val outputText = when (val state = uiState) {
+                    is GenAIImageDescriptionUiState.DownloadingFeature -> stringResource(
+                        id = R.string.image_desc_downloading,
+                        state.bytesDownloaded,
+                        state.bytesToDownload,
+                    )
+                    is GenAIImageDescriptionUiState.Error -> stringResource(state.errorMessageStringRes)
+                    is GenAIImageDescriptionUiState.Generating -> state.partialOutput
+                    is GenAIImageDescriptionUiState.Success -> state.generatedOutput
+                    else -> "" // Show nothing for the Initial state
+                }
 
-                    SecondaryButton(
-                        text = "",
-                        icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_redo),
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(
-                                top = 18.dp,
-                                end = 18.dp
-                            ),
-                    ) {
-                        viewModel.clearGeneratedText()
-                        imageUri = null
-                    }
+                SecondaryButton(
+                    text = "",
+                    icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_redo),
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(
+                            top = 18.dp,
+                            end = 18.dp
+                        ),
+                    onClick = onClearClick
+                )
 
-                    Box(modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    Color(0x99000000)
-                                )
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color(0x99000000)
                             )
-                        )) {
-                        Text(
-                            text = outputText,
-                            style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier
-                                .padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp)
-                                .align(Alignment.BottomCenter),
                         )
-                    }
+                    )) {
+                    Text(
+                        text = outputText,
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier
+                            .padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp)
+                            .align(Alignment.BottomCenter),
+                    )
+                }
             }
         }
+    }
+}
+
+@PreviewScreenSizes
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun GenAIImageDescriptionScreenPreview() {
+    AISampleCatalogTheme {
+        GenAIImageDescriptionScreen(
+            uiState = GenAIImageDescriptionUiState.Initial,
+            imageUri = null,
+            onGenerateClick = {},
+            onImagePickerClick = {},
+            onClearClick = {}
+        )
     }
 }
