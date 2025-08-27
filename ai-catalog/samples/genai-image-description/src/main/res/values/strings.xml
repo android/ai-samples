@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="genai_image_description_title_bar">Image Description with Nano</string>
+    <string name="genai_image_description_title">Image Description with Nano</string>
+    <string name="genai_image_description_subtitle">Generate short descriptions of images on-device with GenAI API powered by Gemini Nano</string>
     <string name="genai_image_description_add_image">Add image</string>
-    <string name="genai_image_description_run_inference">Generate image description</string>
+    <string name="genai_image_description_run_inference">Image description</string>
     <string name="genai_image_description_no_image_selected">No image selected</string>
     <string name="genai_image_description_not_available">Feature is not available on this device</string>
     <string name="genai_image_see_code">See code</string>
