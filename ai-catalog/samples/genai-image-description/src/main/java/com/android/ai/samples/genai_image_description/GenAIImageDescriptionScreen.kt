@@ -58,6 +58,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.android.ai.samples.geminimultimodal.R
 import com.android.ai.theme.AISampleCatalogTheme
+import com.android.ai.theme.extendedColorScheme
 import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.PrimaryButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
@@ -203,7 +204,7 @@ private fun GenAIImageDescriptionScreen(
                         Brush.verticalGradient(
                             colors = listOf(
                                 Color.Transparent,
-                                Color(0x99000000)
+                                extendedColorScheme.startGradient
                             )
                         )
                     )) {
