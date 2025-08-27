@@ -23,5 +23,5 @@ data class ChatMessage(
     val timestamp: Long,
     val isIncoming: Boolean = false,
     val senderIconUrl: Uri? = null,
-    val image: Bitmap? = null
+    val image: Bitmap? = null,
 )

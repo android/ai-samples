@@ -99,7 +99,7 @@ class GeminiImageChatViewModel @Inject constructor() : ViewModel() {
                         text = responseText?.trim() ?: "",
                         timestamp = System.currentTimeMillis(),
                         isIncoming = true,
-                        image = responseImage
+                        image = responseImage,
                     )
                 }
 

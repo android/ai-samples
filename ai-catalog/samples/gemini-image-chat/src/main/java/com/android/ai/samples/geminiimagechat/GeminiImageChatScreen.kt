@@ -113,7 +113,7 @@ fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel())
                     AlertDialog(
                         onDismissRequest = { viewModel.dismissError() },
                         title = { Text(text = stringResource(R.string.error)) },
-                        text = { Text(text = state.errorMessage?: stringResource(R.string.something_went_wrong)) },
+                        text = { Text(text = state.errorMessage ?: stringResource(R.string.something_went_wrong)) },
                         confirmButton = {
                             Button(onClick = { viewModel.dismissError() }) {
                                 Text(text = stringResource(R.string.dismiss_button))
@@ -153,7 +153,7 @@ fun MessageList(messages: List<ChatMessage>, contentPadding: PaddingValues, modi
                 fontStyle = FontStyle.Italic,
                 fontSize = 20.sp,
                 modifier = Modifier.padding(14.dp),
-                )
+            )
         }
     } else {
         LazyColumn(
