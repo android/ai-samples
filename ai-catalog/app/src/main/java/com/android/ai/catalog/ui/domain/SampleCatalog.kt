@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import com.android.ai.catalog.R
 import com.android.ai.samples.geminichatbot.GeminiChatbotScreen
+import com.android.ai.samples.geminiimagechat.GeminiImageChatScreen
 import com.android.ai.samples.geminilivetodo.ui.TodoScreen
 import com.android.ai.samples.geminimultimodal.ui.GeminiMultimodalScreen
 import com.android.ai.samples.geminivideometadatacreation.VideoMetadataCreationScreen
@@ -32,6 +33,14 @@ import com.android.ai.samples.magicselfie.ui.MagicSelfieScreen
 
 @androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
 val sampleCatalog = listOf(
+    SampleCatalogItem(
+        title = R.string.gemini_image_chat,
+        description = R.string.gemini_image_chat_description,
+        route = "GeminiImageChatScreen",
+        sampleEntryScreen = { GeminiImageChatScreen() },
+        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
+        needsFirebase = true,
+    ),
     SampleCatalogItem(
         title = R.string.gemini_multimodal_sample_title,
         description = R.string.gemini_multimodal_sample_description,
