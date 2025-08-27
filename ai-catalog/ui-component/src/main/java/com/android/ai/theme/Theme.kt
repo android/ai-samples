@@ -262,6 +262,7 @@ data class ExtendedColorScheme(
     val firebase: Color,
     val media3: Color,
     val mLKit: Color,
+    val startGradient: Color,
 )
 
 val extendedColorScheme = ExtendedColorScheme(
@@ -271,6 +272,7 @@ val extendedColorScheme = ExtendedColorScheme(
     firebase = firebase,
     media3 = media3,
     mLKit = mlKit,
+    startGradient = startGradient,
 )
 
 enum class Contrast { DEFAULT, MEDIUM, HIGH }
