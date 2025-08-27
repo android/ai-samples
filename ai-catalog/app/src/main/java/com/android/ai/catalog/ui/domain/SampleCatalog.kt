@@ -28,6 +28,7 @@ import com.android.ai.samples.genai_image_description.GenAIImageDescriptionScree
 import com.android.ai.samples.genai_summarization.GenAISummarizationScreen
 import com.android.ai.samples.genai_writing_assistance.GenAIWritingAssistanceScreen
 import com.android.ai.samples.imagen.ui.ImagenScreen
+import com.android.ai.samples.imagenediting.ui.ImagenEditingScreen
 import com.android.ai.samples.magicselfie.ui.MagicSelfieScreen
 
 @androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO)
@@ -75,6 +76,14 @@ val sampleCatalog = listOf(
         route = "ImagenImageGenerationScreen",
         sampleEntryScreen = { ImagenScreen() },
         tags = listOf(SampleTags.IMAGEN, SampleTags.FIREBASE),
+        needsFirebase = true,
+    ),
+    SampleCatalogItem(
+        title = R.string.imagen_editing_sample_title,
+        description = R.string.imagen_editing_sample_description,
+        route = "ImagenMaskEditing",
+        sampleEntryScreen = { ImagenEditingScreen() },
+        tags = listOf(SampleTags.IMAGEN, SampleTags.FIREBASE, SampleTags.MEDIA3),
         needsFirebase = true,
     ),
     SampleCatalogItem(

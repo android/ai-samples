@@ -14,6 +14,8 @@
     <string name="open_sample_button">Open sample</string>
     <string name="imagen_sample_title">Image generation with Imagen</string>
     <string name="imagen_sample_description">Generate images with Imagen, Google image generation model</string>
+    <string name="imagen_editing_sample_title">Imagen Editing using Inpainting</string>
+    <string name="imagen_editing_sample_description">Generate images and edit only specific areas of a generated image with Inpainting</string>
     <string name="magic_selfie_sample_title">Magic Selfie with Imagen and ML Kit</string>
     <string name="magic_selfie_sample_description">Change the background of your selfies with Imagen and the ML Kit Segmentation API</string>
     <string name="gemini_video_summarization_sample_title">Video Summarization with Gemini and Firebase</string>

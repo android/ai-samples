@@ -25,12 +25,12 @@ plugins {
 
 android {
     namespace = "com.android.ai.catalog"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.android.ai.catalog"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -86,6 +86,7 @@ dependencies {
     implementation(project(":samples:genai-image-description"))
     implementation(project(":samples:genai-writing-assistance"))
     implementation(project(":samples:imagen"))
+    implementation(project(":samples:imagen-editing"))
     implementation(project(":samples:magic-selfie"))
     implementation(project(":samples:gemini-video-summarization"))
     implementation(project(":samples:gemini-live-todo"))
