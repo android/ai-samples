@@ -61,11 +61,10 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.android.ai.samples.geminichatbot.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GeminiImageChatScreen(viewModel: GeminiChatbotViewModel = hiltViewModel()) {
+fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel()) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -114,7 +113,7 @@ fun GeminiImageChatScreen(viewModel: GeminiChatbotViewModel = hiltViewModel()) {
                     AlertDialog(
                         onDismissRequest = { viewModel.dismissError() },
                         title = { Text(text = stringResource(R.string.error)) },
-                        text = { Text(text = state.errorMessage) },
+                        text = { Text(text = state.errorMessage?: stringResource(R.string.something_went_wrong)) },
                         confirmButton = {
                             Button(onClick = { viewModel.dismissError() }) {
                                 Text(text = stringResource(R.string.dismiss_button))

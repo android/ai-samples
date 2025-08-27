@@ -37,17 +37,17 @@ import kotlinx.coroutines.launch
 sealed interface GeminiMessageState {
     data object WaitingForMessage : GeminiMessageState
     data object Generating : GeminiMessageState
-    data class Error(val errorMessage: String) : GeminiMessageState
+    data class Error(val errorMessage: String?) : GeminiMessageState
 }
 
-data class GeminiChatbotUiState(
+data class GeminiImageChatUiState(
     val messages: List<ChatMessage> = listOf(),
     val geminiMessageState: GeminiMessageState = GeminiMessageState.WaitingForMessage,
 )
 
-class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
-    private val _uiState = MutableStateFlow(GeminiChatbotUiState())
-    val uiState: StateFlow<GeminiChatbotUiState> = _uiState.asStateFlow()
+class GeminiImageChatViewModel @Inject constructor() : ViewModel() {
+    private val _uiState = MutableStateFlow(GeminiImageChatUiState())
+    val uiState: StateFlow<GeminiImageChatUiState> = _uiState.asStateFlow()
 
     private val generativeModel by lazy {
         Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
@@ -66,7 +66,7 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
                 SafetySetting(HarmCategory.DANGEROUS_CONTENT, HarmBlockThreshold.MEDIUM_AND_ABOVE),
             ),
             systemInstruction = content {
-                text("""You are a friendly assistant. Keep your response short.""")
+                text("""You are a friendly assistant. Keep your responses short.""")
             },
         )
     }
@@ -88,14 +88,21 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
                 }
 
                 val response = chat.sendMessage(message)
-                val newMessage = response.text?.let {
+
+                val responseText = response.text
+                val responseImage = response.candidates.firstOrNull()?.content?.parts?.firstNotNullOf { it.asImageOrNull() }
+
+                val newMessage = if (responseText.isNullOrBlank() && responseImage == null) {
+                    error("Model returned an empty response")
+                } else {
                     ChatMessage(
-                        text = it.trim(),
+                        text = responseText?.trim() ?: "",
                         timestamp = System.currentTimeMillis(),
                         isIncoming = true,
-                        image = response.candidates.first().content.parts.firstNotNullOf { it.asImageOrNull() }
+                        image = responseImage
                     )
-                } ?: error("Model returned an empty response")
+                }
+
                 _uiState.update {
                     it.copy(messages = listOf(newMessage) + it.messages, geminiMessageState = GeminiMessageState.WaitingForMessage)
                 }

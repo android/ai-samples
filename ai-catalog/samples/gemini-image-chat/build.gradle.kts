@@ -22,7 +22,7 @@ plugins {
 }
 
 android {
-    namespace = "com.android.ai.samples.geminichatbot"
+    namespace = "com.android.ai.samples.geminiimagechat"
     compileSdk = 35
 
     buildFeatures {
@@ -64,7 +64,6 @@ dependencies {
     implementation(libs.firebase.ai)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
-    implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.material3.android)
     ksp(libs.hilt.compiler)
