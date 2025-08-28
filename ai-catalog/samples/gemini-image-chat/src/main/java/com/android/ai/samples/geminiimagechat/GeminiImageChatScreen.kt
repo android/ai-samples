@@ -157,7 +157,7 @@ fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel())
                 addImage = {
                     photoPickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
                 },
-                imageUri = imageUri
+                imageUri = imageUri,
             )
         }
     }

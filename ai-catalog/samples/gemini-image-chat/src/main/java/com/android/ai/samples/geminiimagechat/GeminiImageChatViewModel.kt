@@ -16,7 +16,6 @@
 package com.android.ai.samples.geminiimagechat
 
 import android.graphics.Bitmap
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
@@ -79,9 +78,9 @@ class GeminiImageChatViewModel @Inject constructor() : ViewModel() {
         viewModelScope.launch {
             try {
                 val userMessage = ChatMessage(
-                    text =  message,
+                    text = message,
                     timestamp = System.currentTimeMillis(),
-                    image = bitmap
+                    image = bitmap,
                 )
                 _uiState.update {
                     it.copy(
