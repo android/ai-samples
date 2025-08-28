@@ -17,6 +17,11 @@ package com.android.ai.samples.geminiimagechat
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,6 +52,7 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -69,6 +75,15 @@ fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel())
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var message by rememberSaveable { mutableStateOf("") }
+
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    val photoPickerLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
+        uri?.let {
+            imageUri = it
+        }
+    }
+
+    val context = LocalContext.current
 
     Scaffold(
         modifier = Modifier
@@ -131,10 +146,18 @@ fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel())
                     message = it
                 },
                 onSendClick = {
-                    viewModel.sendMessage(message)
+                    val bitmap = imageUri?.let {
+                        MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
+                    }
+                    viewModel.sendMessage(message, bitmap)
+                    imageUri = null
                     message = ""
                 },
                 sendEnabled = uiState.geminiMessageState !is GeminiMessageState.Generating,
+                addImage = {
+                    photoPickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+                },
+                imageUri = imageUri
             )
         }
     }

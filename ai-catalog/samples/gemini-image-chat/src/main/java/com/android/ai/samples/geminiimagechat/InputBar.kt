@@ -15,18 +15,22 @@
  */
 package com.android.ai.samples.geminiimagechat
 
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -37,11 +41,14 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 
 @Composable
 internal fun InputBar(
@@ -50,7 +57,9 @@ internal fun InputBar(
     sendEnabled: Boolean,
     onInputChanged: (String) -> Unit,
     onSendClick: () -> Unit,
+    addImage: () -> Unit,
     modifier: Modifier = Modifier,
+    imageUri: Uri? = null
 ) {
     Surface(
         modifier = modifier,
@@ -62,6 +71,26 @@ internal fun InputBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
+            FilledIconButton(
+                onClick = addImage,
+                modifier = Modifier.size(56.dp),
+                enabled = sendEnabled,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Image,
+                    contentDescription = stringResource(R.string.add_photo),
+                )
+            }
+            if (imageUri != null) {
+                AsyncImage(
+                    model = imageUri,
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.width(50.dp).clip(RoundedCornerShape(5.dp)),
+                )
+            }
+            Spacer(modifier = Modifier.width(4.dp))
+
             TextField(
                 value = value,
                 onValueChange = onInputChanged,

@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.material3.android)
+    implementation(libs.coil.compose)
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
