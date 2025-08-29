@@ -47,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -213,7 +214,13 @@ fun GenerateButtonDisabledPreview() {
 }
 
 @Composable
-fun SecondaryButton(text: String, modifier: Modifier = Modifier, icon: Painter? = null, enabled: Boolean = true, onClick: () -> Unit) {
+fun SecondaryButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    icon: Painter? = null,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
     OutlinedButton(
         modifier = modifier.height(48.dp),
         colors = ButtonDefaults.outlinedButtonColors(
@@ -253,7 +260,11 @@ fun SecondaryButtonPreview() {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BackButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun BackButton(
+    modifier: Modifier = Modifier,
+    imageVector: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
+    onClick: () -> Unit
+) {
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.outline) {
         OutlinedIconButton(
             shape = IconButtonDefaults.smallSquareShape,
@@ -262,7 +273,7 @@ fun BackButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
         ) {
             CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = imageVector,
                     contentDescription = null,
                 )
             }

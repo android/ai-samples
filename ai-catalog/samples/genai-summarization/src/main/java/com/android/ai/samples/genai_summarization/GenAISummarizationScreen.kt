@@ -15,25 +15,23 @@
  */
 package com.android.ai.samples.genai_summarization
 
-import android.content.Intent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,22 +39,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.geminimultimodal.R
+import com.android.ai.theme.surfaceContainerHighestLight
+import com.android.ai.uicomponent.BackButton
+import com.android.ai.uicomponent.PrimaryButton
+import com.android.ai.uicomponent.SampleDetailTopAppBar
+import com.android.ai.uicomponent.SecondaryButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewModel()) {
     val sampleTextOptions = stringArrayResource(R.array.summarization_sample_text)
-
-    val sheetState = rememberModalBottomSheetState()
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var textInput by remember { mutableStateOf("") }
@@ -64,122 +66,126 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                ),
-                title = {
-                    Text(text = stringResource(id = R.string.genai_summarization_title_bar))
-                },
-                actions = {
-                    SeeCodeButton()
-                },
+            SampleDetailTopAppBar(
+                sampleName = stringResource(R.string.genai_summarization_title_bar),
+                sampleDescription = stringResource(R.string.genai_summarization_description),
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-summarization",
             )
         },
     ) { innerPadding ->
-
-        Column(
+        Box(
             Modifier
-                .padding(12.dp)
-                .padding(innerPadding),
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(top = 16.dp)
+                .imePadding()
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.outline,
+                    shape = RoundedCornerShape(40.dp),
+                )
+                .clip(RoundedCornerShape(40.dp))
+                .background(color = surfaceContainerHighestLight),
         ) {
-            // Text input box
-            TextField(
-                value = textInput,
-                onValueChange = { textInput = it },
-                label = { Text(stringResource(id = R.string.genai_summarization_text_input_label)) },
-                modifier = Modifier
+            Column(
+                Modifier
                     .fillMaxSize()
-                    .weight(.8f),
-            )
-
-            // Summarize button
-            Button(
-                onClick = {
-                    viewModel.summarize(textInput)
-                },
-                enabled = textInput.isNotEmpty(),
-                modifier = Modifier
-                    .padding(10.dp)
-                    .align(Alignment.CenterHorizontally),
+                    .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 32.dp),
             ) {
-                Text(
-                    text = stringResource(id = R.string.genai_summarization_summarize_btn),
-                )
-            }
+                when (val state = uiState) {
+                    GenAISummarizationUiState.CheckingFeatureStatus ->
+                        // TODO: Replace with loading animation
+                        DisplayedText(
+                            textToDisplay = stringResource(id = R.string.summarization_checking_feature_status),
+                            isStatusText = true,
+                        )
 
-            // Extra options buttons
-            Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                OutlinedButton(
-                    onClick = { textInput = sampleTextOptions.random() },
-                    Modifier.padding(5.dp),
-                ) {
-                    Text(
-                        stringResource(id = R.string.genai_summarization_add_text_btn),
-                    )
-                }
-                OutlinedButton(
-                    onClick = { textInput = "" },
-                    Modifier.padding(5.dp),
-                ) {
-                    Text(
-                        stringResource(id = R.string.genai_summarization_reset_btn),
-                    )
-                }
-            }
-        }
+                    is GenAISummarizationUiState.DownloadingFeature ->
+                        DisplayedText(
+                            stringResource(
+                                id = R.string.summarization_downloading,
+                                state.bytesDownloaded,
+                                state.bytesToDownload,
+                            ),
+                            isStatusText = true,
+                        )
 
-        if (uiState !is GenAISummarizationUiState.Initial) {
-            val bottomSheetText = when (val state = uiState) {
-                is GenAISummarizationUiState.DownloadingFeature -> stringResource(
-                    id = R.string.summarization_downloading,
-                    state.bytesDownloaded,
-                    state.bytesToDownload,
-                )
-                is GenAISummarizationUiState.Error -> stringResource(state.errorMessageStringRes)
-                is GenAISummarizationUiState.Generating -> state.generatedOutput
-                GenAISummarizationUiState.Initial -> ""
-                is GenAISummarizationUiState.Success -> state.generatedOutput
-                GenAISummarizationUiState.CheckingFeatureStatus -> stringResource(id = R.string.summarization_checking_feature_status)
-            }
-            ModalBottomSheet(
-                onDismissRequest = {
-                    viewModel.clearGeneratedSummary()
-                },
-                sheetState = sheetState,
-            ) {
-                Text(
-                    text = bottomSheetText,
-                    modifier = Modifier.padding(
-                        top = 8.dp,
-                        bottom = 24.dp,
-                        start = 24.dp,
-                        end = 24.dp,
-                    ),
-                )
+                    is GenAISummarizationUiState.Error ->
+                        DisplayedText(stringResource(state.errorMessageStringRes), isStatusText = true)
+
+                    GenAISummarizationUiState.Initial -> {
+                        Column(
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            TextField(
+                                placeholder = { Text(stringResource(R.string.genai_summarization_text_input_label)) },
+                                value = textInput, onValueChange = { textInput = it },
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent,
+                                ),
+                                modifier = Modifier.padding(4.dp),
+                            )
+                        }
+
+                        if (textInput.isEmpty()) {
+                            SecondaryButton(
+                                text = stringResource(R.string.genai_summarization_add_text_btn),
+                                icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add_text),
+                                onClick = { textInput = sampleTextOptions.random() },
+                            )
+                        } else {
+                            PrimaryButton(
+                                text = stringResource(R.string.genai_summarization_summarize_btn),
+                                icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_text),
+                                modifier = Modifier.padding(start = 8.dp, top = 8.dp),
+                                onClick = { viewModel.summarize(textInput) },
+                            )
+                        }
+                    }
+
+                    is GenAISummarizationUiState.Generating ->
+                        DisplayedText(state.generatedOutput)
+
+                    is GenAISummarizationUiState.Success -> {
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            DisplayedText(state.generatedOutput)
+                        }
+
+                        BackButton(
+                            modifier = Modifier.padding(start = 8.dp, top = 8.dp),
+                            imageVector = Icons.AutoMirrored.Filled.Undo,
+                            onClick = {
+                                viewModel.clearGeneratedSummary()
+                                textInput = ""
+                            },
+                        )
+                    }
+                }
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun SeeCodeButton() {
-    val context = LocalContext.current
-    val githubLink = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-summarization"
-
-    Button(
-        onClick = {
-            val intent = Intent(Intent.ACTION_VIEW, githubLink.toUri())
-            context.startActivity(intent)
+fun DisplayedText(
+    textToDisplay: String,
+    isStatusText: Boolean = false,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        textToDisplay, modifier = modifier.padding(8.dp),
+        fontSize = if (!isStatusText) {
+            16.sp
+        } else {
+            24.sp
         },
-        modifier = Modifier.padding(end = 8.dp),
-    ) {
-        Icon(Icons.Filled.Code, contentDescription = "See code")
-        Text(
-            modifier = Modifier.padding(start = 8.dp),
-            fontSize = 12.sp,
-            text = stringResource(R.string.summarization_see_code),
-        )
-    }
+    )
 }
