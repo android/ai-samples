@@ -78,7 +78,7 @@ fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel())
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var message by rememberSaveable { mutableStateOf("""""") }
+    var message by rememberSaveable { mutableStateOf("") }
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val photoPickerLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
@@ -238,7 +238,7 @@ fun MessageBubble(message: ChatMessage, modifier: Modifier = Modifier) {
 @Composable
 fun SeeCodeButton() {
     val context = LocalContext.current
-    val githubLink = """https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-image-chat"""
+    val githubLink = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-image-chat"
 
     Button(
         onClick = {
