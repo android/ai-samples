@@ -97,7 +97,7 @@ class GeminiImageChatViewModel @Inject constructor() : ViewModel() {
                 val response = chat.sendMessage(content)
 
                 val responseText = response.text
-                val responseImage = response.candidates.firstOrNull()?.content?.parts?.firstNotNullOf { it.asImageOrNull() }
+                val responseImage = response.candidates.firstOrNull()?.content?.parts?.firstNotNullOfOrNull { it.asImageOrNull() }
 
                 val newMessage = if (responseText.isNullOrBlank() && responseImage == null) {
                     error("Model returned an empty response")
