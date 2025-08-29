@@ -53,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.geminimultimodal.R
 import com.android.ai.theme.surfaceContainerHighestLight
 import com.android.ai.uicomponent.BackButton
+import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.PrimaryButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.SecondaryButton
@@ -142,7 +143,7 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
                                 onClick = { textInput = sampleTextOptions.random() },
                             )
                         } else {
-                            PrimaryButton(
+                            GenerateButton(
                                 text = stringResource(R.string.genai_summarization_summarize_btn),
                                 icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_text),
                                 modifier = Modifier.padding(start = 8.dp, top = 8.dp),
