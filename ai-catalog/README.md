@@ -13,6 +13,7 @@ some of Google's models.
 
 Browse the samples inside the `/samples` folder:
 
+- **gemini-image-chat**: a sample using the new [Gemini 2.5 Flash Image model](https://developers.googleblog.com/en/introducing-gemini-2-5-flash-image/) (a.k.a. "NanoBanana") enabling image generation and iterations via chat interactions
 - **gemini-chatbot**: a simple chatbot using Gemini Flash
 - **gemini-multimodal**: a single screen application leveraging text+image to text generation with Gemini Flash
 - **genai-summarization**: a text summarization sample using Gemini Nano
