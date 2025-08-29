@@ -52,6 +52,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -67,6 +68,9 @@ import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.util.loadBitmapWithCorrectOrientation
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,6 +88,7 @@ fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel())
     }
 
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         modifier = Modifier
@@ -146,10 +151,16 @@ fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel())
                     message = it
                 },
                 onSendClick = {
-                    val bitmap = imageUri?.let { loadBitmapWithCorrectOrientation(context, it) }
-                    viewModel.sendMessage(message, bitmap)
-                    imageUri = null
-                    message = """"""
+                    coroutineScope.launch {
+                        val bitmap = imageUri?.let {
+                            withContext(Dispatchers.IO) {
+                                loadBitmapWithCorrectOrientation(context, it)
+                            }
+                        }
+                        viewModel.sendMessage(message, bitmap)
+                        imageUri = null
+                        message = ""
+                    }
                 },
                 sendEnabled = uiState.geminiMessageState !is GeminiMessageState.Generating,
                 addImage = {
