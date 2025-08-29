@@ -18,7 +18,6 @@ package com.android.ai.samples.geminiimagechat
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
-import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
@@ -67,6 +66,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.ai.samples.util.loadBitmapWithCorrectOrientation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,7 +74,7 @@ fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel())
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var message by rememberSaveable { mutableStateOf("") }
+    var message by rememberSaveable { mutableStateOf("""""") }
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val photoPickerLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
@@ -146,12 +146,10 @@ fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel())
                     message = it
                 },
                 onSendClick = {
-                    val bitmap = imageUri?.let {
-                        MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
-                    }
+                    val bitmap = imageUri?.let { loadBitmapWithCorrectOrientation(context, it) }
                     viewModel.sendMessage(message, bitmap)
                     imageUri = null
-                    message = ""
+                    message = """"""
                 },
                 sendEnabled = uiState.geminiMessageState !is GeminiMessageState.Generating,
                 addImage = {
@@ -229,7 +227,7 @@ fun MessageBubble(message: ChatMessage, modifier: Modifier = Modifier) {
 @Composable
 fun SeeCodeButton() {
     val context = LocalContext.current
-    val githubLink = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-image-chat"
+    val githubLink = """https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-image-chat"""
 
     Button(
         onClick = {

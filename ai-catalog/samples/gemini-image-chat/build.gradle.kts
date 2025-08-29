@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.material3.android)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.exifinterface)
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
