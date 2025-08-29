@@ -177,8 +177,8 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
 @Composable
 fun DisplayedText(
     textToDisplay: String,
-    isStatusText: Boolean = false,
     modifier: Modifier = Modifier,
+    isStatusText: Boolean = false,
 ) {
     Text(
         textToDisplay, modifier = modifier.padding(8.dp),
