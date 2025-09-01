@@ -87,9 +87,10 @@ fun GenAISummarizationContent(
     onSummarizeClicked: () -> Unit,
     onClearClicked: () -> Unit,
     onAddSampleTextClicked: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.genai_summarization_title_bar),
