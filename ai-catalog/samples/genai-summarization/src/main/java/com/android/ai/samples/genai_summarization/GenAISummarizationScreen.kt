@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Undo
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -46,15 +45,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.geminimultimodal.R
 import com.android.ai.theme.surfaceContainerHighestLight
+import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.BackButton
 import com.android.ai.uicomponent.GenerateButton
-import com.android.ai.uicomponent.PrimaryButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.SecondaryButton
 
@@ -62,10 +62,32 @@ import com.android.ai.uicomponent.SecondaryButton
 @Composable
 fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewModel()) {
     val sampleTextOptions = stringArrayResource(R.array.summarization_sample_text)
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var textInput by remember { mutableStateOf("") }
 
+    GenAISummarizationContent(
+        uiState = uiState,
+        textInput = textInput,
+        onTextInputChanged = { textInput = it },
+        onSummarizeClicked = { viewModel.summarize(textInput) },
+        onClearClicked = {
+            viewModel.clearGeneratedSummary()
+            textInput = ""
+        },
+        onAddSampleTextClicked = { textInput = sampleTextOptions.random() },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GenAISummarizationContent(
+    uiState: GenAISummarizationUiState,
+    textInput: String,
+    onTextInputChanged: (String) -> Unit,
+    onSummarizeClicked: () -> Unit,
+    onClearClicked: () -> Unit,
+    onAddSampleTextClicked: () -> Unit,
+) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -122,7 +144,7 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
                         ) {
                             TextField(
                                 placeholder = { Text(stringResource(R.string.genai_summarization_text_input_label)) },
-                                value = textInput, onValueChange = { textInput = it },
+                                value = textInput, onValueChange = onTextInputChanged,
                                 colors = TextFieldDefaults.colors(
                                     focusedContainerColor = Color.Transparent,
                                     unfocusedContainerColor = Color.Transparent,
@@ -140,14 +162,14 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
                                 icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add_text),
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer),
-                                onClick = { textInput = sampleTextOptions.random() },
+                                onClick = onAddSampleTextClicked,
                             )
                         } else {
                             GenerateButton(
                                 text = stringResource(R.string.genai_summarization_summarize_btn),
                                 icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_text),
                                 modifier = Modifier.padding(start = 8.dp, top = 8.dp),
-                                onClick = { viewModel.summarize(textInput) },
+                                onClick = onSummarizeClicked,
                             )
                         }
                     }
@@ -166,10 +188,7 @@ fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewMo
                         BackButton(
                             modifier = Modifier.padding(start = 8.dp, top = 8.dp),
                             imageVector = Icons.AutoMirrored.Filled.Undo,
-                            onClick = {
-                                viewModel.clearGeneratedSummary()
-                                textInput = ""
-                            },
+                            onClick = onClearClicked,
                         )
                     }
                 }
@@ -194,3 +213,109 @@ fun DisplayedText(
         },
     )
 }
+
+@Preview
+@Composable
+fun GenAISummarizationContentPreview_Initial_EmptyText() {
+    AISampleCatalogTheme {
+        GenAISummarizationContent(
+            uiState = GenAISummarizationUiState.Initial,
+            textInput = "",
+            onTextInputChanged = {},
+            onSummarizeClicked = {},
+            onClearClicked = {},
+            onAddSampleTextClicked = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun GenAISummarizationContentPreview_Initial_WithText() {
+    AISampleCatalogTheme {
+        GenAISummarizationContent(
+            uiState = GenAISummarizationUiState.Initial,
+            textInput = stringResource(R.string.summarization_sample_text_1),
+            onTextInputChanged = {},
+            onSummarizeClicked = {},
+            onClearClicked = {},
+            onAddSampleTextClicked = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun GenAISummarizationContentPreview_CheckingFeatureStatus() {
+    AISampleCatalogTheme {
+        GenAISummarizationContent(
+            uiState = GenAISummarizationUiState.CheckingFeatureStatus,
+            textInput = "",
+            onTextInputChanged = {},
+            onSummarizeClicked = {},
+            onClearClicked = {},
+            onAddSampleTextClicked = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun GenAISummarizationContentPreview_DownloadingFeature() {
+    AISampleCatalogTheme {
+        GenAISummarizationContent(
+            uiState = GenAISummarizationUiState.DownloadingFeature(100, 50),
+            textInput = "",
+            onTextInputChanged = {},
+            onSummarizeClicked = {},
+            onClearClicked = {},
+            onAddSampleTextClicked = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun GenAISummarizationContentPreview_Error() {
+    AISampleCatalogTheme {
+        GenAISummarizationContent(
+            uiState = GenAISummarizationUiState.Error(R.string.summarization_generation_error),
+            textInput = "",
+            onTextInputChanged = {},
+            onSummarizeClicked = {},
+            onClearClicked = {},
+            onAddSampleTextClicked = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun GenAISummarizationContentPreview_Generating() {
+    AISampleCatalogTheme {
+        GenAISummarizationContent(
+            uiState = GenAISummarizationUiState.Generating("Generating summary..."),
+            textInput = "This is a sample text to summarize.",
+            onTextInputChanged = {},
+            onSummarizeClicked = {},
+            onClearClicked = {},
+            onAddSampleTextClicked = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun GenAISummarizationContentPreview_Success() {
+    AISampleCatalogTheme {
+        GenAISummarizationContent(
+            uiState = GenAISummarizationUiState.Success("This is the generated summary."),
+            textInput = "This is a sample text to summarize.",
+            onTextInputChanged = {},
+            onSummarizeClicked = {},
+            onClearClicked = {},
+            onAddSampleTextClicked = {},
+        )
+    }
+}
+
