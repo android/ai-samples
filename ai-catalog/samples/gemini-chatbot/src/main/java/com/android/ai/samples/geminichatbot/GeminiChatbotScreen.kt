@@ -45,7 +45,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -113,7 +112,8 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
                 is GeminiMessageState.Generating -> {
                     CircularProgressIndicator(
                         modifier = Modifier
-                            .padding(vertical = 8.dp),
+                            .padding(vertical = 8.dp)
+                            .align(Alignment.Center),
                     )
                 }
 
@@ -161,7 +161,7 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
 @Composable
 fun MessageList(messages: List<ChatMessage>, modifier: Modifier = Modifier) {
     LazyColumn(
-        modifier = modifier,
+        modifier = modifier.padding(bottom = 54.dp),
         reverseLayout = true,
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
     ) {
@@ -174,14 +174,14 @@ fun MessageList(messages: List<ChatMessage>, modifier: Modifier = Modifier) {
     }
 }
 
-val roundCornerShapeSend = RoundedCornerShape(
+private val roundCornerShapeSend = RoundedCornerShape(
     topStart = 40.dp,
     topEnd = 4.dp,
     bottomStart = 40.dp,
     bottomEnd = 40.dp,
 )
 
-val roundCornerShapeReceive = RoundedCornerShape(
+private val roundCornerShapeReceive = RoundedCornerShape(
     topStart = 4.dp,
     topEnd = 40.dp,
     bottomStart = 40.dp,
@@ -194,7 +194,7 @@ fun MessageBubble(message: ChatMessage, modifier: Modifier = Modifier) {
         if (message.isIncoming) {
             Icon(
                 painterResource(com.android.ai.uicomponent.R.drawable.ic_spark),
-                contentDescription = "Gemini icon",
+                contentDescription = null,
                 modifier = Modifier.padding(end = 8.dp),
             )
         }
