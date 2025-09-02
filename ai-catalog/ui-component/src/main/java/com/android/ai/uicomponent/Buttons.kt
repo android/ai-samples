@@ -85,13 +85,14 @@ fun PrimaryButton(
                 modifier = Modifier.size(width = 24.dp, height = 24.dp),
             )
         }
-        if (text.isNotEmpty()) {
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(end = 8.dp),
-            )
+        AnimatedContent(text.isNotEmpty()) { hasText ->
+            if (hasText) {
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            }
         }
     }
 }
@@ -214,7 +215,7 @@ fun SecondaryButton(text: String, modifier: Modifier = Modifier, icon: Painter? 
     OutlinedButton(
         modifier = modifier.height(48.dp),
         colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ),
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.onSurfaceVariant),
         onClick = { onClick() },

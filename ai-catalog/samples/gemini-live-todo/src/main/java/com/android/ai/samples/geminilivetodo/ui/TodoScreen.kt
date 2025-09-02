@@ -102,44 +102,44 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                 .imePadding()
                 .fillMaxSize(),
         ) {
-                when (uiState) {
-                    is TodoScreenUiState.Initial -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator()
+            when (uiState) {
+                is TodoScreenUiState.Initial -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                is TodoScreenUiState.Success -> {
+                    val todos = (uiState as TodoScreenUiState.Success).todos
+                    LazyColumn(modifier = Modifier.weight(1f)) {
+                        itemsIndexed(todos.reversed(), key = { index: Int, item: Todo -> item.id }) { index, todo ->
+                            TodoItem(
+                                task = todo,
+                                onToggle = { viewModel.toggleTodoStatus(todo.id) },
+                                onDelete = { viewModel.removeTodo(todo.id) },
+                            )
                         }
                     }
-                    is TodoScreenUiState.Success -> {
-                        val todos = (uiState as TodoScreenUiState.Success).todos
-                        LazyColumn(modifier = Modifier.weight(1f)) {
-                            itemsIndexed(todos.reversed(), key = { index: Int, item: Todo -> item.id }) { index, todo ->
-                                TodoItem(
-                                    task = todo,
-                                    onToggle = { viewModel.toggleTodoStatus(todo.id) },
-                                    onDelete = { viewModel.removeTodo(todo.id) },
-                                )
-                            }
-                        }
-                    }
-                    is TodoScreenUiState.Error -> {
-                        val todos = (uiState as TodoScreenUiState.Error).todos
-                        LazyColumn(modifier = Modifier.weight(1f)) {
-                            itemsIndexed(todos.reversed(), key = { index: Int, item: Todo -> item.id }) { index, todo ->
-                                TodoItem(
-                                    task = todo,
-                                    onToggle = { viewModel.toggleTodoStatus(todo.id) },
-                                    onDelete = { viewModel.removeTodo(todo.id) },
-                                )
-                                if (index != todos.size - 1) {
-                                    HorizontalDivider()
-                                }
+                }
+                is TodoScreenUiState.Error -> {
+                    val todos = (uiState as TodoScreenUiState.Error).todos
+                    LazyColumn(modifier = Modifier.weight(1f)) {
+                        itemsIndexed(todos.reversed(), key = { index: Int, item: Todo -> item.id }) { index, todo ->
+                            TodoItem(
+                                task = todo,
+                                onToggle = { viewModel.toggleTodoStatus(todo.id) },
+                                onDelete = { viewModel.removeTodo(todo.id) },
+                            )
+                            if (index != todos.size - 1) {
+                                HorizontalDivider()
                             }
                         }
                     }
                 }
+            }
 
             val textFieldState = rememberTextFieldState()
             val textInputEnabled = remember { mutableStateOf(true) }
@@ -184,7 +184,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                         viewModel.addTodo(textFieldState.text.toString())
                         textFieldState.clearText()
                     }
-                }
+                },
             )
         }
     }
@@ -215,8 +215,8 @@ fun TodoItem(task: Todo, onToggle: () -> Unit, onDelete: () -> Unit) {
             onClick = onDelete,
             modifier = Modifier.background(
                 color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                shape = RoundedCornerShape(10.dp)
-            ).size(32.dp)
+                shape = RoundedCornerShape(10.dp),
+            ).size(32.dp),
         ) {
             Icon(
                 painterResource(com.android.ai.uicomponent.R.drawable.ic_delete),

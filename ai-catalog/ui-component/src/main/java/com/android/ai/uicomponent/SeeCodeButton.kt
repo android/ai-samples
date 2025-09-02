@@ -27,13 +27,13 @@ import androidx.core.net.toUri
 @Composable
 fun SeeCodeButton(sourceCodeUrl: String, modifier: Modifier = Modifier, withText: Boolean = true) {
     val context = LocalContext.current
-    val githubLink = sourceCodeUrl
     PrimaryButton(
-        text= "SOURCE",
+        text= if (withText) "SOURCE" else "",
         icon = rememberVectorPainter(Icons.Filled.Code),
         onClick = {
-            val intent = Intent(Intent.ACTION_VIEW, githubLink.toUri())
+            val intent = Intent(Intent.ACTION_VIEW, sourceCodeUrl.toUri())
             context.startActivity(intent)
         },
+        modifier = modifier,
     )
 }
