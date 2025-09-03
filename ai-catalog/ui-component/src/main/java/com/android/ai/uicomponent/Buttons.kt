@@ -32,6 +32,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -47,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -213,21 +215,27 @@ fun GenerateButtonDisabledPreview() {
 }
 
 @Composable
-fun SecondaryButton(text: String, modifier: Modifier = Modifier, icon: Painter? = null, enabled: Boolean = true, onClick: () -> Unit) {
+fun SecondaryButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    icon: Painter? = null,
+    enabled: Boolean = true,
+    colors: ButtonColors = ButtonDefaults.outlinedButtonColors(
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+    onClick: () -> Unit
+) {
     OutlinedButton(
         modifier = modifier.height(48.dp),
-        colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        ),
+        colors = colors,
         enabled = enabled,
-        border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.onSurfaceVariant),
+        border = BorderStroke(width = 1.dp, color = colors.contentColor),
         onClick = { onClick() },
     ) {
         if (icon != null) {
             Image(
                 painter = icon,
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant),
+                colorFilter = ColorFilter.tint(colors.contentColor),
                 modifier = Modifier.size(width = 24.dp, height = 24.dp),
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -253,7 +261,11 @@ fun SecondaryButtonPreview() {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BackButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun BackButton(
+    modifier: Modifier = Modifier,
+    imageVector: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
+    onClick: () -> Unit
+) {
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.outline) {
         OutlinedIconButton(
             shape = IconButtonDefaults.smallSquareShape,
@@ -262,7 +274,7 @@ fun BackButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
         ) {
             CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = imageVector,
                     contentDescription = null,
                 )
             }

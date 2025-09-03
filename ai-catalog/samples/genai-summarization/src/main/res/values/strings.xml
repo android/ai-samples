@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="genai_summarization_title_bar">GenAI Summarization with Nano</string>
-    <string name="genai_summarization_text_input_label">Enter text to summarizer</string>
-    <string name="genai_summarization_summarize_btn">Summarize</string>
-    <string name="genai_summarization_add_text_btn">Add example text</string>
+    <string name="genai_summarization_title_bar">Summarize</string>
+    <string name="genai_summarization_description">Summarize articles and conversations powered by Gemini Nano.</string>
+    <string name="genai_summarization_text_input_label">Enter text to summarize</string>
+    <string name="genai_summarization_summarize_btn">SUMMARIZE</string>
+    <string name="genai_summarization_add_text_btn">Add sample text</string>
     <string name="genai_summarization_reset_btn">Reset</string>
     <string-array name="summarization_sample_text">
         <item>@string/summarization_sample_text_1</item>
