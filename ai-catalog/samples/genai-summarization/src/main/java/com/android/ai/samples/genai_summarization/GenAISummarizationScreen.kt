@@ -87,7 +87,7 @@ fun GenAISummarizationContent(
     onSummarizeClicked: () -> Unit,
     onClearClicked: () -> Unit,
     onAddSampleTextClicked: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -99,7 +99,7 @@ fun GenAISummarizationContent(
             )
         },
     ) { innerPadding ->
-        Box(
+        Column(
             Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -111,87 +111,76 @@ fun GenAISummarizationContent(
                     shape = RoundedCornerShape(40.dp),
                 )
                 .clip(RoundedCornerShape(40.dp))
-                .background(color = surfaceContainerHighestLight),
+                .background(color = surfaceContainerHighestLight)
+                .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 32.dp),
         ) {
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 32.dp),
-            ) {
-                when (val state = uiState) {
-                    GenAISummarizationUiState.CheckingFeatureStatus ->
-                        // TODO: Replace with loading animation
-                        DisplayedText(
-                            textToDisplay = stringResource(id = R.string.summarization_checking_feature_status),
-                            isStatusText = true,
-                        )
+            when (val state = uiState) {
+                GenAISummarizationUiState.CheckingFeatureStatus ->
+                    // TODO: Replace with loading animation
+                    DisplayedText(
+                        textToDisplay = stringResource(id = R.string.summarization_checking_feature_status),
+                        isStatusText = true,
+                    )
 
-                    is GenAISummarizationUiState.DownloadingFeature ->
-                        DisplayedText(
-                            stringResource(
-                                id = R.string.summarization_downloading,
-                                state.bytesDownloaded,
-                                state.bytesToDownload,
+                is GenAISummarizationUiState.DownloadingFeature ->
+                    DisplayedText(
+                        stringResource(
+                            id = R.string.summarization_downloading,
+                            state.bytesDownloaded,
+                            state.bytesToDownload,
+                        ),
+                        isStatusText = true,
+                    )
+
+                is GenAISummarizationUiState.Error ->
+                    DisplayedText(stringResource(state.errorMessageStringRes), isStatusText = true)
+
+                GenAISummarizationUiState.Initial -> {
+                    TextField(
+                        placeholder = { Text(stringResource(R.string.genai_summarization_text_input_label)) },
+                        value = textInput, onValueChange = onTextInputChanged,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                        ),
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .weight(1f),
+                    )
+
+                    if (textInput.isEmpty()) {
+                        SecondaryButton(
+                            text = stringResource(R.string.genai_summarization_add_text_btn),
+                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add_text),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                             ),
-                            isStatusText = true,
+                            onClick = onAddSampleTextClicked,
                         )
-
-                    is GenAISummarizationUiState.Error ->
-                        DisplayedText(stringResource(state.errorMessageStringRes), isStatusText = true)
-
-                    GenAISummarizationUiState.Initial -> {
-                        Column(
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            TextField(
-                                placeholder = { Text(stringResource(R.string.genai_summarization_text_input_label)) },
-                                value = textInput, onValueChange = onTextInputChanged,
-                                colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent,
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                    disabledIndicatorColor = Color.Transparent,
-                                ),
-                                modifier = Modifier.padding(4.dp),
-                            )
-                        }
-
-                        if (textInput.isEmpty()) {
-                            SecondaryButton(
-                                text = stringResource(R.string.genai_summarization_add_text_btn),
-                                icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add_text),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer),
-                                onClick = onAddSampleTextClicked,
-                            )
-                        } else {
-                            GenerateButton(
-                                text = stringResource(R.string.genai_summarization_summarize_btn),
-                                icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_text),
-                                modifier = Modifier.padding(start = 8.dp, top = 8.dp),
-                                onClick = onSummarizeClicked,
-                            )
-                        }
-                    }
-
-                    is GenAISummarizationUiState.Generating ->
-                        DisplayedText(state.generatedOutput)
-
-                    is GenAISummarizationUiState.Success -> {
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            DisplayedText(state.generatedOutput)
-                        }
-
-                        BackButton(
+                    } else {
+                        GenerateButton(
+                            text = stringResource(R.string.genai_summarization_summarize_btn),
+                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_text),
                             modifier = Modifier.padding(start = 8.dp, top = 8.dp),
-                            imageVector = Icons.AutoMirrored.Filled.Undo,
-                            onClick = onClearClicked,
+                            onClick = onSummarizeClicked,
                         )
                     }
+                }
+
+                is GenAISummarizationUiState.Generating ->
+                    DisplayedText(state.generatedOutput)
+
+                is GenAISummarizationUiState.Success -> {
+                    DisplayedText(state.generatedOutput, modifier = modifier.weight(1f))
+
+                    BackButton(
+                        modifier = Modifier.padding(start = 8.dp, top = 8.dp),
+                        imageVector = Icons.AutoMirrored.Filled.Undo,
+                        onClick = onClearClicked,
+                    )
                 }
             }
         }
