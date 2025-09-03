@@ -17,6 +17,7 @@
 
 <resources>
     <string name="gemini_live_title">Gemini Live Todo</string>
+    <string name="gemini_live_subtitle">Simple ToDo app using the Gemini Live API to interact with the items in the list.</string>
     <string name="new_task_placeholder">New Task</string>
     <string name="add_button">Add</string>
     <string name="error_title">Error</string>
@@ -24,4 +25,5 @@
     <string name="dismiss_button">Dismiss</string>
     <string name="interact_with_todolist_by_voice">Button to start the live session and interact with the todo list by voice</string>
     <string name="see_code">See code</string>
+    <string name="listening">I am listening...</string>
 </resources>
