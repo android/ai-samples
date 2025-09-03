@@ -17,6 +17,7 @@ package com.android.ai.samples.geminivideosummary.viewmodel
 
 import android.net.Uri
 import android.util.Log
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.geminivideosummary.util.sampleVideoList
@@ -45,8 +46,8 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
     private val _uiState = MutableStateFlow(VideoSummarizationState())
     val uiState: StateFlow<VideoSummarizationState> = _uiState.asStateFlow()
 
-    fun onVideoSelected(uri: Uri) {
-        _uiState.update { it.copy(selectedVideoUri = uri, summarizationState = SummarizationState.Idle) }
+    fun onVideoSelected(@StringRes titleId: Int, uri: Uri) {
+        _uiState.update { it.copy(selectedVideoTitle = titleId, selectedVideoUri = uri, summarizationState = SummarizationState.Idle) }
     }
 
     fun onAccentSelected(locale: Locale) {
@@ -92,7 +93,7 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
                 }
                 _uiState.update {
                     it.copy(
-                        summarizationState = SummarizationState.Success(outputStringBuilder.toString()),
+                        summarizationState = SummarizationState.Success(summarizedText = outputStringBuilder.toString()),
                     )
                 }
             } catch (error: Exception) {
@@ -107,6 +108,10 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
     }
 
     fun dismissError() {
+        _uiState.update { it.copy(summarizationState = SummarizationState.Idle) }
+    }
+
+    fun redo() {
         _uiState.update { it.copy(summarizationState = SummarizationState.Idle) }
     }
 }
@@ -128,6 +133,7 @@ sealed interface TtsState {
 }
 
 data class VideoSummarizationState(
+    @StringRes val selectedVideoTitle: Int? = sampleVideoList.first().titleResId,
     val selectedVideoUri: Uri? = sampleVideoList.first().uri,
     val summarizationState: SummarizationState = SummarizationState.Idle,
     val selectedAccent: Locale = Locale.US,

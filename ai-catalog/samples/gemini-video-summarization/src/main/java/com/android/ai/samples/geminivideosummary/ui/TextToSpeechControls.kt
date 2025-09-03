@@ -18,17 +18,22 @@ package com.android.ai.samples.geminivideosummary.ui
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,23 +45,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.ai.samples.geminivideosummary.viewmodel.TtsState
+import com.android.ai.uicomponent.PrimaryButton
+import com.android.ai.uicomponent.SecondaryButton
 import com.google.com.android.ai.samples.geminivideosummary.R
 import java.util.Locale
 
-/**
- * Composable function that provides controls for Text-to-Speech functionality.
- *
- * This function displays a UI that allows the user to:
- * - Select a language accent for the Text-to-Speech engine.
- * - Initiate speech synthesis for the provided text.
- * - Pause the ongoing speech.
- */
 @Composable
 fun TextToSpeechControls(
+    @StringRes title: Int?,
     ttsState: TtsState,
     speechText: String,
     selectedAccent: Locale,
@@ -86,58 +88,65 @@ fun TextToSpeechControls(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        OutlinedTextField(
-            value = selectedAccent.displayLanguage,
-            onValueChange = { },
-            readOnly = true,
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Filled.ArrowDropDown,
-                    contentDescription = "Dropdown",
-                    modifier = Modifier.clickable { isAccentDropdownExpanded = !isAccentDropdownExpanded },
+        Row (modifier = Modifier.weight(1f)){
+            Column(modifier = Modifier.wrapContentHeight()) {
+                Text(
+                    text = stringResource(title?:R.string.video_summary),
+                    style = MaterialTheme.typography.headlineSmall,
                 )
-            },
-            modifier = Modifier
-                .clickable { isAccentDropdownExpanded = !isAccentDropdownExpanded }
-                .padding(end = 8.dp)
-                .weight(1f),
-        )
-
-        DropdownMenu(
-            expanded = isAccentDropdownExpanded,
-            onDismissRequest = { isAccentDropdownExpanded = false },
-        ) {
-            accentOptions.forEach { accent ->
-                DropdownMenuItem(
-                    text = { Text(accent.displayLanguage) },
-                    onClick = {
-                        onAccentSelected(accent)
-                        isAccentDropdownExpanded = false
+                OutlinedTextField(
+                    value = selectedAccent.displayLanguage,
+                    onValueChange = { },
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Dropdown",
+                            modifier = Modifier.clickable { isAccentDropdownExpanded = !isAccentDropdownExpanded },
+                        )
                     },
+                    modifier = Modifier
+                        .clickable { isAccentDropdownExpanded = !isAccentDropdownExpanded }
+                        .padding(top = 8.dp, end = 8.dp),
+                )
+                DropdownMenu(
+                    expanded = isAccentDropdownExpanded,
+                    onDismissRequest = { isAccentDropdownExpanded = false },
+                ) {
+                    accentOptions.forEach { accent ->
+                        DropdownMenuItem(
+                            text = { Text(accent.displayLanguage) },
+                            onClick = {
+                                onAccentSelected(accent)
+                                isAccentDropdownExpanded = false
+                            },
+                        )
+                    }
+                }
+            }
+            if (ttsState == TtsState.Idle || ttsState == TtsState.Paused) {
+                PrimaryButton(
+                    text = "",
+                    icon = painterResource(com.android.ai.uicomponent.R.drawable.ic_video_play),
+                    onClick = {
+                        handleSpeakButtonClick(
+                            textToSpeech, speechText, selectedAccent, onTtsStateChange,
+                        )
+                    },
+                    modifier = Modifier.size(width = 72.dp, height = 56.dp),
                 )
             }
-        }
 
-        if (ttsState == TtsState.Idle || ttsState == TtsState.Paused) {
-            Button(
-                onClick = {
-                    handleSpeakButtonClick(
-                        textToSpeech, speechText, selectedAccent, onTtsStateChange,
-                    )
-                },
-            ) {
-                Text(text = stringResource(R.string.text_listen_to_ai_output))
-            }
-        }
-
-        if (ttsState == TtsState.Playing) {
-            Button(
-                onClick = {
-                    textToSpeech?.stop()
-                    onTtsStateChange(TtsState.Paused)
-                },
-            ) {
-                Text(text = stringResource(R.string.pause))
+            if (ttsState == TtsState.Playing) {
+                PrimaryButton(
+                    text = "",
+                    icon = painterResource(com.android.ai.uicomponent.R.drawable.ic_video_pause),
+                    onClick = {
+                        textToSpeech?.stop()
+                        onTtsStateChange(TtsState.Paused)
+                    },
+                    modifier = Modifier.size(width = 72.dp, height = 56.dp),
+                )
             }
         }
     }
