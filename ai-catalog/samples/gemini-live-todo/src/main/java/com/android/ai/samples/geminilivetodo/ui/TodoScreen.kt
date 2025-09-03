@@ -146,8 +146,9 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
             if (uiState is TodoScreenUiState.Success) {
                 when {
                     (uiState as TodoScreenUiState.Success).liveSessionState is LiveSessionState.Running -> {
+                        val listeningMessage = stringResource(R.string.listening)
                         LaunchedEffect(Unit) {
-                            textFieldState.setTextAndPlaceCursorAtEnd("I am listening...")
+                            textFieldState.setTextAndPlaceCursorAtEnd(listeningMessage)
                             textInputEnabled.value = false
                         }
                     }
