@@ -43,6 +43,7 @@ import com.android.ai.theme.AISampleCatalogTheme
 fun TextInput(
     state: TextFieldState,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     maxLines: Int = 2,
     placeholder: String = "",
     primaryButton: @Composable () -> Unit = {},
@@ -65,6 +66,7 @@ fun TextInput(
     ) {
         TextField(
             state = state,
+            enabled = enabled,
             placeholder = {
                 Text(
                     text = placeholder,
