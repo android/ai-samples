@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="magic_selfie">Magic Selfie</string>
-    <string name="see_code">See code</string>
-    <string name="share_image">Share image</string>
+    <string name="magic_selfie_title">Magic Selfie</string>
+    <string name="magic_selfie_subtitle">Change the background of you selfies with Imagen and the ML Kit Segmentation API</string>
+    <string name="add_image">Add image</string>
     <string name="unknown_error">Unknown error</string>
-    <string name="removing_background">Removing background...</string>
-    <string name="generating_new_background">Generating new background...</string>
+    <string name="prompt_placeholder">A very scenic view of the grand canyon</string>
 </resources>
