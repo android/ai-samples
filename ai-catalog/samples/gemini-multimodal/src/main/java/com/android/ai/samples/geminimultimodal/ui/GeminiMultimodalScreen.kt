@@ -104,7 +104,7 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
         onGenerateClick = viewModel::generate,
         onTakePictureClick = {
             cameraLauncher.launch(null)
-        }
+        },
     )
 }
 
@@ -115,7 +115,7 @@ private fun GeminiMultimodalScreen(
     bitmap: Bitmap?,
     snackbarHostState: SnackbarHostState,
     onGenerateClick: (Bitmap, String) -> Unit,
-    onTakePictureClick: () -> Unit
+    onTakePictureClick: () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -266,7 +266,7 @@ private fun GeminiMultimodalScreenPreview() {
             bitmap = null,
             snackbarHostState = remember { SnackbarHostState() },
             onGenerateClick = { _, _ -> },
-            onTakePictureClick = {}
+            onTakePictureClick = {},
         )
     }
 }

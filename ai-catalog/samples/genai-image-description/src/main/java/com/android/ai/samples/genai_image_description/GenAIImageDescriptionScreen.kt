@@ -86,7 +86,7 @@ fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hilt
         onClearClick = {
             viewModel.clearGeneratedText()
             imageUri = null
-        }
+        },
     )
 }
 
@@ -97,7 +97,7 @@ private fun GenAIImageDescriptionScreen(
     imageUri: Uri?,
     onGenerateClick: (Uri?) -> Unit,
     onImagePickerClick: () -> Unit,
-    onClearClick: () -> Unit
+    onClearClick: () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -109,7 +109,7 @@ private fun GenAIImageDescriptionScreen(
                 sampleDescription = stringResource(R.string.genai_image_description_subtitle),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-image-description",
             )
-        }
+        },
     ) { innerPadding ->
         val imageBitmap = remember {
             val bitmap = BitmapFactory.decodeResource(context.resources, com.android.ai.uicomponent.R.drawable.img_fill)
@@ -171,8 +171,8 @@ private fun GenAIImageDescriptionScreen(
             }
 
             if (
-                uiState !is GenAIImageDescriptionUiState.Initial
-                && uiState !is GenAIImageDescriptionUiState.CheckingFeatureStatus
+                uiState !is GenAIImageDescriptionUiState.Initial &&
+                uiState !is GenAIImageDescriptionUiState.CheckingFeatureStatus
             ) {
                 val outputText = when (val state = uiState) {
                     is GenAIImageDescriptionUiState.DownloadingFeature -> stringResource(
@@ -193,21 +193,23 @@ private fun GenAIImageDescriptionScreen(
                         .align(Alignment.TopEnd)
                         .padding(
                             top = 18.dp,
-                            end = 18.dp
+                            end = 18.dp,
                         ),
-                    onClick = onClearClick
+                    onClick = onClearClick,
                 )
 
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                extendedColorScheme.startGradient
-                            )
-                        )
-                    )) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    extendedColorScheme.startGradient,
+                                ),
+                            ),
+                        ),
+                ) {
                     Text(
                         text = outputText,
                         style = MaterialTheme.typography.titleLarge,
@@ -231,7 +233,7 @@ private fun GenAIImageDescriptionScreenPreview() {
             imageUri = null,
             onGenerateClick = {},
             onImagePickerClick = {},
-            onClearClick = {}
+            onClearClick = {},
         )
     }
 }
