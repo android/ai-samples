@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="geminichatbot_title_bar">Gemini Chatbot</string>
+    <string name="geminichatbot_title">Gemini Chatbot</string>
+    <string name="geminichatbot_description">A simple implementation of chatbot using Gemini Flash model.</string>
     <string name="geminichatbot_input_placeholder">Type your message</string>
     <string name="see_code">See code</string>
     <string name="dismiss_button">Dismiss</string>
