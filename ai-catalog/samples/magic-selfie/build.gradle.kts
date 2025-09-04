@@ -69,8 +69,13 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.runtime.livedata)
-    implementation("com.google.android.gms:play-services-mlkit-subject-segmentation:16.0.0-beta1")
+    implementation(libs.mlkit.segmentation)
+    implementation(libs.ui.tooling.preview)
+    debugImplementation(libs.ui.tooling)
+
     ksp(libs.hilt.compiler)
+
+    implementation(project(":ui-component"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
