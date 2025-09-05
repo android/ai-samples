@@ -18,6 +18,7 @@ package com.android.ai.samples.geminivideosummary
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -50,8 +51,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
-import com.android.ai.samples.geminivideosummary.player.VideoPlayer
-import com.android.ai.samples.geminivideosummary.player.VideoSelectionDropdown
 import com.android.ai.samples.geminivideosummary.ui.OutputTextDisplay
 import com.android.ai.samples.geminivideosummary.ui.TextToSpeechControls
 import com.android.ai.samples.geminivideosummary.util.sampleVideoList
@@ -59,6 +58,9 @@ import com.android.ai.samples.geminivideosummary.viewmodel.SummarizationState
 import com.android.ai.samples.geminivideosummary.viewmodel.TtsState
 import com.android.ai.samples.geminivideosummary.viewmodel.VideoSummarizationState
 import com.android.ai.samples.geminivideosummary.viewmodel.VideoSummarizationViewModel
+import com.android.ai.uicomponent.VideoPickerData
+import com.android.ai.uicomponent.VideoPickerDropdown
+import com.android.ai.uicomponent.VideoPlayer
 import com.google.com.android.ai.samples.geminivideosummary.R
 import java.util.Locale
 
@@ -110,17 +112,23 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
                 .padding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            VideoSelectionDropdown(
-                selectedVideoUri = uiState.selectedVideoUri,
-                isDropdownExpanded = isDropdownExpanded,
-                videoOptions = sampleVideoList,
-                onVideoUriSelected = { uri ->
-                    viewModel.onVideoSelected(uri)
+            VideoPlayer(
+                player = exoPlayer,
+                videoPicker = {
+                    VideoPickerDropdown(
+                        videoItems = sampleVideoList.map { VideoPickerData(context.getString(it.titleResId), it.uri) },
+                        selectedVideo = uiState.selectedVideoUri,
+                        isExpanded = isDropdownExpanded,
+                        onDropdownExpandedChanged = { isDropdownExpanded = !isDropdownExpanded },
+                        onVideoSelected = { video ->
+                            viewModel.onVideoSelected(video.uri)
+                            isDropdownExpanded = false
+                        },
+                    )
                 },
-                onDropdownExpanded = { isDropdownExpanded = it },
+                forceShowControls = isDropdownExpanded,
+                modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
             )
-
-            VideoPlayer(exoPlayer = exoPlayer, modifier = Modifier.fillMaxWidth())
 
             SummarizationSection(
                 uiState = uiState,

@@ -50,14 +50,15 @@ import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.android.ai.samples.geminivideometadatacreation.player.VideoPlayer
-import com.android.ai.samples.geminivideometadatacreation.player.VideoSelectionDropdown
 import com.android.ai.samples.geminivideometadatacreation.ui.ButtonGrid
 import com.android.ai.samples.geminivideometadatacreation.util.sampleVideoList
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.MetadataCreationState
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.MetadataType
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.VideoMetadataCreationState
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.VideoMetadataCreationViewModel
+import com.android.ai.uicomponent.VideoPickerData
+import com.android.ai.uicomponent.VideoPickerDropdown
+import com.android.ai.uicomponent.VideoPlayer
 
 /**
  * Composable function for the AI Video Metadata Creation screen.
@@ -101,20 +102,23 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            VideoSelectionDropdown(
-                selectedVideoUri = uiState.selectedVideoUri,
-                isDropdownExpanded = isDropdownExpanded,
-                videoOptions = sampleVideoList,
-                onVideoUriSelected = { uri ->
-                    viewModel.onVideoSelected(uri)
-                    viewModel.resetMetadataState()
-                },
-                onDropdownExpanded = { isDropdownExpanded = it },
-            )
-
             VideoPlayer(
                 player = uiState.player,
-                modifier = Modifier.aspectRatio(16f / 9f),
+                videoPicker = {
+                    VideoPickerDropdown(
+                        videoItems = sampleVideoList.map { VideoPickerData(context.getString(it.titleResId), it.uri) },
+                        selectedVideo = uiState.selectedVideoUri,
+                        isExpanded = isDropdownExpanded,
+                        onDropdownExpandedChanged = { isDropdownExpanded = !isDropdownExpanded },
+                        onVideoSelected = { video ->
+                            viewModel.onVideoSelected(video.uri)
+                            isDropdownExpanded = false
+                            viewModel.resetMetadataState()
+                        },
+                    )
+                },
+                forceShowControls = isDropdownExpanded,
+                modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
             )
 
             MetadataCreationSection(
