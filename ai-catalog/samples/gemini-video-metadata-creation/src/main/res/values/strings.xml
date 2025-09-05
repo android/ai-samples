@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">Gemini Video Metadata</string>
+    <string name="select_video_placeholder">Select Video</string>
+    <string name="create_metadata_button">Create Metadata</string>
+    <string name="video_metadata_creation_title">Video Metadata Creation</string>
+    <string name="output_text_combined">%s</string>
+    <string name="output_text_generated_placeholder">"Text generated with Gemini: "</string>
+    <string name="text_listen_to_ai_output">Listen to AI output</string>
+    <string name="pause">Pause</string>
+    <string name="see_code">See Code</string>
+    <string name="dropdown_content_description">Dropdown for selecting a video</string>
+
+    <!--Video titles for list of sample videos-->
+    <string name="video_title_big_buck_bunny">Big Buck Bunny</string>
+    <string name="video_title_android_spotlight_shorts">Android Spotlight Week (Shorts video)</string>
+    <string name="video_title_tears_of_steel">Tears of Steel</string>
+    <string name="video_title_for_bigger_blazes">For Bigger Blazes</string>
+    <string name="video_title_for_bigger_escape">For Bigger Escape</string>
+
+    <string name="thumbnails">Thumbnails</string>
+    <string name="description">Description</string>
+    <string name="hashtags">Hashtags</string>
+    <string name="account_tags">Account tags</string>
+    <string name="chapters">Chapters</string>
+    <string name="links">Links</string>
+    <string name="hdr_thumbnail_unsupported_message">HDR thumbnails are only supported on Android 14 and above.</string>
+
+    <string name="playpause_button_play">play</string>
+    <string name="playpause_button_pause">pause</string>
+
+</resources>

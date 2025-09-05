@@ -26,12 +26,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,7 +72,6 @@ import com.android.ai.uicomponent.SecondaryButton
 fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
-
     val photoPickerLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
         uri?.let {
             imageUri = it
@@ -152,7 +154,8 @@ private fun GenAIImageDescriptionScreen(
                         text = stringResource(R.string.genai_image_description_run_inference),
                         icon = painterResource(com.android.ai.uicomponent.R.drawable.ic_ai_edit),
                         modifier = Modifier
-                            .align(Alignment.BottomStart)
+
+                    .align(Alignment.BottomStart)
                             .padding(start = 24.dp, bottom = 24.dp),
                     ) {
                         onGenerateClick(imageUri)
@@ -170,54 +173,30 @@ private fun GenAIImageDescriptionScreen(
                 )
             }
 
-            if (
-                uiState !is GenAIImageDescriptionUiState.Initial &&
-                uiState !is GenAIImageDescriptionUiState.CheckingFeatureStatus
+            // Generate image description button
+            Button(
+                onClick = {
+                    showBottomSheet = true
+                    viewModel.getImageDescription(imageUri, context)
+                }, modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
             ) {
-                val outputText = when (val state = uiState) {
-                    is GenAIImageDescriptionUiState.DownloadingFeature -> stringResource(
-                        id = R.string.image_desc_downloading,
-                        state.bytesDownloaded,
-                        state.bytesToDownload,
-                    )
-                    is GenAIImageDescriptionUiState.Error -> stringResource(state.errorMessageStringRes)
-                    is GenAIImageDescriptionUiState.Generating -> state.partialOutput
-                    is GenAIImageDescriptionUiState.Success -> state.generatedOutput
-                    else -> "" // Show nothing for the Initial state
-                }
-
-                SecondaryButton(
-                    text = "",
-                    icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_redo),
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(
-                            top = 18.dp,
-                            end = 18.dp,
-                        ),
-                    onClick = onClearClick,
+                Text(
+                    text = stringResource(id = R.string.genai_image_description_run_inference),
                 )
+            }
+        }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    extendedColorScheme.startGradient,
-                                ),
-                            ),
-                        ),
-                ) {
-                    Text(
-                        text = outputText,
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier
-                            .padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp)
-                            .align(Alignment.BottomCenter),
-                    )
-                }
+        if (showBottomSheet) {
+            ModalBottomSheet(
+                onDismissRequest = {
+                    showBottomSheet = false
+                    viewModel.clearGeneratedText()
+                }, sheetState = sheetState,
+            ) {
+                Text(
+                    text = imageDescriptionResult.value,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp),
+                )
             }
         }
     }

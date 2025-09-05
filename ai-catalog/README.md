@@ -1,6 +1,6 @@
 # Android AI Sample Catalog
 
-![Android AI Sample Catalog screenshots](https://developer.android.com/static/ai/assets/images/ai_sample_catalog_1440.png)
+![Android AI Sample Catalog screenshots](https://developer.android.com/static/ai/assets/images/ai_catalog_screenshot_1440.png)
 
 This folder contains the Android AI Sample catalog, a stand alone application giving you access to 
 individual self-contained samples illustrating some of the Generative AI capabilities unlocked by 
@@ -13,14 +13,16 @@ some of Google's models.
 
 Browse the samples inside the `/samples` folder:
 
-- **gemini-chatbot**: a simple chatbot using Gemini 2.0 Flash
-- **gemini-multimodal**: a single screen application leveraging text+image to text generation with Gemini 2.0 Flash
+- **gemini-image-chat**: a sample using the new [Gemini 2.5 Flash Image model](https://developers.googleblog.com/en/introducing-gemini-2-5-flash-image/) (a.k.a. "NanoBanana") enabling image generation and iterations via chat interactions
+- **gemini-chatbot**: a simple chatbot using Gemini Flash
+- **gemini-multimodal**: a single screen application leveraging text+image to text generation with Gemini Flash
 - **genai-summarization**: a text summarization sample using Gemini Nano
 - **genai-image-description**: an image description sample using Gemini Nano
 - **genai-writing-assistance**: a proofreading and rewriting sample using Gemini Nano
 - **imagen**: an image generation sample using Imagen
 - **magic-selfie**: an sample using ML Kit subject segmentation and Imagen for image generation
-- **gemini-video-summarization**: a video summarization sample using Gemini 2.0 Flash
+- **gemini-video-summarization**: a video summarization sample using Gemini Flash
+- **gemini-video-metadata-creation**: a sample using Gemini Flash to generate a video description, hashtags, chapters, etc...
 - **gemini-live-todo**: a todo list app using Gemini Live
 - More to come...
 
@@ -34,8 +36,8 @@ Browse the samples inside the `/samples` folder:
 1. Clone the repository
 2. Open the whole project in Android Studio.
 3. Set up a Firebase project and connect your app to Firebase by adding your Firebase configuration 
-file (google-services.json) to the app. Read more [here](https://firebase.google.com/docs/ai-logic/get-started?platform=android&api=dev#set-up-firebase).
-3. Sync & Run `app` configuration
+file (`google-services.json`) to the `/app` directory. Read more in the [Firebase documentation](https://firebase.google.com/docs/ai-logic/get-started?platform=android&api=dev#set-up-firebase) and the [Android-specific setup guide](https://firebase.google.com/docs/android/learn-more?authuser=0#google-services-plugin-and-file).
+4. Sync & Run `app` configuration
 
 The app will open with the samples list screen that allows you to navigate throughout the different 
 available samples.

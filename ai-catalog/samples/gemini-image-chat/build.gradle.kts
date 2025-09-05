@@ -22,7 +22,7 @@ plugins {
 }
 
 android {
-    namespace = "com.android.ai.samples.geminimultimodal"
+    namespace = "com.android.ai.samples.geminiimagechat"
     compileSdk = 35
 
     buildFeatures {
@@ -30,7 +30,7 @@ android {
     }
 
     defaultConfig {
-        minSdk = 26
+        minSdk = 24
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -49,26 +49,28 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
     kotlinOptions {
         jvmTarget = "17"
     }
 }
 
 dependencies {
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.material.icons.extended)
-    implementation(libs.androidx.material.icons.extended)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.ai)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
-    implementation(libs.androidx.runtime.livedata)
-    implementation(libs.genai.proofreading)
-    implementation(libs.genai.rewrite)
-    implementation(libs.kotlinx.coroutines.guava)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.material3.android)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.exifinterface)
     ksp(libs.hilt.compiler)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

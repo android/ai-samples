@@ -14,30 +14,20 @@
  * limitations under the License.
  */
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
-    alias(libs.plugins.jetbrains.kotlin.serialization)
-    alias(libs.plugins.google.gms.google.services)
-    alias(libs.plugins.hilt.plugin)
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.hilt.plugin)
 }
 
 android {
-    namespace = "com.android.ai.catalog"
-    compileSdk = 35
+    namespace = "com.android.ai.samples.geminivideometadatacreation"
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.android.ai.catalog"
-        minSdk = 26
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
-
+        minSdk = 24
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
     }
 
     buildTypes {
@@ -64,40 +54,29 @@ android {
 dependencies {
 
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.material.icons.extended)
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.androidx.material3.android)
+    implementation(libs.firebase.common.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.ui.tooling.preview.android)
+    ksp(libs.hilt.compiler)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.ai)
-    ksp(libs.hilt.compiler)
 
-    implementation(project(":ui-component"))
-    implementation(project(":samples:gemini-multimodal"))
-    implementation(project(":samples:gemini-chatbot"))
-    implementation(project(":samples:genai-summarization"))
-    implementation(project(":samples:genai-image-description"))
-    implementation(project(":samples:genai-writing-assistance"))
-    implementation(project(":samples:imagen"))
-    implementation(project(":samples:magic-selfie"))
-    implementation(project(":samples:gemini-video-summarization"))
-    implementation(project(":samples:gemini-live-todo"))
-    implementation(project(":samples:gemini-video-metadata-creation"))
-    implementation(project(":samples:gemini-image-chat"))
+    // Media3 ExoPlayer
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.transformer)
+    implementation(libs.androidx.media3.ui.compose)
+    implementation(libs.kotlinx.coroutines.guava)
 
-    testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
 }

@@ -15,13 +15,16 @@
  */
 package com.android.ai.samples.genai_writing_assistance
 
+import android.app.Application
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.ViewModel
+import androidx.annotation.StringRes
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.geminimultimodal.R
+import com.google.mlkit.genai.common.DownloadCallback
 import com.google.mlkit.genai.common.FeatureStatus
-import com.google.mlkit.genai.proofreading.Proofreader
+import com.google.mlkit.genai.common.GenAiException
 import com.google.mlkit.genai.proofreading.ProofreaderOptions
 import com.google.mlkit.genai.proofreading.Proofreading
 import com.google.mlkit.genai.proofreading.ProofreadingRequest
@@ -32,74 +35,104 @@ import com.google.mlkit.genai.rewriting.RewritingRequest
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 
-class GenAIWritingAssistanceViewModel @Inject constructor() : ViewModel() {
-    private val _resultGenerated = MutableStateFlow("")
-    val resultGenerated: StateFlow<String> = _resultGenerated
+sealed class GenAIWritingAssistanceUiState {
+    data object Initial : GenAIWritingAssistanceUiState()
+    data object CheckingFeatureStatus : GenAIWritingAssistanceUiState()
+    data class DownloadingFeature(
+        val bytesToDownload: Long,
+        val bytesDownloaded: Long,
+    ) : GenAIWritingAssistanceUiState()
 
-    private var proofreader: Proofreader? = null
+    data object Generating : GenAIWritingAssistanceUiState()
+    data class Success(val generatedOutput: String) : GenAIWritingAssistanceUiState()
+    data class Error(@StringRes val errorMessageStringRes: Int) : GenAIWritingAssistanceUiState()
+}
+
+class GenAIWritingAssistanceViewModel @Inject constructor(val context: Application) : AndroidViewModel(context) {
+    private val _uiState = MutableStateFlow<GenAIWritingAssistanceUiState>(GenAIWritingAssistanceUiState.Initial)
+    val uiState: StateFlow<GenAIWritingAssistanceUiState> = _uiState.asStateFlow()
+
+    private val proofreader = Proofreading.getClient(
+        ProofreaderOptions.builder(context)
+            .setLanguage(ProofreaderOptions.Language.ENGLISH)
+            // If input was transcript of speech-to-text, this should be InputType.SPEECH
+            .setInputType(ProofreaderOptions.InputType.KEYBOARD)
+            .build(),
+    )
+
     private var rewriter: Rewriter? = null
 
     fun proofread(text: String, context: Context) {
         if (text.isEmpty()) {
-            _resultGenerated.value = context.getString(R.string.genai_writing_assistance_no_input)
+            _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.genai_writing_assistance_no_input)
             return
         }
 
-        val proofreadOptions = ProofreaderOptions.builder(context)
-            .setLanguage(ProofreaderOptions.Language.ENGLISH)
-            // If input was transcript of speech-to-text, this should be InputType.SPEECH
-            .setInputType(ProofreaderOptions.InputType.KEYBOARD)
-            .build()
-
-        proofreader = Proofreading.getClient(proofreadOptions)
-
         viewModelScope.launch {
-            proofreader?.let { proofreader ->
+            var proofreadFeatureStatus = FeatureStatus.UNAVAILABLE
 
-                var proofreadFeatureStatus = FeatureStatus.UNAVAILABLE
+            try {
+                _uiState.value = GenAIWritingAssistanceUiState.CheckingFeatureStatus
+                proofreadFeatureStatus = proofreader.checkFeatureStatus().await()
+            } catch (error: Exception) {
+                _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.feature_check_fail)
+                Log.e("GenAIImageDesc", "Error checking feature status", error)
+            }
 
-                try {
-                    proofreadFeatureStatus = proofreader.checkFeatureStatus().await()
-                } catch (error: Exception) {
-                    Log.e("GenAIProofread", "Error checking feature status", error)
-                }
-
-                if (proofreadFeatureStatus == FeatureStatus.UNAVAILABLE) {
-                    _resultGenerated.value =
-                        context.getString(R.string.genai_writing_assistance_not_available)
-                    return@launch
-                }
-
-                // If feature is downloadable, making an inference call will automatically start
-                // the downloading process.
-                // If feature is downloading, the inference request will automatically execute after
-                // the feature has been downloaded.
-                // Alternatively, you can call proofreader.downloadFeature() to monitor the
-                // progress of the download.
-                if (proofreadFeatureStatus == FeatureStatus.DOWNLOADABLE ||
-                    proofreadFeatureStatus == FeatureStatus.DOWNLOADING
-                ) {
-                    _resultGenerated.value =
-                        context.getString(R.string.genai_writing_assistance_downloading)
-                }
-
-                val proofreadRequest = ProofreadingRequest.builder(text).build()
-                // More than 1 result may be generated. Results are returned in descending order of
-                // quality of confidence. Here we use the first result which has the highest quality
-                // of confidence.
-                val results = proofreader.runInference(proofreadRequest).await()
-                _resultGenerated.value = results.results[0].text
+            if (proofreadFeatureStatus == FeatureStatus.UNAVAILABLE) {
+                _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.genai_writing_assistance_not_available)
                 return@launch
+            }
+
+            if (proofreadFeatureStatus == FeatureStatus.DOWNLOADABLE || proofreadFeatureStatus == FeatureStatus.DOWNLOADING) {
+                proofreader.downloadFeature(
+                    object : DownloadCallback {
+                        override fun onDownloadStarted(bytesToDownload: Long) {
+                            _uiState.value = GenAIWritingAssistanceUiState.DownloadingFeature(bytesToDownload, 0)
+                        }
+
+                        override fun onDownloadProgress(bytesDownloaded: Long) {
+                            _uiState.update {
+                                (it as? GenAIWritingAssistanceUiState.DownloadingFeature)?.copy(bytesDownloaded = bytesDownloaded) ?: it
+                            }
+                        }
+
+                        override fun onDownloadCompleted() {
+                            viewModelScope.launch {
+                                runProofreadingInference(text)
+                            }
+                        }
+
+                        override fun onDownloadFailed(exception: GenAiException) {
+                            Log.e("GenAIWriting", "Download failed", exception)
+                            _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.feature_download_failed)
+                        }
+                    },
+                )
+            } else {
+                runProofreadingInference(text)
             }
         }
     }
 
+    private suspend fun runProofreadingInference(textToProofread: String) {
+        val proofreadRequest = ProofreadingRequest.builder(textToProofread).build()
+        // More than 1 result may be generated. Results are returned in descending order of
+        // quality of confidence. Here we use the first result which has the highest quality
+        // of confidence.
+        _uiState.value = GenAIWritingAssistanceUiState.Generating
+        val results = proofreader.runInference(proofreadRequest).await()
+        _uiState.value = GenAIWritingAssistanceUiState.Success(results.results[0].text)
+    }
+
     fun rewrite(text: String, rewriteStyle: Int, context: Context) {
         if (text.isEmpty()) {
-            _resultGenerated.value = context.getString(R.string.genai_writing_assistance_no_input)
+            _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.genai_writing_assistance_no_input)
             return
         }
 
@@ -115,47 +148,66 @@ class GenAIWritingAssistanceViewModel @Inject constructor() : ViewModel() {
                 var rewriteFeatureStatus = FeatureStatus.UNAVAILABLE
 
                 try {
+                    _uiState.value = GenAIWritingAssistanceUiState.CheckingFeatureStatus
                     rewriteFeatureStatus = rewriter.checkFeatureStatus().await()
                 } catch (error: Exception) {
-                    Log.e("GenAIRewrite", "Error checking feature status", error)
+                    _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.feature_check_fail)
+                    Log.e("GenAIWriting", "Error checking feature status", error)
                 }
 
                 if (rewriteFeatureStatus == FeatureStatus.UNAVAILABLE) {
-                    _resultGenerated.value =
-                        context.getString(R.string.genai_writing_assistance_not_available)
+                    _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.genai_writing_assistance_not_available)
                     return@launch
                 }
 
-                // If feature is downloadable, making an inference call will automatically start
-                // the downloading process.
-                // If feature is downloading, the inference request will automatically execute after
-                // the feature has been downloaded.
-                // Alternatively, you can call rewriter.downloadFeature() to monitor the
-                // progress of the download.
-                if (rewriteFeatureStatus == FeatureStatus.DOWNLOADABLE ||
-                    rewriteFeatureStatus == FeatureStatus.DOWNLOADING
-                ) {
-                    _resultGenerated.value =
-                        context.getString(R.string.genai_writing_assistance_downloading)
-                }
+                if (rewriteFeatureStatus == FeatureStatus.DOWNLOADABLE || rewriteFeatureStatus == FeatureStatus.DOWNLOADING) {
+                    rewriter.downloadFeature(
+                        object : DownloadCallback {
+                            override fun onDownloadStarted(bytesToDownload: Long) {
+                                _uiState.value = GenAIWritingAssistanceUiState.DownloadingFeature(bytesToDownload, 0)
+                            }
 
-                val rewriteRequest = RewritingRequest.builder(text).build()
-                // More than 1 result may be generated. Results are returned in descending order of
-                // quality of confidence. Here we use the first result which has the highest quality of
-                // confidence.
-                val results = rewriter.runInference(rewriteRequest).await()
-                _resultGenerated.value = results.results[0].text
-                return@launch
+                            override fun onDownloadProgress(bytesDownloaded: Long) {
+                                _uiState.update {
+                                    (it as? GenAIWritingAssistanceUiState.DownloadingFeature)?.copy(bytesDownloaded = bytesDownloaded) ?: it
+                                }
+                            }
+
+                            override fun onDownloadCompleted() {
+                                viewModelScope.launch {
+                                    runRewritingInference(rewriter, text)
+                                }
+                            }
+
+                            override fun onDownloadFailed(exception: GenAiException) {
+                                Log.e("GenAIWriting", "Download failed", exception)
+                                _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.feature_download_failed)
+                            }
+                        },
+                    )
+                } else {
+                    runRewritingInference(rewriter, text)
+                }
             }
         }
     }
 
+    private suspend fun runRewritingInference(rewriter: Rewriter, text: String) {
+        val rewriteRequest = RewritingRequest.builder(text).build()
+        // More than 1 result may be generated. Results are returned in descending order of
+        // quality of confidence. Here we use the first result which has the highest quality of
+        // confidence.
+        _uiState.value = GenAIWritingAssistanceUiState.Generating
+        val results = rewriter.runInference(rewriteRequest).await()
+        _uiState.value = GenAIWritingAssistanceUiState.Success(results.results[0].text)
+    }
+
     fun clearGeneratedText() {
-        _resultGenerated.value = ""
+        _uiState.value = GenAIWritingAssistanceUiState.Initial
     }
 
     override fun onCleared() {
-        proofreader?.close()
+        proofreader.close()
         rewriter?.close()
     }
 }

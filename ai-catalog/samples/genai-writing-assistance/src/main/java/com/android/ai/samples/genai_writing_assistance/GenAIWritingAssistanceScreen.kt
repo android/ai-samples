@@ -33,7 +33,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -42,9 +41,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,19 +58,17 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.geminimultimodal.R
 import com.google.mlkit.genai.rewriting.RewriterOptions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val sheetState = rememberModalBottomSheetState()
-    var showBottomSheet by remember { mutableStateOf(false) }
     var showRewriteOptionsDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
-
-    val resultGenerated = viewModel.resultGenerated.collectAsState()
 
     val proofreadSampleTextOptions = stringArrayResource(R.array.proofread_sample_text)
     val rewriteSampleTextOptions = stringArrayResource(R.array.rewrite_sample_text)
@@ -81,7 +76,8 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
     var textInput by remember { mutableStateOf("") }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(), topBar = {
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
             TopAppBar(
                 colors = topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -112,14 +108,40 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                     .weight(.8f),
             )
 
+            val outputText = when (val state = uiState) {
+                is GenAIWritingAssistanceUiState.DownloadingFeature -> stringResource(
+                    id = R.string.genai_writing_assistance_downloading,
+                    state.bytesDownloaded,
+                    state.bytesToDownload,
+                )
+
+                is GenAIWritingAssistanceUiState.Error -> stringResource(state.errorMessageStringRes)
+                is GenAIWritingAssistanceUiState.Success -> state.generatedOutput
+                is GenAIWritingAssistanceUiState.Generating -> stringResource(id = R.string.generating)
+                GenAIWritingAssistanceUiState.CheckingFeatureStatus -> stringResource(id = R.string.checking_feature_status)
+                GenAIWritingAssistanceUiState.Initial -> "" // Show nothing for the Initial state
+            }
+
+            // Output box
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            ) {
+                Text(
+                    text = outputText,
+                    modifier = Modifier.padding(16.dp),
+                )
+            }
+
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 // Proofread button
                 Button(
                     onClick = {
-                        showBottomSheet = true
                         viewModel.proofread(textInput, context)
                     },
-                    Modifier.padding(10.dp),
+                    Modifier.padding(8.dp),
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_proofread_btn),
@@ -129,7 +151,7 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                     onClick = {
                         showRewriteOptionsDialog = true
                     },
-                    Modifier.padding(10.dp),
+                    Modifier.padding(8.dp),
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_rewrite_btn),
@@ -145,7 +167,9 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
             ) {
                 OutlinedButton(
                     onClick = { textInput = proofreadSampleTextOptions.random() },
-                    Modifier.weight(1f).padding(5.dp),
+                    Modifier
+                        .weight(1f)
+                        .padding(4.dp),
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_proofread_sample_text_btn),
@@ -155,7 +179,9 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
 
                 OutlinedButton(
                     onClick = { textInput = rewriteSampleTextOptions.random() },
-                    Modifier.weight(1f).padding(5.dp),
+                    Modifier
+                        .weight(1f)
+                        .padding(4.dp),
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_rewrite_sample_text_btn),
@@ -164,8 +190,13 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
                 }
 
                 OutlinedButton(
-                    onClick = { textInput = "" },
-                    Modifier.weight(1f).padding(5.dp),
+                    onClick = {
+                        textInput = ""
+                        viewModel.clearGeneratedText()
+                    },
+                    Modifier
+                        .weight(1f)
+                        .padding(4.dp),
                 ) {
                     Text(
                         stringResource(id = R.string.genai_writing_assistance_reset_btn),
@@ -175,31 +206,10 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
             }
         }
 
-        if (showBottomSheet) {
-            ModalBottomSheet(
-                onDismissRequest = {
-                    showBottomSheet = false
-                    viewModel.clearGeneratedText()
-                },
-                sheetState = sheetState,
-            ) {
-                Text(
-                    text = resultGenerated.value,
-                    modifier = Modifier.padding(
-                        top = 8.dp,
-                        bottom = 24.dp,
-                        start = 24.dp,
-                        end = 24.dp,
-                    ),
-                )
-            }
-        }
-
         if (showRewriteOptionsDialog) {
             RewriteOptionsDialog(
                 onConfirm = { rewriteStyleSelected ->
                     showRewriteOptionsDialog = false
-                    showBottomSheet = true
                     viewModel.rewrite(
                         textInput,
                         rewriteStyleSelected.rewriteStyle,
