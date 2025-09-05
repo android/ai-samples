@@ -15,201 +15,229 @@
  */
 package com.android.ai.samples.genai_writing_assistance
 
-import android.content.Intent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.geminimultimodal.R
+import com.android.ai.theme.AISampleCatalogTheme
+import com.android.ai.theme.surfaceContainerHighestLight
+import com.android.ai.uicomponent.GenerateButton
+import com.android.ai.uicomponent.SampleDetailTopAppBar
+import com.android.ai.uicomponent.SecondaryButton
+import com.android.ai.uicomponent.UndoButton
 import com.google.mlkit.genai.rewriting.RewriterOptions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hiltViewModel()) {
 
-    val sheetState = rememberModalBottomSheetState()
-    var showBottomSheet by remember { mutableStateOf(false) }
     var showRewriteOptionsDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    val resultGenerated = viewModel.resultGenerated.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val proofreadSampleTextOptions = stringArrayResource(R.array.proofread_sample_text)
     val rewriteSampleTextOptions = stringArrayResource(R.array.rewrite_sample_text)
 
     var textInput by remember { mutableStateOf("") }
 
+    GenAIWritingAssistanceContent(
+        uiState = uiState,
+        textInput = textInput,
+        onTextInputChanged = { textInput = it },
+        onProofreadClicked = { viewModel.proofread(textInput) },
+        onRewriteClicked = {
+            showRewriteOptionsDialog = true
+        },
+        onClearClicked = {
+            viewModel.clearGeneratedText()
+            textInput = ""
+        },
+        onAddProofreadTextClicked = { textInput = proofreadSampleTextOptions.random() },
+        onAddRewriteTextClicked = { textInput = rewriteSampleTextOptions.random() },
+    )
+
+    if (showRewriteOptionsDialog) {
+        RewriteOptionsDialog(
+            onConfirm = { rewriteStyleSelected ->
+                showRewriteOptionsDialog = false
+                viewModel.rewrite(
+                    textInput,
+                    rewriteStyleSelected.rewriteStyle,
+                    context,
+                )
+            },
+            onDismissRequest = {
+                showRewriteOptionsDialog = false
+            },
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GenAIWritingAssistanceContent(
+    uiState: GenAIWritingAssistanceUiState,
+    textInput: String,
+    onTextInputChanged: (String) -> Unit,
+    onProofreadClicked: () -> Unit,
+    onRewriteClicked: () -> Unit,
+    onClearClicked: () -> Unit,
+    onAddProofreadTextClicked: () -> Unit,
+    onAddRewriteTextClicked: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Scaffold(
-        modifier = Modifier.fillMaxSize(), topBar = {
-            TopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                title = {
-                    Text(text = stringResource(id = R.string.genai_writing_assistance_title_bar))
-                },
-                actions = {
-                    SeeCodeButton()
-                },
+        modifier = modifier.fillMaxSize(),
+        topBar = {
+            SampleDetailTopAppBar(
+                sampleName = stringResource(R.string.genai_writing_assistance_title_bar),
+                sampleDescription = stringResource(R.string.genai_writing_assistance_description),
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-writing-assistance",
             )
         },
     ) { innerPadding ->
-
         Column(
             Modifier
-                .padding(12.dp)
-                .padding(innerPadding),
-        ) {
-            // Text input box
-            TextField(
-                value = textInput,
-                onValueChange = { textInput = it },
-                label = { Text(stringResource(id = R.string.genai_writing_assistance_text_input_label)) },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .weight(.8f),
-            )
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                // Proofread button
-                Button(
-                    onClick = {
-                        showBottomSheet = true
-                        viewModel.proofread(textInput, context)
-                    },
-                    Modifier.padding(10.dp),
-                ) {
-                    Text(
-                        stringResource(id = R.string.genai_writing_assistance_proofread_btn),
-                    )
-                }
-                Button(
-                    onClick = {
-                        showRewriteOptionsDialog = true
-                    },
-                    Modifier.padding(10.dp),
-                ) {
-                    Text(
-                        stringResource(id = R.string.genai_writing_assistance_rewrite_btn),
-                    )
-                }
-            }
-
-            // Extra options buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                OutlinedButton(
-                    onClick = { textInput = proofreadSampleTextOptions.random() },
-                    Modifier.weight(1f).padding(5.dp),
-                ) {
-                    Text(
-                        stringResource(id = R.string.genai_writing_assistance_proofread_sample_text_btn),
-                        textAlign = TextAlign.Center,
-                    )
-                }
-
-                OutlinedButton(
-                    onClick = { textInput = rewriteSampleTextOptions.random() },
-                    Modifier.weight(1f).padding(5.dp),
-                ) {
-                    Text(
-                        stringResource(id = R.string.genai_writing_assistance_rewrite_sample_text_btn),
-                        textAlign = TextAlign.Center,
-                    )
-                }
-
-                OutlinedButton(
-                    onClick = { textInput = "" },
-                    Modifier.weight(1f).padding(5.dp),
-                ) {
-                    Text(
-                        stringResource(id = R.string.genai_writing_assistance_reset_btn),
-                        textAlign = TextAlign.Center,
-                    )
-                }
-            }
-        }
-
-        if (showBottomSheet) {
-            ModalBottomSheet(
-                onDismissRequest = {
-                    showBottomSheet = false
-                    viewModel.clearGeneratedText()
-                },
-                sheetState = sheetState,
-            ) {
-                Text(
-                    text = resultGenerated.value,
-                    modifier = Modifier.padding(
-                        top = 8.dp,
-                        bottom = 24.dp,
-                        start = 24.dp,
-                        end = 24.dp,
-                    ),
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(top = 16.dp)
+                .imePadding()
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.outline,
+                    shape = RoundedCornerShape(40.dp),
                 )
-            }
-        }
-
-        if (showRewriteOptionsDialog) {
-            RewriteOptionsDialog(
-                onConfirm = { rewriteStyleSelected ->
-                    showRewriteOptionsDialog = false
-                    showBottomSheet = true
-                    viewModel.rewrite(
-                        textInput,
-                        rewriteStyleSelected.rewriteStyle,
-                        context,
+                .clip(RoundedCornerShape(40.dp))
+                .background(color = surfaceContainerHighestLight)
+                .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 32.dp),
+        ) {
+            when (val state = uiState) {
+                GenAIWritingAssistanceUiState.CheckingFeatureStatus ->
+                    // TODO: Replace with loading animation
+                    DisplayedText(
+                        textToDisplay = stringResource(id = R.string.checking_feature_status),
+                        isStatusText = true,
                     )
-                },
-                onDismissRequest = {
-                    showRewriteOptionsDialog = false
-                },
-            )
+
+                is GenAIWritingAssistanceUiState.DownloadingFeature ->
+                    DisplayedText(
+                        stringResource(
+                            id = R.string.genai_writing_assistance_downloading,
+                            state.bytesDownloaded,
+                            state.bytesToDownload,
+                        ),
+                        isStatusText = true,
+                    )
+
+                is GenAIWritingAssistanceUiState.Error ->
+                    DisplayedText(stringResource(state.errorMessageStringRes), isStatusText = true)
+
+                GenAIWritingAssistanceUiState.Initial -> {
+                    TextField(
+                        placeholder = { Text(stringResource(R.string.genai_writing_assistance_text_input_label)) },
+                        value = textInput, onValueChange = onTextInputChanged,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                        ),
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .weight(1f),
+                    )
+
+                    if (textInput.isEmpty()) {
+                        SecondaryButton(
+                            text = stringResource(R.string.genai_writing_assistance_proofread_sample_text_btn),
+                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add_text),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            ),
+                            onClick = onAddProofreadTextClicked,
+                            modifier = Modifier.padding(start = 8.dp, top = 12.dp),
+                        )
+                        SecondaryButton(
+                            text = stringResource(R.string.genai_writing_assistance_rewrite_sample_text_btn),
+                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add_text),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            ),
+                            onClick = onAddRewriteTextClicked,
+                            modifier = Modifier.padding(start = 8.dp, top = 12.dp),
+                        )
+                    } else {
+                        GenerateButton(
+                            text = stringResource(R.string.genai_writing_assistance_proofread_btn),
+                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_text),
+                            modifier = Modifier.padding(start = 8.dp, top = 12.dp),
+                            onClick = onProofreadClicked,
+                        )
+                        GenerateButton(
+                            text = stringResource(R.string.genai_writing_assistance_rewrite_btn),
+                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_text),
+                            modifier = Modifier.padding(start = 8.dp, top = 12.dp),
+                            onClick = onRewriteClicked,
+                        )
+                    }
+                }
+
+                is GenAIWritingAssistanceUiState.Generating ->
+                    // TODO: Replace with loading animation
+                    DisplayedText(stringResource(R.string.genai_writing_assistance_generating))
+
+                is GenAIWritingAssistanceUiState.Success -> {
+                    DisplayedText(state.generatedOutput, modifier = modifier.weight(1f))
+
+                    UndoButton(
+                        modifier = Modifier.padding(start = 8.dp, top = 8.dp),
+                        onClick = onClearClicked,
+                    )
+                }
+            }
         }
     }
 }
@@ -276,26 +304,108 @@ fun RewriteOptionsDialog(onConfirm: (rewriteStyle: RewriteStyle) -> Unit, onDism
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun SeeCodeButton() {
-    val context = LocalContext.current
-    val githubLink = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-writing-assistance"
-
-    Button(
-        onClick = {
-            val intent = Intent(Intent.ACTION_VIEW, githubLink.toUri())
-            context.startActivity(intent)
+fun DisplayedText(
+    textToDisplay: String,
+    modifier: Modifier = Modifier,
+    isStatusText: Boolean = false,
+) {
+    Text(
+        textToDisplay, modifier = modifier.padding(8.dp),
+        fontSize = if (!isStatusText) {
+            16.sp
+        } else {
+            24.sp
         },
-        modifier = Modifier.padding(end = 8.dp),
-    ) {
-        Icon(Icons.Filled.Code, contentDescription = "See code")
-        Text(
-            modifier = Modifier.padding(start = 8.dp),
-            fontSize = 12.sp,
-            text = stringResource(R.string.genai_writing_assistance_see_code),
+    )
+}
+
+@Preview
+@Composable
+fun GenAISummarizationContentPreview_Initial_EmptyText() {
+    AISampleCatalogTheme {
+        GenAIWritingAssistanceContent(
+            uiState = GenAIWritingAssistanceUiState.Initial,
+            textInput = "",
+            onTextInputChanged = {},
+            onProofreadClicked = {},
+            onRewriteClicked = {},
+            onClearClicked = {},
+            onAddProofreadTextClicked = {},
+            onAddRewriteTextClicked = {},
         )
     }
 }
+
+@Preview
+@Composable
+fun GenAISummarizationContentPreview_Initial_WithTextText() {
+    AISampleCatalogTheme {
+        GenAIWritingAssistanceContent(
+            uiState = GenAIWritingAssistanceUiState.Initial,
+            textInput = stringResource(R.string.genai_proofread_sample_text_1),
+            onTextInputChanged = {},
+            onProofreadClicked = {},
+            onRewriteClicked = {},
+            onClearClicked = {},
+            onAddProofreadTextClicked = {},
+            onAddRewriteTextClicked = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun GenAISummarizationContentPreview_CheckingFeatureStatus() {
+    AISampleCatalogTheme {
+        GenAIWritingAssistanceContent(
+            uiState = GenAIWritingAssistanceUiState.CheckingFeatureStatus,
+            textInput = "",
+            onTextInputChanged = {},
+            onProofreadClicked = {},
+            onRewriteClicked = {},
+            onClearClicked = {},
+            onAddProofreadTextClicked = {},
+            onAddRewriteTextClicked = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun GenAISummarizationContentPreview_Error() {
+    AISampleCatalogTheme {
+        GenAIWritingAssistanceContent(
+            uiState = GenAIWritingAssistanceUiState.Error(R.string.feature_check_fail),
+            textInput = "",
+            onTextInputChanged = {},
+            onProofreadClicked = {},
+            onRewriteClicked = {},
+            onClearClicked = {},
+            onAddProofreadTextClicked = {},
+            onAddRewriteTextClicked = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+fun GenAISummarizationContentPreview_Success() {
+    AISampleCatalogTheme {
+        GenAIWritingAssistanceContent(
+            uiState = GenAIWritingAssistanceUiState.Success("A fluffy golden retriever, wearing tiny spectacles, diligently typed lines of code"),
+            textInput = "",
+            onTextInputChanged = {},
+            onProofreadClicked = {},
+            onRewriteClicked = {},
+            onClearClicked = {},
+            onAddProofreadTextClicked = {},
+            onAddRewriteTextClicked = {},
+        )
+    }
+}
+
 
 enum class RewriteStyle(
     val rewriteStyle: Int,
