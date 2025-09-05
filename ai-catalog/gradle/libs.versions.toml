@@ -1,7 +1,7 @@
 [versions]
 agp = "8.8.2"
 coilCompose = "3.1.0"
-firebaseBom = "33.14.0"
+firebaseBom = "34.1.0"
 lifecycleRuntimeCompose = "2.9.1"
 mlkitGenAi = "1.0.0-beta1"
 kotlin = "2.1.0"
@@ -29,7 +29,6 @@ uiToolingPreviewAndroid = "1.8.1"
 spotless = "7.0.4"
 uiToolingPreview = "1.8.3"
 uiTooling = "1.8.3"
-firebaseAi = "16.2.0"
 lifecycleViewmodelAndroid = "2.8.7"
 material3 = "1.5.0-alpha01"
 uiTextGoogleFonts = "1.8.1"
@@ -79,7 +78,6 @@ androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "u
 mlkit-segmentation = { module = "com.google.android.gms:play-services-mlkit-subject-segmentation", version.ref = "mlkitSegmentation" }
 ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "uiToolingPreview" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
-google-firebase-ai = { group = "com.google.firebase", name = "firebase-ai", version.ref = "firebaseAi" }
 androidx-lifecycle-viewmodel-android = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-android", version.ref = "lifecycleViewmodelAndroid" }
 androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "exifinterface" }

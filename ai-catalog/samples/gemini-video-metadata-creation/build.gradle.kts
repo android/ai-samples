@@ -19,6 +19,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt.plugin)
+    alias(libs.plugins.jetbrains.kotlin.serialization)
 }
 
 android {
@@ -67,6 +68,8 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.ai)
+    implementation(libs.kotlinx.serialization.json)
+    debugImplementation(libs.androidx.ui.tooling)
 
     // Media3 ExoPlayer
     implementation(libs.androidx.media3.exoplayer)

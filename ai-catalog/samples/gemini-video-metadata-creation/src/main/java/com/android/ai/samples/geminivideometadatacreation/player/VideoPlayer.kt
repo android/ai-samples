@@ -44,7 +44,7 @@ import com.android.ai.samples.geminivideometadatacreation.R
  */
 @OptIn(UnstableApi::class) // New Media3 Compose artifact is currently experimental
 @Composable
-fun VideoPlayer(player: Player, modifier: Modifier = Modifier) {
+fun VideoPlayer(player: Player?, modifier: Modifier = Modifier) {
 
     val presentationState = rememberPresentationState(player)
     Box(
@@ -74,7 +74,9 @@ fun VideoPlayer(player: Player, modifier: Modifier = Modifier) {
 
 @OptIn(UnstableApi::class) // New Media3 Compose artifact is currently experimental
 @Composable
-fun PlayPauseButton(player: Player, modifier: Modifier = Modifier) {
+fun PlayPauseButton(player: Player?, modifier: Modifier = Modifier) {
+    if (player == null) return
+
     val state = rememberPlayPauseButtonState(player)
 
     IconButton(onClick = state::onClick, modifier = modifier, enabled = state.isEnabled) {

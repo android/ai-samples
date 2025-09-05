@@ -18,9 +18,11 @@ package com.android.ai.samples.geminivideometadatacreation
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.AlertDialog
@@ -34,8 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,14 +48,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.ExoPlayer
 import com.android.ai.samples.geminivideometadatacreation.player.VideoPlayer
 import com.android.ai.samples.geminivideometadatacreation.player.VideoSelectionDropdown
 import com.android.ai.samples.geminivideometadatacreation.ui.ButtonGrid
-import com.android.ai.samples.geminivideometadatacreation.ui.OutputTextDisplay
-import com.android.ai.samples.geminivideometadatacreation.ui.ThumbnailScreen
 import com.android.ai.samples.geminivideometadatacreation.util.sampleVideoList
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.MetadataCreationState
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.MetadataType
@@ -75,17 +72,9 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
     val context = LocalContext.current
     var isDropdownExpanded by remember { mutableStateOf(false) }
 
-    val exoPlayer = remember(context) {
-        ExoPlayer.Builder(context).build().apply {
-            playWhenReady = true
-        }
-    }
-
-    LaunchedEffect(uiState.selectedVideoUri) {
-        uiState.selectedVideoUri?.let {
-            exoPlayer.setMediaItem(MediaItem.fromUri(it))
-            exoPlayer.prepare()
-        }
+    LifecycleStartEffect(viewModel) {
+        viewModel.createPlayer()
+        onStopOrDispose { viewModel.releasePlayer() }
     }
 
     Scaffold(
@@ -108,7 +97,8 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
             modifier = Modifier
                 .padding(16.dp)
                 .padding(innerPadding)
-                .fillMaxHeight(),
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             VideoSelectionDropdown(
@@ -123,10 +113,8 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
             )
 
             VideoPlayer(
-                player = exoPlayer,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(0.25f),
+                player = uiState.player,
+                modifier = Modifier.aspectRatio(16f / 9f),
             )
 
             MetadataCreationSection(
@@ -134,16 +122,9 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
                 onDismissError = { viewModel.dismissError() },
                 onMetadataTypeClicked = {
                     viewModel.onMetadataTypeSelected(it)
-                    viewModel.createMetadata(it)
+                    viewModel.generateMetadata(it)
                 },
-                modifier = Modifier.weight(0.75f),
             )
-        }
-    }
-
-    DisposableEffect(key1 = exoPlayer) {
-        onDispose {
-            exoPlayer.release()
         }
     }
 }
@@ -182,12 +163,7 @@ private fun MetadataCreationSection(
                 )
             }
 
-            is MetadataCreationState.Success -> {
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    OutputTextDisplay(metadataCreationState.metadataText)
-                    ThumbnailScreen(thumbnailState = metadataCreationState.thumbnailState)
-                }
-            }
+            is MetadataCreationState.Success -> metadataCreationState.generatedUi()
 
             MetadataCreationState.Idle -> {
                 // Default state - No button is selected unless explicitly selected
