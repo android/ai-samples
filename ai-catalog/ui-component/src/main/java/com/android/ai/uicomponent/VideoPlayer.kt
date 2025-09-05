@@ -17,13 +17,13 @@
 
 package com.android.ai.uicomponent
 
-import android.R.attr.onClick
 import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -81,6 +81,8 @@ import androidx.media3.ui.compose.state.rememberSeekForwardButtonState
 import com.android.ai.theme.AISampleCatalogTheme
 import kotlinx.coroutines.delay
 
+private const val CONTROLS_TIMEOUT_MS = 3000L
+
 data class VideoPickerData(
     val title: String,
     val uri: Uri,
@@ -94,7 +96,11 @@ fun VideoPlayer(
     forceShowControls: Boolean = false,
     videoPicker: (@Composable () -> Unit)? = null, // Optional video picker component
 ) {
-    Box(modifier.fillMaxSize().clip(RoundedCornerShape(40.dp))) {
+    Box(
+        modifier
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(40.dp))
+            .clip(RoundedCornerShape(40.dp)),
+    ) {
         val presentationState = rememberPresentationState(player)
         PlayerScaffold(
             cover = presentationState::coverSurface,
@@ -125,7 +131,7 @@ fun BoxScope.PlayerScaffold(
     var showControls by remember { mutableStateOf(true) }
     LaunchedEffect(showControls, forceShowControls) {
         if (!forceShowControls && showControls) {
-            delay(3000)
+            delay(CONTROLS_TIMEOUT_MS)
             showControls = false
         }
     }
@@ -178,7 +184,7 @@ fun VideoPickerDropdown(
     selectedVideo: Uri?,
     onVideoSelected: (VideoPickerData) -> Unit,
     isExpanded: Boolean,
-    onDropdownExpandedChanged: () -> Unit,
+    onDropdownExpandedChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -187,7 +193,7 @@ fun VideoPickerDropdown(
         modifier
             .background(MaterialTheme.colorScheme.onSurface, RoundedCornerShape(percent = 100))
             .height(24.dp)
-            .clickable(onClick = { onDropdownExpandedChanged() }),
+            .clickable(onClick = { onDropdownExpandedChanged(!isExpanded) }),
     ) {
         Spacer(Modifier.width(8.dp))
         Box(Modifier.align(Alignment.CenterVertically)) {
@@ -211,13 +217,14 @@ fun VideoPickerDropdown(
 
     DropdownMenu(
         expanded = isExpanded,
-        onDismissRequest = { onDropdownExpandedChanged() },
+        onDismissRequest = { onDropdownExpandedChanged(false) },
     ) {
         videoItems.forEach { video ->
             DropdownMenuItem(
                 text = { Text(video.title, style = MaterialTheme.typography.bodyMedium) },
                 onClick = {
                     onVideoSelected(video)
+                    onDropdownExpandedChanged(false)
                 },
             )
         }
@@ -259,7 +266,6 @@ private fun BoxScope.VideoControls(player: Player, modifier: Modifier = Modifier
                         SeekBackButton(
                             isEnabled = state::isEnabled,
                             onClick = state::onClick,
-                            modifier = Modifier,
                         )
                     },
                     centerButton = {
@@ -268,7 +274,6 @@ private fun BoxScope.VideoControls(player: Player, modifier: Modifier = Modifier
                             showPlay = state::showPlay,
                             isEnabled = state::isEnabled,
                             onClick = state::onClick,
-                            modifier = Modifier,
                         )
                     },
                     endButton = {
@@ -276,7 +281,6 @@ private fun BoxScope.VideoControls(player: Player, modifier: Modifier = Modifier
                         SeekForwardButton(
                             isEnabled = state::isEnabled,
                             onClick = state::onClick,
-                            modifier = Modifier,
                         )
                     },
                 )
@@ -388,7 +392,7 @@ private fun CenterControlsPreview() {
 
 @OptIn(UnstableApi::class)
 @Composable
-private fun PlayPauseButton(showPlay: () -> Boolean, isEnabled: () -> Boolean, onClick: () -> Unit, modifier: Modifier) {
+private fun PlayPauseButton(showPlay: () -> Boolean, isEnabled: () -> Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     FilledIconButton(
         onClick = { onClick() },
         modifier = modifier.size(width = 124.dp, height = 72.dp),
@@ -456,7 +460,6 @@ private fun PlayPauseButtonPreview() {
             showPlay = { showPlay },
             isEnabled = { true },
             onClick = { showPlay = !showPlay },
-            modifier = Modifier,
         )
     }
 }
@@ -468,7 +471,6 @@ private fun SeekForwardButtonPreview() {
         SeekForwardButton(
             isEnabled = { true },
             onClick = { /* Handle click */ },
-            modifier = Modifier,
         )
     }
 }
@@ -480,7 +482,6 @@ private fun SeekBackButtonPreview() {
         SeekBackButton(
             isEnabled = { true },
             onClick = { /* Handle click */ },
-            modifier = Modifier,
         )
     }
 }

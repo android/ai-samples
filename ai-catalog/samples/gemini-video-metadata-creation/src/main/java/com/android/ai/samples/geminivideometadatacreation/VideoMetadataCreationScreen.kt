@@ -109,10 +109,9 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
                         videoItems = sampleVideoList.map { VideoPickerData(context.getString(it.titleResId), it.uri) },
                         selectedVideo = uiState.selectedVideoUri,
                         isExpanded = isDropdownExpanded,
-                        onDropdownExpandedChanged = { isDropdownExpanded = !isDropdownExpanded },
+                        onDropdownExpandedChanged = { isDropdownExpanded = it },
                         onVideoSelected = { video ->
                             viewModel.onVideoSelected(video.uri)
-                            isDropdownExpanded = false
                             viewModel.resetMetadataState()
                         },
                     )

@@ -119,11 +119,8 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
                         videoItems = sampleVideoList.map { VideoPickerData(context.getString(it.titleResId), it.uri) },
                         selectedVideo = uiState.selectedVideoUri,
                         isExpanded = isDropdownExpanded,
-                        onDropdownExpandedChanged = { isDropdownExpanded = !isDropdownExpanded },
-                        onVideoSelected = { video ->
-                            viewModel.onVideoSelected(video.uri)
-                            isDropdownExpanded = false
-                        },
+                        onDropdownExpandedChanged = { isDropdownExpanded = it },
+                        onVideoSelected = { viewModel.onVideoSelected(it.uri) },
                     )
                 },
                 forceShowControls = isDropdownExpanded,
