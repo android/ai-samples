@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.ai.theme.AISampleCatalogTheme
@@ -309,7 +310,7 @@ fun UndoButton(
             CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Undo,
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.undo),
                 )
             }
         }
