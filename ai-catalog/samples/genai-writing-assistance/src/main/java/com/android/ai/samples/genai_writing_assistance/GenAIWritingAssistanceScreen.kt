@@ -323,7 +323,7 @@ fun DisplayedText(
 
 @Preview
 @Composable
-fun GenAISummarizationContentPreview_Initial_EmptyText() {
+fun GenAIWritingAssistanceContentPreview_Initial_EmptyText() {
     AISampleCatalogTheme {
         GenAIWritingAssistanceContent(
             uiState = GenAIWritingAssistanceUiState.Initial,
@@ -340,7 +340,7 @@ fun GenAISummarizationContentPreview_Initial_EmptyText() {
 
 @Preview
 @Composable
-fun GenAISummarizationContentPreview_Initial_WithTextText() {
+fun GenAIWritingAssistanceContentPreview_Initial_WithTextText() {
     AISampleCatalogTheme {
         GenAIWritingAssistanceContent(
             uiState = GenAIWritingAssistanceUiState.Initial,
@@ -357,7 +357,7 @@ fun GenAISummarizationContentPreview_Initial_WithTextText() {
 
 @Preview
 @Composable
-fun GenAISummarizationContentPreview_CheckingFeatureStatus() {
+fun GenAIWritingAssistanceContentPreview_CheckingFeatureStatus() {
     AISampleCatalogTheme {
         GenAIWritingAssistanceContent(
             uiState = GenAIWritingAssistanceUiState.CheckingFeatureStatus,
@@ -374,7 +374,7 @@ fun GenAISummarizationContentPreview_CheckingFeatureStatus() {
 
 @Preview
 @Composable
-fun GenAISummarizationContentPreview_Error() {
+fun GenAIWritingAssistanceContentPreview_Error() {
     AISampleCatalogTheme {
         GenAIWritingAssistanceContent(
             uiState = GenAIWritingAssistanceUiState.Error(R.string.feature_check_fail),
@@ -391,7 +391,7 @@ fun GenAISummarizationContentPreview_Error() {
 
 @Preview
 @Composable
-fun GenAISummarizationContentPreview_Success() {
+fun GenAIWritingAssistanceContentPreview_Success() {
     AISampleCatalogTheme {
         GenAIWritingAssistanceContent(
             uiState = GenAIWritingAssistanceUiState.Success("A fluffy golden retriever, wearing tiny spectacles, diligently typed lines of code"),

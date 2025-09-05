@@ -81,7 +81,7 @@ class GenAIWritingAssistanceViewModel @Inject constructor(context: Application) 
                 proofreadFeatureStatus = proofreader.checkFeatureStatus().await()
             } catch (error: Exception) {
                 _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.feature_check_fail)
-                Log.e("GenAIImageDesc", "Error checking feature status", error)
+                Log.e("GenAIWriting", "Error checking feature status", error)
             }
 
             if (proofreadFeatureStatus == FeatureStatus.UNAVAILABLE) {
