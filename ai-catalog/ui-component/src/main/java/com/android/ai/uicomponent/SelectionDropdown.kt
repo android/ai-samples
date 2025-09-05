@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ai.samples.geminivideosummary.player
+package com.android.ai.uicomponent
 
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -34,7 +34,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,20 +47,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.android.ai.samples.geminivideosummary.util.VideoItem
-import com.android.ai.samples.geminivideosummary.util.sampleVideoList
 import com.android.ai.theme.AISampleCatalogTheme
-import com.google.com.android.ai.samples.geminivideosummary.R
 
-/**
- * A composable function that displays a dropdown menu for selecting a video from a list of options.
- */
+
+interface SelectableItem<T> {
+    val itemLabel: String
+    val itemData: T
+}
+
 @Composable
-fun VideoSelectionDropdown(
-    selectedVideoUri: Pair<Int?, Uri?>,
+fun <T> SelectionDropdown(
+    selectedItem: SelectableItem<T>?,
     isDropdownExpanded: Boolean,
-    videoOptions: List<VideoItem>,
-    onVideoUriSelected: (Int, Uri) -> Unit,
+    itemList: List<SelectableItem<T>>,
+    selectPlaceHolder: String = stringResource(R.string.select_placeholder),
+    onItemSelected: (SelectableItem<T>) -> Unit,
     onDropdownExpanded: (Boolean) -> Unit,
 ) {
     val shape = RoundedCornerShape(20.dp)
@@ -83,10 +83,7 @@ fun VideoSelectionDropdown(
                 )
         ) {
             Text(
-                text = selectedVideoUri?.let {
-                    videoOptions.firstOrNull { videoItem -> videoItem.uri == selectedVideoUri }
-                        ?.let { stringResource(it.titleResId) }
-                } ?: stringResource(R.string.select_video_placeholder),
+                text = selectedItem?.itemLabel?: selectPlaceHolder,
                 style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.inverseOnSurface),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -116,35 +113,64 @@ fun VideoSelectionDropdown(
             expanded = isDropdownExpanded,
             onDismissRequest = { onDropdownExpanded(false) },
             modifier = Modifier
-                .fillMaxWidth()
-                .background(color = MaterialTheme.colorScheme.onSurface),
+                .wrapContentWidth()
         ) {
-            videoOptions.forEach { videoItem ->
-                DropdownMenuItem(text = { Text(stringResource(videoItem.titleResId)) }, onClick = {
-                    onVideoUriSelected(videoItem.titleResId , videoItem.uri)
-                    onDropdownExpanded(false)
-                }, colors = MenuDefaults.itemColors(textColor = MaterialTheme.colorScheme.surfaceContainerHighest))
+            itemList.forEach { it ->
+                DropdownMenuItem(
+                    text = { Text(it.itemLabel) },
+                    onClick = {
+                        onItemSelected(it)
+                        onDropdownExpanded(false)
+                    },
+//                    colors = MenuDefaults.itemColors(textColor = MaterialTheme.colorScheme.surfaceContainerHighest)
+                )
             }
         }
     }
 }
 
+
+class PreviewSelectableItem(override val itemLabel: String, override val itemData: String) : SelectableItem<String>
+val previewListOfItems = listOf<SelectableItem<String>>(
+    PreviewSelectableItem("Item 1", "item_1"),
+    PreviewSelectableItem("Item 2", "item_2"),
+    PreviewSelectableItem("Item 3", "item_3"),
+    PreviewSelectableItem("Item 4", "item_4"),
+)
+
 @Preview
 @Composable
-private fun VideoSelectionDropdownPreview() {
-    var selectedTitle by remember { mutableStateOf<Int?>(null) }
-    var selectedUri by remember { mutableStateOf<Uri?>(null) }
+private fun SelectionDropdownPreviewCollapsed() {
+
     var isExpanded by remember { mutableStateOf<Boolean>(false) }
+    var selectedItem by remember { mutableStateOf(previewListOfItems[0]) }
 
     AISampleCatalogTheme {
-        VideoSelectionDropdown(
-            selectedVideoUri = Pair(selectedTitle,selectedUri),
+        SelectionDropdown(
+            selectedItem = selectedItem,
             isDropdownExpanded = isExpanded,
-            videoOptions = sampleVideoList,
-            onVideoUriSelected = { titleId, uri ->
-                selectedTitle = titleId
-                selectedUri = uri
-                                 },
+            itemList = previewListOfItems,
+            selectPlaceHolder = "",
+            onItemSelected = { selectedItem = it },
+            onDropdownExpanded = { isExpanded = it }
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun SelectionDropdownPreviewExpanded() {
+
+    var isExpanded by remember { mutableStateOf<Boolean>(true) }
+    var selectedItem by remember { mutableStateOf(previewListOfItems[0]) }
+
+    AISampleCatalogTheme {
+        SelectionDropdown(
+            selectedItem = selectedItem,
+            isDropdownExpanded = isExpanded,
+            itemList = previewListOfItems,
+            selectPlaceHolder = "",
+            onItemSelected = { selectedItem = it },
             onDropdownExpanded = { isExpanded = it }
         )
     }

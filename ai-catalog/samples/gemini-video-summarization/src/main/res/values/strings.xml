@@ -32,5 +32,7 @@
     <string name="tts_unknown_error">an unknown error.</string>
     <string name="tts_error_message">TTS Initialization failed: %s</string>
     <string name="text_generated_with_gemini">TEXT GENERATED WITH GEMINI</string>
+    <string name="select_placeholder">Select option</string>
+    <string name="show_summary">Show summary</string>
 
 </resources>
