@@ -98,7 +98,7 @@ fun CatalogWideCardPreview() {
             description = R.string.gemini_multimodal_sample_description,
             route = "GeminiMultimodalScreen",
             sampleEntryScreen = { },
-            tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE),
+            tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         )
 
         CatalogWideCard(

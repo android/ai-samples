@@ -221,8 +221,9 @@ fun SecondaryButton(
     icon: Painter? = null,
     enabled: Boolean = true,
     colors: ButtonColors = ButtonDefaults.outlinedButtonColors(
-        contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
-    onClick: () -> Unit
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    ),
+    onClick: () -> Unit,
 ) {
     OutlinedButton(
         modifier = modifier.height(48.dp),
@@ -261,11 +262,7 @@ fun SecondaryButtonPreview() {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BackButton(
-    modifier: Modifier = Modifier,
-    imageVector: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
-    onClick: () -> Unit
-) {
+fun BackButton(modifier: Modifier = Modifier, imageVector: ImageVector = Icons.AutoMirrored.Filled.ArrowBack, onClick: () -> Unit) {
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.outline) {
         OutlinedIconButton(
             shape = IconButtonDefaults.smallSquareShape,

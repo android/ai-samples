@@ -28,7 +28,7 @@ import androidx.core.net.toUri
 fun SeeCodeButton(sourceCodeUrl: String, modifier: Modifier = Modifier, withText: Boolean = true) {
     val context = LocalContext.current
     PrimaryButton(
-        text= if (withText) "SOURCE" else "",
+        text = if (withText) "SOURCE" else "",
         icon = rememberVectorPainter(Icons.Filled.Code),
         onClick = {
             val intent = Intent(Intent.ACTION_VIEW, sourceCodeUrl.toUri())
