@@ -16,6 +16,8 @@
 package com.android.ai.samples.imagenediting.ui
 
 import android.graphics.Bitmap
+import android.graphics.Canvas as AndroidCanvas
+import android.graphics.Paint as AndroidPaint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -39,7 +41,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asAndroidPath
@@ -53,8 +54,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import com.android.ai.samples.imagenediting.R
-import android.graphics.Canvas as AndroidCanvas
-import android.graphics.Paint as AndroidPaint
 
 @Composable
 fun ImagenEditingGeneratedContent(
@@ -71,7 +70,6 @@ fun ImagenEditingGeneratedContent(
     var pathVersion by remember { mutableIntStateOf(0) }
     // To store the bitmap that is currently being masked
     var bitmapToMask by remember { mutableStateOf<Bitmap?>(null) }
-
 
     Box(
         modifier = modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant),
@@ -212,7 +210,8 @@ private fun DrawingCanvas(
 
     Canvas(
         modifier = modifier
-            .pointerInput(Unit) { // Use Unit or a key that changes if you need to reset pointerInput
+            .pointerInput(Unit) {
+                // Use Unit or a key that changes if you need to reset pointerInput
                 detectDragGestures(
                     onDragStart = { offset ->
                         internalPath = Path().apply { moveTo(offset.x, offset.y) }
@@ -246,7 +245,6 @@ private fun DrawingCanvas(
         }
     }
 }
-
 
 // This function is now part of GeneratedContent.kt or accessible to it
 private fun createMaskBitmap(width: Int, height: Int, composePath: Path?): Bitmap {

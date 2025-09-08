@@ -51,12 +51,7 @@ class ImagenEditingViewModel @Inject constructor(private val imagenDataSource: I
         }
     }
 
-    fun inpaintImage(
-        sourceImage: Bitmap,
-        maskImage: Bitmap,
-        prompt: String,
-        editSteps: Int = 50,
-    ) {
+    fun inpaintImage(sourceImage: Bitmap, maskImage: Bitmap, prompt: String, editSteps: Int = 50) {
         _uiState.value = ImagenEditingUIState.Loading
         viewModelScope.launch {
             try {

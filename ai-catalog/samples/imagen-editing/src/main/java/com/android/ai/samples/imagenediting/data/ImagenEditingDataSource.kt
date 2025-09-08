@@ -18,6 +18,7 @@ package com.android.ai.samples.imagenediting.data
 import android.graphics.Bitmap
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
+import com.google.firebase.ai.type.Dimensions // Assuming Dimensions is available, if not, define a simple data class
 import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.ImagenAspectRatio
 import com.google.firebase.ai.type.ImagenBackgroundMask
@@ -30,7 +31,6 @@ import com.google.firebase.ai.type.ImagenRawImage
 import com.google.firebase.ai.type.ImagenRawMask
 import com.google.firebase.ai.type.ImagenStyleReference
 import com.google.firebase.ai.type.PublicPreviewAPI
-import com.google.firebase.ai.type.Dimensions // Assuming Dimensions is available, if not, define a simple data class
 import com.google.firebase.ai.type.toImagenInlineImage
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -71,12 +71,7 @@ class ImagenEditingDataSource @Inject constructor() {
      * This uses the "full-featured path" allowing for explicit mask control.
      */
     @OptIn(PublicPreviewAPI::class)
-    suspend fun inpaintImageWithMask(
-        sourceImage: Bitmap,
-        maskImage: Bitmap,
-        prompt: String,
-        editSteps: Int = 50,
-    ): Bitmap {
+    suspend fun inpaintImageWithMask(sourceImage: Bitmap, maskImage: Bitmap, prompt: String, editSteps: Int = 50): Bitmap {
         val source = ImagenRawImage(sourceImage.toImagenInlineImage())
         val mask = ImagenRawMask(maskImage.toImagenInlineImage())
 
@@ -99,11 +94,7 @@ class ImagenEditingDataSource @Inject constructor() {
      * This uses the "happy path" for background inpainting.
      */
     @OptIn(PublicPreviewAPI::class)
-    suspend fun inpaintBackgroundImage(
-        sourceImage: Bitmap,
-        prompt: String,
-        editSteps: Int = 50,
-    ): Bitmap {
+    suspend fun inpaintBackgroundImage(sourceImage: Bitmap, prompt: String, editSteps: Int = 50): Bitmap {
         val imageResponse = maskModel.inpaintImage(
             image = sourceImage.toImagenInlineImage(),
             prompt = prompt,

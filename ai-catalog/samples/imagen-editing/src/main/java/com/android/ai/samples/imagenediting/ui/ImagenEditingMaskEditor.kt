@@ -1,6 +1,23 @@
+/*
+ * Copyright 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.android.ai.samples.imagenediting.ui
 
 import android.graphics.Bitmap
+import android.graphics.Canvas as AndroidCanvas // Keep this alias
+import android.graphics.Paint as AndroidPaint // Keep this alias
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -28,19 +45,13 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
-import android.graphics.Canvas as AndroidCanvas // Keep this alias
-import android.graphics.Paint as AndroidPaint // Keep this alias
 
 @Composable
-fun ImageMaskEditor(
-    sourceBitmap: Bitmap,
-    onMaskGenerated: (source: Bitmap, mask: Bitmap) -> Unit,
-) {
+fun ImageMaskEditor(sourceBitmap: Bitmap, onMaskGenerated: (source: Bitmap, mask: Bitmap) -> Unit) {
     // This will hold the path currently being drawn.
     var currentDrawingPath by remember { mutableStateOf(Path()) }
     // This state is used to trigger recomposition of the Canvas.
     var pathVersion by remember { mutableIntStateOf(0) }
-
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -56,7 +67,8 @@ fun ImageMaskEditor(
                 .pointerInput(Unit) {
                     detectDragGestures(
                         onDragStart = { offset ->
-                            currentDrawingPath = Path().apply { // Start a brand new path
+                            currentDrawingPath = Path().apply {
+                                // Start a brand new path
                                 moveTo(offset.x, offset.y)
                             }
                             pathVersion++ // Trigger recomposition

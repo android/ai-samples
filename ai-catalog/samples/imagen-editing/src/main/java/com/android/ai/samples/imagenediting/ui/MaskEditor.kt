@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -51,17 +51,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.createBitmap
 import com.android.ai.samples.imagenediting.R
 import kotlin.math.min
-import androidx.core.graphics.createBitmap
 
 @Composable
-fun MaskEditor(
-    sourceBitmap: Bitmap,
-    onMaskFinalized: (Bitmap) -> Unit,
-    onCancel: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun MaskEditor(sourceBitmap: Bitmap, onMaskFinalized: (Bitmap) -> Unit, onCancel: () -> Unit, modifier: Modifier = Modifier) {
     val paths = remember { mutableStateListOf<Path>() }
     var currentPath by remember { mutableStateOf<Path?>(null) }
     var scale by remember { mutableFloatStateOf(1f) }
