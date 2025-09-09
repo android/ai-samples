@@ -69,5 +69,7 @@ dependencies {
     implementation(libs.genai.proofreading)
     implementation(libs.genai.rewrite)
     implementation(libs.kotlinx.coroutines.guava)
+    implementation(project(":ui-component"))
+    debugImplementation(libs.ui.tooling)
     ksp(libs.hilt.compiler)
 }

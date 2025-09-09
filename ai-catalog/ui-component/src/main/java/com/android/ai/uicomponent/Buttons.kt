@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.Button
@@ -51,6 +52,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.ai.theme.AISampleCatalogTheme
@@ -221,8 +223,9 @@ fun SecondaryButton(
     icon: Painter? = null,
     enabled: Boolean = true,
     colors: ButtonColors = ButtonDefaults.outlinedButtonColors(
-        contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
-    onClick: () -> Unit
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    ),
+    onClick: () -> Unit,
 ) {
     OutlinedButton(
         modifier = modifier.height(48.dp),
@@ -264,7 +267,7 @@ fun SecondaryButtonPreview() {
 fun BackButton(
     modifier: Modifier = Modifier,
     imageVector: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.outline) {
         OutlinedIconButton(
@@ -291,3 +294,36 @@ fun BackButtonPreview() {
         )
     }
 }
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun UndoButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.outline) {
+        OutlinedIconButton(
+            shape = IconButtonDefaults.smallRoundShape,
+            onClick = { onClick() },
+            modifier = modifier,
+        ) {
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Undo,
+                    contentDescription = stringResource(R.string.undo),
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun UndoButtonPreview() {
+    AISampleCatalogTheme {
+        UndoButton(
+            onClick = {},
+        )
+    }
+}
+
