@@ -53,7 +53,7 @@ sealed class GenAIWritingAssistanceUiState {
     data class Error(@StringRes val errorMessageStringRes: Int) : GenAIWritingAssistanceUiState()
 }
 
-class GenAIWritingAssistanceViewModel @Inject constructor(val context: Application) : AndroidViewModel(context) {
+class GenAIWritingAssistanceViewModel @Inject constructor(context: Application) : AndroidViewModel(context) {
     private val _uiState = MutableStateFlow<GenAIWritingAssistanceUiState>(GenAIWritingAssistanceUiState.Initial)
     val uiState: StateFlow<GenAIWritingAssistanceUiState> = _uiState.asStateFlow()
 
@@ -67,7 +67,7 @@ class GenAIWritingAssistanceViewModel @Inject constructor(val context: Applicati
 
     private var rewriter: Rewriter? = null
 
-    fun proofread(text: String, context: Context) {
+    fun proofread(text: String) {
         if (text.isEmpty()) {
             _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.genai_writing_assistance_no_input)
             return
@@ -81,7 +81,7 @@ class GenAIWritingAssistanceViewModel @Inject constructor(val context: Applicati
                 proofreadFeatureStatus = proofreader.checkFeatureStatus().await()
             } catch (error: Exception) {
                 _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.feature_check_fail)
-                Log.e("GenAIImageDesc", "Error checking feature status", error)
+                Log.e("GenAIWriting", "Error checking feature status", error)
             }
 
             if (proofreadFeatureStatus == FeatureStatus.UNAVAILABLE) {

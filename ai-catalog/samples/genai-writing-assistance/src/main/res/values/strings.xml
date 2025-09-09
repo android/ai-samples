@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="genai_writing_assistance_title_bar">Writing Assistance with Nano</string>
-    <string name="genai_writing_assistance_text_input_label">Enter text for writing assistance</string>
-    <string name="genai_writing_assistance_proofread_btn">Proofread</string>
-    <string name="genai_writing_assistance_rewrite_btn">Rewrite</string>
+    <string name="genai_writing_assistance_title_bar">Polish text</string>
+    <string name="genai_writing_assistance_description">Proofread and rewrite short content on-device with ML Kit GenAI APIs powered by Gemini Nano.</string>
+    <string name="genai_writing_assistance_text_input_label">Enter text to polish.</string>
+    <string name="genai_writing_assistance_proofread_btn">PROOFREAD</string>
+    <string name="genai_writing_assistance_rewrite_btn">REWRITE</string>
     <string name="genai_writing_assistance_dismiss_btn">Dismiss</string>
     <string name="genai_writing_assistance_confirm_btn">Confirm</string>
-    <string name="genai_writing_assistance_proofread_sample_text_btn">Add text to proofread</string>
-    <string name="genai_writing_assistance_rewrite_sample_text_btn">Add text to rewrite</string>
+    <string name="genai_writing_assistance_proofread_sample_text_btn">ADD TEXT TO PROOFREAD</string>
+    <string name="genai_writing_assistance_rewrite_sample_text_btn">ADD TEXT TO REWRITE</string>
     <string-array name="proofread_sample_text">
         <item>@string/genai_proofread_sample_text_1</item>
         <item>@string/genai_proofread_sample_text_2</item>
@@ -33,5 +34,6 @@
     <string name="checking_feature_status">Checking feature status</string>
     <string name="feature_download_failed">Feature download failed</string>
     <string name="genai_writing_assistance_downloading">Downloading feature</string>
+    <string name="genai_writing_assistance_generating">Generating…</string>
     <string name="genai_writing_assistance_see_code">See code</string>
 </resources>
