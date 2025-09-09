@@ -70,5 +70,7 @@ dependencies {
     implementation(libs.genai.rewrite)
     implementation(libs.kotlinx.coroutines.guava)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(project(":ui-component"))
+    debugImplementation(libs.ui.tooling)
     ksp(libs.hilt.compiler)
 }

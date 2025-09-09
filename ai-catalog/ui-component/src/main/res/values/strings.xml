@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="undo">undo</string>
+    <string name="select_placeholder">Select an option</string>
+    <string name="dropdown_content_description">Option selection</string>
+</resources>
