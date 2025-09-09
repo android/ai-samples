@@ -3,6 +3,7 @@
     <string name="select_video_placeholder">Select Video</string>
     <string name="create_metadata_button">Create Metadata</string>
     <string name="video_metadata_creation_title">Video Metadata Creation</string>
+    <string name="video_metadata_creation_description">Generate content metadata like description, hashtags, chapters, and account tags (from a cloud URL or Youtube) with Gemini API powered by Firebase.</string>
     <string name="output_text_combined">%s</string>
     <string name="output_text_generated_placeholder">"Text generated with Gemini: "</string>
     <string name="text_listen_to_ai_output">Listen to AI output</string>
@@ -27,5 +28,6 @@
 
     <string name="playpause_button_play">play</string>
     <string name="playpause_button_pause">pause</string>
+    <string name="create">Create</string>
 
 </resources>

@@ -15,49 +15,68 @@
  */
 package com.android.ai.samples.geminivideometadatacreation.ui
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedIconToggleButton
+import androidx.compose.material3.OutlinedToggleButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.MetadataType
 
-/**
- * A Composable that displays a grid of buttons for each [MetadataType].
- *
- * This function dynamically creates a button for every entry in the [MetadataType] enum.
- * It uses a [FlowRow] to arrange the buttons, allowing them to wrap to the next line
- * if they exceed the available horizontal space. The currently selected button is
- * highlighted with the primary color.
- */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ButtonGrid(selectedMetadataType: MetadataType?, onMetadataCreationClicked: (MetadataType) -> Unit, modifier: Modifier = Modifier) {
+fun ButtonGrid(
+    selectedMetadataType: MetadataType?,
+    onMetadataCreationClicked: (MetadataType) -> Unit, modifier: Modifier = Modifier) {
     val metadataTypes = MetadataType.entries
 
-    FlowRow(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+    Row(
+        modifier = modifier.horizontalScroll(rememberScrollState()),
+
     ) {
+        Spacer(Modifier.width(10.dp))
         metadataTypes.forEach { metadataType ->
             val isSelected = selectedMetadataType == metadataType
-            Button(
-                onClick = { onMetadataCreationClicked(metadataType) },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+            OutlinedToggleButton(
+                checked = isSelected,
+                onCheckedChange = { onMetadataCreationClicked(metadataType) },
+                colors = ToggleButtonDefaults.outlinedToggleButtonColors(
+                    contentColor = MaterialTheme.colorScheme.tertiary
                 ),
+                modifier = Modifier.padding(horizontal = 6.dp)
             ) {
+                Icon(
+                    painterResource(metadataType.iconRes),
+                    contentDescription = null
+                )
+                Spacer(Modifier.size(8.dp))
                 Text(
-                    text = metadataType.name.replace('_', ' ').lowercase()
-                        .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
+                    stringResource(metadataType.titleRes).uppercase(),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
+        Spacer(Modifier.width(10.dp))
     }
 }

@@ -18,7 +18,9 @@ package com.android.ai.samples.geminivideometadatacreation.viewmodel
 import android.app.Application
 import android.graphics.Bitmap
 import android.net.Uri
+import androidx.annotation.DrawableRes
 import androidx.annotation.OptIn
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -26,6 +28,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import com.android.ai.samples.geminivideometadatacreation.R
 import com.android.ai.samples.geminivideometadatacreation.generateAccountTags
 import com.android.ai.samples.geminivideometadatacreation.generateChapters
 import com.android.ai.samples.geminivideometadatacreation.generateDescription
@@ -140,13 +143,13 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
     }
 }
 
-enum class MetadataType {
-    DESCRIPTION,
-    THUMBNAILS,
-    HASHTAGS,
-    ACCOUNT_TAGS,
-    CHAPTERS,
-    LINKS,
+enum class MetadataType(@DrawableRes val iconRes: Int, @StringRes val titleRes: Int) {
+    THUMBNAILS(R.drawable.photo_spark, R.string.thumbnails),
+    DESCRIPTION(R.drawable.summarize_auto, R.string.description),
+    HASHTAGS(R.drawable.bulleted_spark, R.string.hashtags),
+    ACCOUNT_TAGS(R.drawable.label_spark, R.string.account_tags),
+    CHAPTERS(R.drawable.tab_spark, R.string.chapters),
+    LINKS(R.drawable.bulleted_spark, R.string.links),
 }
 
 sealed interface MetadataCreationState {

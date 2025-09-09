@@ -135,8 +135,6 @@ private fun VideoSummarizationScreen(
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
 
-    val videoItemList = sampleVideoList.map { item -> VideoSelectableItem(stringResource(item.titleResId), item) }
-
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -157,14 +155,6 @@ private fun VideoSummarizationScreen(
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-//            SelectionDropdown(
-//                selectedItem = uiState.selectedVideo?.let {VideoSelectableItem(stringResource(uiState.selectedVideo.titleResId), uiState.selectedVideo) },
-//                isDropdownExpanded = isDropdownExpanded,
-//                itemList = videoItemList,
-//                onItemSelected = {onVideoSelected(it.itemData)},
-//                onDropdownExpanded = onDropdownExpandedChanged,
-//            )
-
             VideoPlayer(
                 player = exoPlayer,
                 videoPicker = {
