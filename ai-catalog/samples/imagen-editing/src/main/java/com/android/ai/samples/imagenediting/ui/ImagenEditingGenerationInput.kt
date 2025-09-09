@@ -22,7 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.Icons // ktlint-disable import-ordering
 import androidx.compose.material.icons.filled.AutoFixHigh // Icon for Inpaint/Edit
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.Button
@@ -43,20 +43,17 @@ import com.android.ai.samples.imagenediting.R
 
 @Composable
 fun GenerationInput(
-    uiState: ImagenEditingUIState, // <-- New parameter: Current UI State
+    uiState: ImagenEditingUIState,
     onGenerateClick: (String) -> Unit,
-    onInpaintClick: (prompt: String) -> Unit, // <-- Changed: Now only takes prompt
-    enabled: Boolean, // General enabled state (e.g., not loading)
+    onInpaintClick: (prompt: String) -> Unit,
+    enabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val placeholder = stringResource(R.string.editing_placeholder_prompt_entry)
-    // Keep prompt text in this component, ImagenScreen will get it via callback
     var promptTextField by rememberSaveable { mutableStateOf(placeholder) }
 
-    // Determine if the inpaint button should be specifically enabled
     val canInpaint = uiState is ImagenEditingUIState.ImageMasked && enabled
 
-    // Determine if the generate button should be enabled
     val canGenerate = uiState !is ImagenEditingUIState.ImageMasked && enabled
 
     Column(
@@ -72,7 +69,6 @@ fun GenerationInput(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
             keyboardActions = KeyboardActions(
                 onSend = {
-                    // Decide which action to take on "Send"
                     if (uiState is ImagenEditingUIState.ImageMasked) {
                         if (canInpaint) onInpaintClick(promptTextField)
                     } else {
@@ -82,7 +78,6 @@ fun GenerationInput(
             ),
         )
 
-        // Show Generate button if not in ImageMasked state
         if (uiState !is ImagenEditingUIState.ImageMasked) {
             Button(
                 onClick = {
@@ -94,7 +89,7 @@ fun GenerationInput(
             ) {
                 Icon(
                     Icons.Default.SmartToy,
-                    contentDescription = null, // Decorative
+                    contentDescription = null,
                     modifier = Modifier.size(ButtonDefaults.IconSize),
                 )
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
@@ -102,7 +97,6 @@ fun GenerationInput(
             }
         }
 
-        // Show Inpaint button if in ImageMasked state
         if (uiState is ImagenEditingUIState.ImageMasked) {
             Button(
                 onClick = {
@@ -114,11 +108,11 @@ fun GenerationInput(
             ) {
                 Icon(
                     Icons.Default.AutoFixHigh, // Using a different icon for inpainting
-                    contentDescription = null, // Decorative
+                    contentDescription = null,
                     modifier = Modifier.size(ButtonDefaults.IconSize),
                 )
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text(text = stringResource(R.string.editing_inpaint_button)) // Add this string
+                Text(text = stringResource(R.string.editing_inpaint_button))
             }
         }
     }

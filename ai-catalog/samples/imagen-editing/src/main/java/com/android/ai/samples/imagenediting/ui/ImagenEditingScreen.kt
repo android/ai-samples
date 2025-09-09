@@ -62,26 +62,19 @@ fun ImagenEditingScreen(viewModel: ImagenEditingViewModel = hiltViewModel()) {
     val showMaskEditor: Boolean by viewModel.showMaskEditor.collectAsStateWithLifecycle()
     val bitmapForMasking: Bitmap? by viewModel.bitmapForMasking.collectAsStateWithLifecycle()
 
-    // Handle back press when mask editor is shown
     BackHandler(enabled = showMaskEditor) {
         viewModel.onCancelMasking()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        ImagenScreenContent(
+        ImagenEditingScreenContent(
             uiState = uiState,
             showMaskEditor = showMaskEditor,
             bitmapForMasking = bitmapForMasking,
             onGenerateClick = viewModel::generateImage,
-            onInpaintClick = { source, mask, prompt ->
-                viewModel.inpaintImage(source, mask, prompt)
-            },
-            onImageToMaskClicked = { bitmap ->
-                viewModel.onStartMasking(bitmap)
-            },
-            onImageMaskReady = { source, mask ->
-                viewModel.onImageMaskReady(source, mask)
-            },
+            onInpaintClick = { source, mask, prompt -> viewModel.inpaintImage(source, mask, prompt) },
+            onImageToMaskClicked = { bitmap -> viewModel.onStartMasking(bitmap) },
+            onImageMaskReady = { source, mask -> viewModel.onImageMaskReady(source, mask) },
             onCancelMasking = viewModel::onCancelMasking,
             modifier = Modifier.fillMaxSize(),
         )
@@ -90,7 +83,7 @@ fun ImagenEditingScreen(viewModel: ImagenEditingViewModel = hiltViewModel()) {
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun ImagenScreenContent(
+private fun ImagenEditingScreenContent(
     uiState: ImagenEditingUIState,
     showMaskEditor: Boolean,
     bitmapForMasking: Bitmap?,
@@ -133,7 +126,6 @@ private fun ImagenScreenContent(
                 showMaskEditor = showMaskEditor,
                 bitmapForMasking = bitmapForMasking,
                 onImageClick = {
-                    // Only allow masking on a successfully generated image
                     if (uiState is ImagenEditingUIState.ImageGenerated) {
                         onImageToMaskClicked(it)
                     }
@@ -178,7 +170,6 @@ fun ImagenEditingGeneratedContent(
         modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center,
     ) {
-        // When masking is active, show the editor. Otherwise, show the current state.
         if (showMaskEditor && bitmapForMasking != null) {
             MaskEditor(
                 sourceBitmap = bitmapForMasking,
@@ -206,7 +197,6 @@ fun ImagenEditingGeneratedContent(
                 }
 
                 is ImagenEditingUIState.ImageMasked -> {
-                    // After finalizing, show the original image with the mask overlaid for confirmation
                     Box(modifier = Modifier.fillMaxSize()) {
                         Image(
                             bitmap = uiState.originalBitmap.asImageBitmap(),
@@ -219,7 +209,6 @@ fun ImagenEditingGeneratedContent(
                             contentDescription = stringResource(R.string.editing_generated_mask),
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Fit,
-                            // Tint the mask to make it visible
                             colorFilter = ColorFilter.tint(Color.Red.copy(alpha = 0.5f)),
                         )
                     }
@@ -229,7 +218,7 @@ fun ImagenEditingGeneratedContent(
                     uiState.message?.let { Text(text = it) }
                 }
 
-                else -> { // Initial state
+                else -> {
                     Text(text = stringResource(R.string.editing_placeholder_prompt))
                 }
             }

@@ -16,8 +16,8 @@
 package com.android.ai.samples.imagenediting.ui
 
 import android.graphics.Bitmap
-import android.graphics.Canvas as AndroidCanvas // Keep this alias
-import android.graphics.Paint as AndroidPaint // Keep this alias
+import android.graphics.Canvas as AndroidCanvas
+import android.graphics.Paint as AndroidPaint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -35,7 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path // Keep this import
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asAndroidPath
@@ -48,9 +48,7 @@ import androidx.core.graphics.createBitmap
 
 @Composable
 fun ImageMaskEditor(sourceBitmap: Bitmap, onMaskGenerated: (source: Bitmap, mask: Bitmap) -> Unit) {
-    // This will hold the path currently being drawn.
     var currentDrawingPath by remember { mutableStateOf(Path()) }
-    // This state is used to trigger recomposition of the Canvas.
     var pathVersion by remember { mutableIntStateOf(0) }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -68,24 +66,20 @@ fun ImageMaskEditor(sourceBitmap: Bitmap, onMaskGenerated: (source: Bitmap, mask
                     detectDragGestures(
                         onDragStart = { offset ->
                             currentDrawingPath = Path().apply {
-                                // Start a brand new path
                                 moveTo(offset.x, offset.y)
                             }
-                            pathVersion++ // Trigger recomposition
+                            pathVersion++
                         },
                         onDrag = { change, _ ->
                             currentDrawingPath.lineTo(change.position.x, change.position.y)
-                            pathVersion++ // Trigger recomposition by changing this state value
+                            pathVersion++
                             change.consume()
                         },
-                        onDragEnd = {
-                            // The currentDrawingPath is complete for this stroke
-                        },
+                        onDragEnd = {},
                     )
                 },
         ) {
-            // Read pathVersion to ensure recomposition when it changes
-            val pathForDrawing = currentDrawingPath.apply { } // Simple way to use pathVersion indirectly
+            val pathForDrawing = currentDrawingPath.apply {}
             if (!pathForDrawing.isEmpty) {
                 drawPath(
                     path = pathForDrawing,
@@ -117,10 +111,6 @@ fun ImageMaskEditor(sourceBitmap: Bitmap, onMaskGenerated: (source: Bitmap, mask
     }
 }
 
-/**
- * Creates a mask Bitmap from the user's drawing path.
- * The mask is black everywhere except for the white area drawn by the user.
- */
 private fun createMaskBitmap(width: Int, height: Int, composePath: Path?): Bitmap {
     val maskBitmap = createBitmap(width, height)
     val canvas = AndroidCanvas(maskBitmap)
@@ -133,7 +123,7 @@ private fun createMaskBitmap(width: Int, height: Int, composePath: Path?): Bitma
                 color = android.graphics.Color.WHITE
                 isAntiAlias = true
                 style = AndroidPaint.Style.STROKE
-                strokeWidth = 40f // Ensure this thickness is intended for the mask
+                strokeWidth = 40f
                 strokeCap = AndroidPaint.Cap.ROUND
                 strokeJoin = AndroidPaint.Join.ROUND
             }

@@ -18,7 +18,7 @@ package com.android.ai.samples.imagenediting.data
 import android.graphics.Bitmap
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
-import com.google.firebase.ai.type.Dimensions // Assuming Dimensions is available, if not, define a simple data class
+import com.google.firebase.ai.type.Dimensions
 import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.ImagenAspectRatio
 import com.google.firebase.ai.type.ImagenBackgroundMask
@@ -35,28 +35,58 @@ import com.google.firebase.ai.type.toImagenInlineImage
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * A data source that provides methods for interacting with the Firebase Imagen API
+ * for various image generation and editing tasks.
+ *
+ * This class encapsulates the logic for initializing Imagen models and calling
+ * their respective functions for image generation, inpainting, outpainting, and style transfer.
+ * It leverages the Firebase AI SDK for seamless integration with Vertex AI backends.
+ *
+ * Note: This class uses `@OptIn(PublicPreviewAPI::class)` as Imagen features
+ * are currently in public preview.
+ */
 @Singleton
 class ImagenEditingDataSource @Inject constructor() {
-    @OptIn(PublicPreviewAPI::class)
-    private val imagenModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).imagenModel(
-        modelName = "imagen-4.0-generate-preview-06-06",
-        generationConfig = ImagenGenerationConfig(
-            numberOfImages = 1,
-            aspectRatio = ImagenAspectRatio.SQUARE_1x1,
-            imageFormat = ImagenImageFormat.jpeg(compressionQuality = 75),
-        ),
-    )
+    private companion object {
+        const val IMAGEN_MODEL_NAME = "imagen-4.0-ultra-generate-001"
+        const val IMAGEN_EDITING_MODEL_NAME = "imagen-3.0-capability-001"
+        const val DEFAULT_EDIT_STEPS = 50
+        const val DEFAULT_STYLE_STRENGTH = 1
+    }
 
     @OptIn(PublicPreviewAPI::class)
-    private val maskModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).imagenModel(
-        modelName = "imagen-3.0-capability-001",
-        generationConfig = ImagenGenerationConfig(
-            numberOfImages = 1,
-            aspectRatio = ImagenAspectRatio.SQUARE_1x1,
-            imageFormat = ImagenImageFormat.jpeg(compressionQuality = 75),
-        ),
-    )
+    private val imagenModel =
+        Firebase.ai(backend = GenerativeBackend.vertexAI()).imagenModel(
+            IMAGEN_MODEL_NAME,
+            generationConfig = ImagenGenerationConfig(
+                numberOfImages = 1,
+                aspectRatio = ImagenAspectRatio.SQUARE_1x1,
+                imageFormat = ImagenImageFormat.jpeg(compressionQuality = 75),
+            ),
+        )
 
+    @OptIn(PublicPreviewAPI::class)
+    private val editingModel =
+        Firebase.ai(backend = GenerativeBackend.vertexAI()).imagenModel(
+            IMAGEN_EDITING_MODEL_NAME,
+            generationConfig = ImagenGenerationConfig(
+                numberOfImages = 1,
+                aspectRatio = ImagenAspectRatio.SQUARE_1x1,
+                imageFormat = ImagenImageFormat.jpeg(compressionQuality = 75),
+            ),
+        )
+
+    /**
+     * Generates an image based on the provided prompt.
+     *
+     * This function uses the Imagen model to generate an image from a textual description.
+     * It returns the generated image as a Bitmap.
+     *
+     * @param prompt The textual description to generate the image from.
+     * @return The generated image as a [Bitmap].
+     * @throws Exception if the image generation fails.
+     */
     @OptIn(PublicPreviewAPI::class)
     suspend fun generateImage(prompt: String): Bitmap {
         val imageResponse = imagenModel.generateImages(
@@ -67,18 +97,29 @@ class ImagenEditingDataSource @Inject constructor() {
     }
 
     /**
-     * Inpaints an image using a provided mask and prompt.
-     * This uses the "full-featured path" allowing for explicit mask control.
+     * Performs inpainting on a source image using a provided mask and prompt.
+     *
+     * This function utilizes the Imagen editing model to fill in the masked areas
+     * of the source image based on the textual prompt.
+     *
+     * @param sourceImage The original image to be inpainted.
+     * @param maskImage A bitmap representing the mask, where white areas indicate
+     *                  regions to be inpainted and black areas indicate regions to be preserved.
+     * @param prompt A textual description of what should be generated in the masked areas.
+     * @param editSteps The number of editing steps to perform. Defaults to `DEFAULT_EDIT_STEPS`.
+     * @return A [Bitmap] representing the inpainted image.
      */
     @OptIn(PublicPreviewAPI::class)
-    suspend fun inpaintImageWithMask(sourceImage: Bitmap, maskImage: Bitmap, prompt: String, editSteps: Int = 50): Bitmap {
-        val source = ImagenRawImage(sourceImage.toImagenInlineImage())
-        val mask = ImagenRawMask(maskImage.toImagenInlineImage())
-
-        val imageResponse = maskModel.editImage(
+    suspend fun inpaintImageWithMask(
+        sourceImage: Bitmap,
+        maskImage: Bitmap,
+        prompt: String,
+        editSteps: Int = DEFAULT_EDIT_STEPS,
+    ): Bitmap {
+        val imageResponse = editingModel.editImage(
             referenceImages = listOf(
-                source,
-                mask,
+                ImagenRawImage(sourceImage.toImagenInlineImage()),
+                ImagenRawMask(maskImage.toImagenInlineImage()),
             ),
             prompt = prompt,
             config = ImagenEditingConfig(
@@ -90,12 +131,25 @@ class ImagenEditingDataSource @Inject constructor() {
     }
 
     /**
-     * Inpaints an image by automatically detecting the background as the mask.
-     * This uses the "happy path" for background inpainting.
+     * Inpaints the background of a source image using a text prompt.
+     *
+     * This function utilizes the Imagen model's inpainting capability to modify the background
+     * of the provided [sourceImage] based on the [prompt]. The [editSteps] parameter
+     * controls the intensity of the inpainting process.
+     *
+     * @param sourceImage The original bitmap image to be modified.
+     * @param prompt A text description of the desired background.
+     * @param editSteps The number of editing steps to perform (default is 50).
+     *                  Higher values may lead to more significant changes.
+     * @return A [Bitmap] object representing the image with the inpainted background.
      */
     @OptIn(PublicPreviewAPI::class)
-    suspend fun inpaintBackgroundImage(sourceImage: Bitmap, prompt: String, editSteps: Int = 50): Bitmap {
-        val imageResponse = maskModel.inpaintImage(
+    suspend fun inpaintBackgroundImage(
+        sourceImage: Bitmap,
+        prompt: String,
+        editSteps: Int = 50,
+    ): Bitmap {
+        val imageResponse = editingModel.inpaintImage(
             image = sourceImage.toImagenInlineImage(),
             prompt = prompt,
             mask = ImagenBackgroundMask(),
@@ -108,18 +162,21 @@ class ImagenEditingDataSource @Inject constructor() {
     }
 
     /**
-     * Outpaints an image to the specified target dimensions.
-     * This uses the "happy path" for outpainting.
+     * Outpaints an image to the target dimensions using the Firebase Imagen API.
+     * This function extends the original image by generating content around it
+     * based on the provided prompt and target dimensions.
+     *
+     * @param sourceImage The original bitmap image to be outpainted.
+     * @param targetDimensions The desired dimensions of the outpainted image.
+     * @param prompt An optional text prompt to guide the outpainting process.
+     * @return The outpainted bitmap image.
      */
     @OptIn(PublicPreviewAPI::class)
     suspend fun outpaintImageSimple(
         sourceImage: Bitmap,
-        targetDimensions: Dimensions, // e.g., Dimensions(1024, 1024)
-        prompt: String = "", // Prompt is often optional or implicit for outpainting
+        targetDimensions: Dimensions,
+        prompt: String = "",
     ): Bitmap {
-        // Note: The example shows `model.outpaintImage(...)`
-        // If that specific helper isn't available, we use the general `editImage`
-        // as shown in the "Outpainting full-featured path"
         val imageResponse = imagenModel.editImage(
             referenceImages = ImagenMaskReference.generateMaskAndPadForOutpainting(
                 image = sourceImage.toImagenInlineImage(),
@@ -132,28 +189,41 @@ class ImagenEditingDataSource @Inject constructor() {
     }
 
     /**
-     * Performs style transfer on an image using a style reference image.
+     * Transfers the style from a style image to a source image.
+     *
+     * This function uses the Imagen model to apply the artistic style of the [styleImage]
+     * to the [sourceImage]. The process is guided by the [prompt] and [styleGuidanceText],
+     * with the intensity of the style transfer controlled by [styleStrength]. The [editSteps]
+     * parameter determines the number of refinement steps in the style transfer process.
+     *
+     * @param sourceImage The original image to which the style will be applied.
+     * @param styleImage The image from which the artistic style will be extracted.
+     * @param styleStrength An integer controlling the intensity of the style transfer.
+     *                      Defaults to `DEFAULT_STYLE_STRENGTH`. Higher values result in a stronger style.
+     * @param styleGuidanceText Text that provides additional guidance on how the style should be applied.
+     * @param prompt A text prompt describing the desired outcome of the style transfer.
+     * @param editSteps The number of editing steps to perform during the style transfer.
+     *                  Defaults to 50. More steps can lead to a more refined result.
+     * @return A [Bitmap] representing the [sourceImage] with the style of the [styleImage] applied.
      */
     @OptIn(PublicPreviewAPI::class)
     suspend fun transferStyle(
-        sourceImage: Bitmap, // The image to apply the style to (implicitly used by the prompt)
+        sourceImage: Bitmap,
         styleImage: Bitmap,
-        styleStrength: Int = 1, // Example strength, adjust as needed
-        styleGuidanceText: String, // e.g., "van gogh style"
-        prompt: String, // e.g., "A cat flying through outer space, in the van gogh style[1]"
+        styleStrength: Int = DEFAULT_STYLE_STRENGTH,
+        styleGuidanceText: String,
+        prompt: String,
         editSteps: Int = 50,
     ): Bitmap {
         val imageResponse = imagenModel.editImage(
             referenceImages = listOf(
-                // The source image for content is implied if not explicitly added as ImagenRawImage
-                // The prompt will reference the style via "[1]"
                 ImagenStyleReference(
                     styleImage.toImagenInlineImage(),
                     styleStrength,
                     styleGuidanceText,
                 ),
             ),
-            prompt = prompt, // Ensure prompt references the style image, e.g., "A photo of a dog in style [1]"
+            prompt = prompt,
             config = ImagenEditingConfig(
                 editSteps = editSteps,
             ),
