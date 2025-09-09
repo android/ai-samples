@@ -19,14 +19,12 @@ import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -65,7 +63,7 @@ fun TextToSpeechControls(
         }
     }
 
-    LaunchedEffect(speechText,) {
+    LaunchedEffect(speechText) {
         textToSpeech?.stop()
         onTtsStateChange(TtsState.Idle)
     }
@@ -77,12 +75,13 @@ fun TextToSpeechControls(
         Text(
             text = stringResource(title ?: R.string.video_summary),
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(end = 100.dp)
+            modifier = Modifier.padding(end = 100.dp),
         )
         Spacer(
             Modifier
                 .weight(1f)
-                .height(1.dp))
+                .height(1.dp),
+        )
 
         if (ttsState == TtsState.Idle || ttsState == TtsState.Paused) {
             PrimaryButton(

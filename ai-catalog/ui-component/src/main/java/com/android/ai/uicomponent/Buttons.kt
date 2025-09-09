@@ -264,8 +264,7 @@ fun SecondaryButtonPreview() {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BackButton(modifier: Modifier = Modifier, imageVector: ImageVector = Icons.AutoMirrored.Filled.ArrowBack, onClick: () -> Unit,
-) {
+fun BackButton(modifier: Modifier = Modifier, imageVector: ImageVector = Icons.AutoMirrored.Filled.ArrowBack, onClick: () -> Unit) {
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.outline) {
         OutlinedIconButton(
             shape = IconButtonDefaults.smallSquareShape,
@@ -294,10 +293,7 @@ fun BackButtonPreview() {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun UndoButton(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
+fun UndoButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.outline) {
         OutlinedIconButton(
             shape = IconButtonDefaults.smallRoundShape,
@@ -323,4 +319,3 @@ fun UndoButtonPreview() {
         )
     }
 }
-

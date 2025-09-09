@@ -26,7 +26,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -56,10 +55,10 @@ fun SummarizationSheet(
     onTtsStateChanged: (TtsState) -> Unit,
     onTtsInitializationResult: (Boolean, String?) -> Unit,
     onRedo: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
+        skipPartiallyExpanded = true,
     )
     val summarizationState = uiState.summarizationState as? SummarizationState.Success ?: return
 
@@ -82,7 +81,7 @@ fun SummarizationSheet(
             Spacer(modifier = Modifier.height(24.dp))
             Row(
                 Modifier
-                    .wrapContentHeight()
+                    .wrapContentHeight(),
             ) {
                 Text(
                     text = stringResource(R.string.text_generated_with_gemini),
@@ -91,14 +90,15 @@ fun SummarizationSheet(
                     modifier = Modifier
                         .background(
                             color = extendedColorScheme.geminiProFlash,
-                            shape = RoundedCornerShape(16.dp)
+                            shape = RoundedCornerShape(16.dp),
                         )
-                        .padding(vertical = 4.dp, horizontal = 8.dp)
+                        .padding(vertical = 4.dp, horizontal = 8.dp),
                 )
                 Spacer(
                     Modifier
                         .weight(1f)
-                        .height(1.dp))
+                        .height(1.dp),
+                )
                 SecondaryButton(
                     text = "",
                     icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_redo),

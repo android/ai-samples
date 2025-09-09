@@ -305,11 +305,7 @@ fun RewriteOptionsDialog(onConfirm: (rewriteStyle: RewriteStyle) -> Unit, onDism
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun DisplayedText(
-    textToDisplay: String,
-    modifier: Modifier = Modifier,
-    isStatusText: Boolean = false,
-) {
+fun DisplayedText(textToDisplay: String, modifier: Modifier = Modifier, isStatusText: Boolean = false) {
     Text(
         textToDisplay, modifier = modifier.padding(8.dp),
         fontSize = if (!isStatusText) {
@@ -393,7 +389,9 @@ fun GenAIWritingAssistanceContentPreview_Error() {
 fun GenAIWritingAssistanceContentPreview_Success() {
     AISampleCatalogTheme {
         GenAIWritingAssistanceContent(
-            uiState = GenAIWritingAssistanceUiState.Success("A fluffy golden retriever, wearing tiny spectacles, diligently typed lines of code"),
+            uiState = GenAIWritingAssistanceUiState.Success(
+                "A fluffy golden retriever, wearing tiny spectacles, diligently typed lines of code",
+            ),
             textInput = "",
             onTextInputChanged = {},
             onProofreadClicked = {},
@@ -404,7 +402,6 @@ fun GenAIWritingAssistanceContentPreview_Success() {
         )
     }
 }
-
 
 enum class RewriteStyle(
     val rewriteStyle: Int,
