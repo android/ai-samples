@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("ktlint:standard:import-ordering")
+
 package com.android.ai.samples.imagenediting.ui
 
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons // ktlint-disable import-ordering
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoFixHigh // Icon for Inpaint/Edit
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.Button

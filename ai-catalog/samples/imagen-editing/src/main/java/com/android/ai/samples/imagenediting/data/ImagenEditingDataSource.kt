@@ -110,12 +110,7 @@ class ImagenEditingDataSource @Inject constructor() {
      * @return A [Bitmap] representing the inpainted image.
      */
     @OptIn(PublicPreviewAPI::class)
-    suspend fun inpaintImageWithMask(
-        sourceImage: Bitmap,
-        maskImage: Bitmap,
-        prompt: String,
-        editSteps: Int = DEFAULT_EDIT_STEPS,
-    ): Bitmap {
+    suspend fun inpaintImageWithMask(sourceImage: Bitmap, maskImage: Bitmap, prompt: String, editSteps: Int = DEFAULT_EDIT_STEPS): Bitmap {
         val imageResponse = editingModel.editImage(
             referenceImages = listOf(
                 ImagenRawImage(sourceImage.toImagenInlineImage()),
@@ -144,11 +139,7 @@ class ImagenEditingDataSource @Inject constructor() {
      * @return A [Bitmap] object representing the image with the inpainted background.
      */
     @OptIn(PublicPreviewAPI::class)
-    suspend fun inpaintBackgroundImage(
-        sourceImage: Bitmap,
-        prompt: String,
-        editSteps: Int = 50,
-    ): Bitmap {
+    suspend fun inpaintBackgroundImage(sourceImage: Bitmap, prompt: String, editSteps: Int = 50): Bitmap {
         val imageResponse = editingModel.inpaintImage(
             image = sourceImage.toImagenInlineImage(),
             prompt = prompt,
@@ -172,11 +163,7 @@ class ImagenEditingDataSource @Inject constructor() {
      * @return The outpainted bitmap image.
      */
     @OptIn(PublicPreviewAPI::class)
-    suspend fun outpaintImageSimple(
-        sourceImage: Bitmap,
-        targetDimensions: Dimensions,
-        prompt: String = "",
-    ): Bitmap {
+    suspend fun outpaintImageSimple(sourceImage: Bitmap, targetDimensions: Dimensions, prompt: String = ""): Bitmap {
         val imageResponse = imagenModel.editImage(
             referenceImages = ImagenMaskReference.generateMaskAndPadForOutpainting(
                 image = sourceImage.toImagenInlineImage(),

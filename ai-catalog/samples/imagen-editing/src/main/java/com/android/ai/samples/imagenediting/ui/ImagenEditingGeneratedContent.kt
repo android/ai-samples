@@ -16,6 +16,8 @@
 package com.android.ai.samples.imagenediting.ui
 
 import android.graphics.Bitmap
+import android.graphics.Canvas as AndroidCanvas
+import android.graphics.Paint as AndroidPaint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -39,7 +41,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asAndroidPath
@@ -53,8 +54,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import com.android.ai.samples.imagenediting.R
-import android.graphics.Canvas as AndroidCanvas
-import android.graphics.Paint as AndroidPaint
 
 @Composable
 fun ImagenEditingGeneratedContent(
@@ -66,7 +65,6 @@ fun ImagenEditingGeneratedContent(
     var currentDrawingPath by remember { mutableStateOf(Path()) }
     var pathVersion by remember { mutableIntStateOf(0) }
     var bitmapToMask by remember { mutableStateOf<Bitmap?>(null) }
-
 
     Box(
         modifier = modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant),
@@ -122,7 +120,8 @@ fun ImagenEditingGeneratedContent(
                             val maskBitmap = createMaskBitmap(
                                 currentSourceBitmap.width,
                                 currentSourceBitmap.height,
-                                currentDrawingPath)
+                                currentDrawingPath,
+                            )
                             onMaskFinalized(currentSourceBitmap, maskBitmap)
                             // Optionally reset the path after finalizing
                             currentDrawingPath = Path()
@@ -183,12 +182,7 @@ fun ImagenEditingGeneratedContent(
 }
 
 @Composable
-private fun DrawingCanvas(
-    currentDrawingPath: Path,
-    pathVersion: Int,
-    onPathUpdate: (Path, Int) -> Unit,
-    modifier: Modifier = Modifier,
-) {
+private fun DrawingCanvas(currentDrawingPath: Path, pathVersion: Int, onPathUpdate: (Path, Int) -> Unit, modifier: Modifier = Modifier) {
     var internalPath by remember(pathVersion) { mutableStateOf(currentDrawingPath) }
     var internalVersion by remember { mutableIntStateOf(pathVersion) }
     val pathToDraw = remember(internalVersion) { internalPath }
