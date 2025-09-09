@@ -28,6 +28,7 @@ import com.android.ai.samples.geminilivetodo.ui.TodoScreen
 import com.android.ai.samples.geminimultimodal.ui.GeminiMultimodalScreen
 import com.android.ai.samples.geminivideometadatacreation.VideoMetadataCreationScreen
 import com.android.ai.samples.geminivideosummary.VideoSummarizationScreen
+import com.android.ai.samples.geminivideometadatacreation.VideoMetadataCreationScreen
 import com.android.ai.samples.geminivideosummary.ui.VideoSummarizationScreen
 import com.android.ai.samples.genai_image_description.GenAIImageDescriptionScreen
 import com.android.ai.samples.genai_summarization.GenAISummarizationScreen
@@ -162,7 +163,7 @@ enum class SampleTags(
     val backgroundColor: Color,
 ) {
     FIREBASE("Firebase", extendedColorScheme.firebase),
-    GEMINI_2_0_FLASH("Gemini 2.0 Flash", extendedColorScheme.geminiProFlash),
+    GEMINI_FLASH("Gemini Flash", extendedColorScheme.geminiProFlash),
     GEMINI_NANO("Gemini Nano", extendedColorScheme.geminiNano),
     IMAGEN("Imagen", extendedColorScheme.imagen),
     MEDIA3("Media3", extendedColorScheme.media3),

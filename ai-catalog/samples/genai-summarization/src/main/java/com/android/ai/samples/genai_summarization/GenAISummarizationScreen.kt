@@ -17,7 +17,6 @@ package com.android.ai.samples.genai_summarization
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
@@ -38,7 +37,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -51,8 +49,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.geminimultimodal.R
-import com.android.ai.theme.surfaceContainerHighestLight
 import com.android.ai.theme.AISampleCatalogTheme
+import com.android.ai.theme.surfaceContainerHighestLight
 import com.android.ai.uicomponent.BackButton
 import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
@@ -133,7 +131,7 @@ fun GenAISummarizationContent(
                     )
 
                 is GenAISummarizationUiState.Error ->
-                    DisplayedText(stringResource(state.errorMessageStringRes), isStatusText = true)
+                    DisplayedText(state.errorMessage, isStatusText = true)
 
                 GenAISummarizationUiState.Initial -> {
                     TextField(
@@ -189,11 +187,7 @@ fun GenAISummarizationContent(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun DisplayedText(
-    textToDisplay: String,
-    modifier: Modifier = Modifier,
-    isStatusText: Boolean = false,
-) {
+fun DisplayedText(textToDisplay: String, modifier: Modifier = Modifier, isStatusText: Boolean = false) {
     Text(
         textToDisplay, modifier = modifier.padding(8.dp),
         fontSize = if (!isStatusText) {
@@ -269,7 +263,7 @@ fun GenAISummarizationContentPreview_DownloadingFeature() {
 fun GenAISummarizationContentPreview_Error() {
     AISampleCatalogTheme {
         GenAISummarizationContent(
-            uiState = GenAISummarizationUiState.Error(R.string.summarization_generation_error),
+            uiState = GenAISummarizationUiState.Error(stringResource(R.string.summarization_generation_error)),
             textInput = "",
             onTextInputChanged = {},
             onSummarizeClicked = {},
@@ -308,4 +302,3 @@ fun GenAISummarizationContentPreview_Success() {
         )
     }
 }
-
