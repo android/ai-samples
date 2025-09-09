@@ -53,6 +53,7 @@ fun SampleDetailTopAppBar(
     sampleName: String,
     sampleDescription: String,
     sourceCodeUrl: String,
+    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     topAppBarState: TopAppBarState = rememberTopAppBarState(),
     scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState),
@@ -83,7 +84,7 @@ fun SampleDetailTopAppBar(
                 overflow = TextOverflow.Ellipsis,
             )
         },
-        navigationIcon = { BackButton {} },
+        navigationIcon = { BackButton(onClick = onBackClick) },
         actions = {
             SeeCodeButton(
                 sourceCodeUrl = sourceCodeUrl,
@@ -104,6 +105,7 @@ fun SampleDetailTopAppBarPreview() {
             sampleName = "Sample Name",
             sampleDescription = "Sample Description",
             sourceCodeUrl = "https://example.com/source-code",
+            onBackClick = {}
         )
     }
 }
@@ -124,6 +126,7 @@ fun SampleDetailTopAppBarPreview_CollapseWhenContentIsScrolled() {
                     sourceCodeUrl = "https://example.com/source-code",
                     topAppBarState = topAppBarState,
                     scrollBehavior = scrollBehavior,
+                    onBackClick = {}
                 )
             },
         ) { innerPadding ->
@@ -151,6 +154,7 @@ fun SampleDetailTopAppBarPreview_CollapseWhenToolbarIsScrolled() {
                     sampleName = "Sample Name",
                     sampleDescription = "Sample Description",
                     sourceCodeUrl = "https://example.com/source-code",
+                    onBackClick = {}
                 )
             },
         ) { innerPadding ->

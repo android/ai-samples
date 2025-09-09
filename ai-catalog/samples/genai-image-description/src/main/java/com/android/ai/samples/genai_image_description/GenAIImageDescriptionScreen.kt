@@ -20,6 +20,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -95,6 +96,7 @@ private fun GenAIImageDescriptionScreen(
     onClearClick: () -> Unit,
 ) {
     val context = LocalContext.current
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -103,6 +105,7 @@ private fun GenAIImageDescriptionScreen(
                 sampleName = stringResource(R.string.genai_image_description_title),
                 sampleDescription = stringResource(R.string.genai_image_description_subtitle),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-image-description",
+                onBackClick = { backDispatcher?.onBackPressed() }
             )
         },
     ) { innerPadding ->
