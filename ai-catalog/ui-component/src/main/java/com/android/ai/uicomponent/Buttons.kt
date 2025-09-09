@@ -264,10 +264,7 @@ fun SecondaryButtonPreview() {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BackButton(
-    modifier: Modifier = Modifier,
-    imageVector: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
-    onClick: () -> Unit,
+fun BackButton(modifier: Modifier = Modifier, imageVector: ImageVector = Icons.AutoMirrored.Filled.ArrowBack, onClick: () -> Unit,
 ) {
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.outline) {
         OutlinedIconButton(

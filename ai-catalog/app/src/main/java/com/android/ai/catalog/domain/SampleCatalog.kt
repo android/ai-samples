@@ -23,8 +23,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import com.android.ai.catalog.R
 import com.android.ai.samples.geminichatbot.GeminiChatbotScreen
+import com.android.ai.samples.geminiimagechat.GeminiImageChatScreen
 import com.android.ai.samples.geminilivetodo.ui.TodoScreen
 import com.android.ai.samples.geminimultimodal.ui.GeminiMultimodalScreen
+import com.android.ai.samples.geminivideometadatacreation.VideoMetadataCreationScreen
 import com.android.ai.samples.geminivideosummary.ui.VideoSummarizationScreen
 import com.android.ai.samples.genai_image_description.GenAIImageDescriptionScreen
 import com.android.ai.samples.genai_summarization.GenAISummarizationScreen
@@ -36,11 +38,19 @@ import com.android.ai.theme.extendedColorScheme
 @RequiresPermission(Manifest.permission.RECORD_AUDIO)
 val sampleCatalog = listOf(
     SampleCatalogItem(
+        title = R.string.gemini_image_chat,
+        description = R.string.gemini_image_chat_description,
+        route = "GeminiImageChatScreen",
+        sampleEntryScreen = { GeminiImageChatScreen() },
+        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
+        needsFirebase = true,
+    ),
+    SampleCatalogItem(
         title = R.string.gemini_multimodal_sample_title,
         description = R.string.gemini_multimodal_sample_description,
         route = "GeminiMultimodalScreen",
         sampleEntryScreen = { GeminiMultimodalScreen() },
-        tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE),
+        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
         isFeatured = true,
         keyArt = R.drawable.img_keyart_multimodal,
@@ -50,7 +60,7 @@ val sampleCatalog = listOf(
         description = R.string.gemini_chatbot_sample_description,
         route = "GeminiChitchatScreen",
         sampleEntryScreen = { GeminiChatbotScreen() },
-        tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE),
+        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
         keyArt = R.drawable.img_keyart_chatbot,
     ),
@@ -101,7 +111,15 @@ val sampleCatalog = listOf(
         description = R.string.gemini_video_summarization_sample_description,
         route = "VideoSummarizationScreen",
         sampleEntryScreen = { VideoSummarizationScreen() },
-        tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE, SampleTags.MEDIA3),
+        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE, SampleTags.MEDIA3),
+        needsFirebase = true,
+    ),
+    SampleCatalogItem(
+        title = R.string.gemini_video_metadata_creation_sample_title,
+        description = R.string.gemini_video_metadata_creation_sample_description,
+        route = "VideoMetadataCreationScreen",
+        sampleEntryScreen = { VideoMetadataCreationScreen() },
+        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE, SampleTags.MEDIA3),
         needsFirebase = true,
         keyArt = R.drawable.img_keyart_video_summary,
     ),
@@ -110,7 +128,7 @@ val sampleCatalog = listOf(
         description = R.string.gemini_live_todo_description,
         route = "GeminiLiveTodoScreen",
         sampleEntryScreen = { TodoScreen() },
-        tags = listOf(SampleTags.GEMINI_2_0_FLASH, SampleTags.FIREBASE),
+        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
         keyArt = R.drawable.img_keyart_todo,
     ),
@@ -134,7 +152,7 @@ enum class SampleTags(
     val backgroundColor: Color,
 ) {
     FIREBASE("Firebase", extendedColorScheme.firebase),
-    GEMINI_2_0_FLASH("Gemini 2.0 Flash", extendedColorScheme.geminiProFlash),
+    GEMINI_FLASH("Gemini Flash", extendedColorScheme.geminiProFlash),
     GEMINI_NANO("Gemini Nano", extendedColorScheme.geminiNano),
     IMAGEN("Imagen", extendedColorScheme.imagen),
     MEDIA3("Media3", extendedColorScheme.media3),

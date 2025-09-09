@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gemini_image_chat_title_bar">Gemini Image Chat</string>
+    <string name="gemini_image_chat_input_placeholder">Type your message</string>
+    <string name="gemini_image_chat_guidance">Start by describing an initial image. Then iterate on it by suggesting gemini to apply changes (background, colors, view angle, etc…).</string>
+    <string name="see_code">See code</string>
+    <string name="something_went_wrong">Something went wrong, try again</string>
+    <string name="dismiss_button">Dismiss</string>
+    <string name="error">Error</string>
+    <string name="send">Send</string>
+    <string name="add_photo">Add photo</string>
+</resources>

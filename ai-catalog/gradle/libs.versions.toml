@@ -1,7 +1,7 @@
 [versions]
 agp = "8.8.2"
 coilCompose = "3.1.0"
-firebaseBom = "33.14.0"
+firebaseBom = "34.1.0"
 lifecycleRuntimeCompose = "2.9.1"
 mlkitGenAi = "1.0.0-beta1"
 kotlin = "2.1.0"
@@ -23,17 +23,17 @@ hiltNavigationCompose = "1.2.0"
 ksp = "2.1.0-1.0.29"
 mlkitSegmentation = "16.0.0-beta1"
 runtimeLivedata = "1.7.6"
-media3 = "1.6.1"
+media3 = "1.8.0"
 firebaseCommonKtx = "21.0.0"
 uiToolingPreviewAndroid = "1.8.1"
 spotless = "7.0.4"
 uiToolingPreview = "1.8.3"
 uiTooling = "1.8.3"
-firebaseAi = "16.2.0"
 lifecycleViewmodelAndroid = "2.8.7"
 material3 = "1.5.0-alpha01"
 uiTextGoogleFonts = "1.8.1"
 runtime = "1.8.3"
+exifinterface = "1.4.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -72,13 +72,15 @@ hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-com
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }
 androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3" }
+androidx-media3-ui-compose = { module = "androidx.media3:media3-ui-compose", version.ref = "media3"}
+androidx-media3-transformer = { module = "androidx.media3:media3-transformer", version.ref = "media3" }
 androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "uiToolingPreviewAndroid" }
 mlkit-segmentation = { module = "com.google.android.gms:play-services-mlkit-subject-segmentation", version.ref = "mlkitSegmentation" }
 ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "uiToolingPreview" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
-google-firebase-ai = { group = "com.google.firebase", name = "firebase-ai", version.ref = "firebaseAi" }
 androidx-lifecycle-viewmodel-android = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-android", version.ref = "lifecycleViewmodelAndroid" }
 androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
+androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "exifinterface" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

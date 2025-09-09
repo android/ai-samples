@@ -71,7 +71,6 @@ import com.google.mlkit.genai.rewriting.RewriterOptions
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hiltViewModel()) {
-
     var showRewriteOptionsDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 

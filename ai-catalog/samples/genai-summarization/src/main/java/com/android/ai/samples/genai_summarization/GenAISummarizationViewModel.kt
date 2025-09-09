@@ -17,7 +17,6 @@ package com.android.ai.samples.genai_summarization
 
 import android.app.Application
 import android.util.Log
-import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.geminimultimodal.R
@@ -46,7 +45,7 @@ sealed class GenAISummarizationUiState {
 
     data class Generating(val generatedOutput: String) : GenAISummarizationUiState()
     data class Success(val generatedOutput: String) : GenAISummarizationUiState()
-    data class Error(@StringRes val errorMessageStringRes: Int) : GenAISummarizationUiState()
+    data class Error(val errorMessage: String) : GenAISummarizationUiState()
 }
 
 class GenAISummarizationViewModel @Inject constructor(val context: Application) : AndroidViewModel(context) {
@@ -62,7 +61,7 @@ class GenAISummarizationViewModel @Inject constructor(val context: Application) 
 
     fun summarize(textToSummarize: String) {
         if (textToSummarize.isEmpty()) {
-            _uiState.value = GenAISummarizationUiState.Error(R.string.summarization_no_input)
+            _uiState.value = GenAISummarizationUiState.Error(context.getString(R.string.summarization_no_input))
             return
         }
 
@@ -73,12 +72,12 @@ class GenAISummarizationViewModel @Inject constructor(val context: Application) 
                 _uiState.value = GenAISummarizationUiState.CheckingFeatureStatus
                 featureStatus = summarizer.checkFeatureStatus().await()
             } catch (error: Exception) {
-                _uiState.value = GenAISummarizationUiState.Error(R.string.summarization_feature_check_fail)
+                _uiState.value = GenAISummarizationUiState.Error(context.getString(R.string.summarization_feature_check_fail))
                 Log.e("GenAISummarization", "Error checking feature status", error)
             }
 
             if (featureStatus == FeatureStatus.UNAVAILABLE) {
-                _uiState.value = GenAISummarizationUiState.Error(R.string.summarization_not_available)
+                _uiState.value = GenAISummarizationUiState.Error(context.getString(R.string.summarization_not_available))
                 return@launch
             }
 
@@ -110,7 +109,7 @@ class GenAISummarizationViewModel @Inject constructor(val context: Application) 
 
                         override fun onDownloadFailed(exception: GenAiException) {
                             Log.e("GenAISummarization", "Download failed", exception)
-                            _uiState.value = GenAISummarizationUiState.Error(R.string.summarization_download_failed)
+                            _uiState.value = GenAISummarizationUiState.Error(context.getString(R.string.summarization_download_failed))
                         }
                     },
                 )
@@ -124,11 +123,18 @@ class GenAISummarizationViewModel @Inject constructor(val context: Application) 
         _uiState.value = GenAISummarizationUiState.Generating("")
         val summarizationRequest = SummarizationRequest.builder(textToSummarize).build()
 
-        summarizer.runInference(summarizationRequest) { newText ->
-            val generatedOutput = (_uiState.value as GenAISummarizationUiState.Generating).generatedOutput
-            _uiState.value = GenAISummarizationUiState.Generating(generatedOutput + newText)
-        }.await()
-        // Instead of using await() here, alternatively you can attach a FutureCallback<SummarizationResult>
+        try {
+            // Instead of using await() here, alternatively you can attach a FutureCallback<SummarizationResult>
+            summarizer.runInference(summarizationRequest) { newText ->
+                (_uiState.value as? GenAISummarizationUiState.Generating)?.let { generatingState ->
+                    _uiState.value = generatingState.copy(generatedOutput = generatingState.generatedOutput + newText)
+                }
+            }.await()
+        } catch (genAiException: GenAiException) {
+            Log.e("GenAISummarization", "Error generating summary with error code: ${genAiException.errorCode}", genAiException)
+            val errorMessage = genAiException.message ?: context.getString(R.string.summarization_generation_error)
+            _uiState.value = GenAISummarizationUiState.Error(errorMessage)
+        }
 
         (_uiState.value as? GenAISummarizationUiState.Generating)?.generatedOutput?.let { generatedOutput ->
             _uiState.value = GenAISummarizationUiState.Success(generatedOutput)

@@ -125,7 +125,7 @@ fun MagicSelfieScreen(viewModel: MagicSelfieViewModel = hiltViewModel()) {
             val tempSelfiePhotoUri = FileProvider.getUriForFile(context, context.packageName + ".provider", tempFile)
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, tempSelfiePhotoUri)
             resultLauncher.launch(cameraIntent)
-        }
+        },
     )
 }
 
@@ -136,7 +136,7 @@ private fun MagicSelfieScreen(
     selfieBitmap: Bitmap?,
     snackbarHostState: SnackbarHostState,
     onGenerateClick: (Bitmap, String) -> Unit,
-    onTakePictureClick: () -> Unit
+    onTakePictureClick: () -> Unit,
 ) {
     val context = LocalContext.current
     val topAppBarState = rememberTopAppBarState()
@@ -222,8 +222,8 @@ private fun MagicSelfieScreen(
                             text = "",
                             icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_bg),
                             enabled = textFieldState.text.isNotEmpty() &&
-                                    (uiState !is MagicSelfieUiState.RemovingBackground) &&
-                                    (uiState !is MagicSelfieUiState.GeneratingBackground),
+                                (uiState !is MagicSelfieUiState.RemovingBackground) &&
+                                (uiState !is MagicSelfieUiState.GeneratingBackground),
                         ) {
                             onGenerateClick(selfieBitmap, textFieldState.text.toString())
                             keyboardController?.hide()
@@ -234,10 +234,10 @@ private fun MagicSelfieScreen(
                             text = "",
                             icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
                             enabled = (uiState !is MagicSelfieUiState.RemovingBackground) &&
-                                    (uiState !is MagicSelfieUiState.GeneratingBackground),
-                            onClick = onTakePictureClick
+                                (uiState !is MagicSelfieUiState.GeneratingBackground),
+                            onClick = onTakePictureClick,
                         )
-                    }
+                    },
                 )
             }
         }
@@ -254,8 +254,7 @@ private fun MagicSelfieScreenPreview() {
             selfieBitmap = null,
             snackbarHostState = remember { SnackbarHostState() },
             onGenerateClick = { _, _ -> },
-            onTakePictureClick = {}
+            onTakePictureClick = {},
         )
     }
 }
-

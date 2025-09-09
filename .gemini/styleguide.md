@@ -73,7 +73,11 @@ sealed class ScreenState {
 * **Recommended:** Do not use `AndroidViewModel`. Use the `ViewModel` class. Avoid using the `Application` class in ViewModels; move the dependency to the UI or data layer.
 * **Recommended:** Don't use `LiveData`, use state flow instead.
 * **Recommended:** Expose a UI state. Use a single `uiState` property (a `StateFlow`) for data exposure. Multiple properties can be used for unrelated data. Use `stateIn` with `WhileSubscribed(5000)` for data streams.  For simpler cases, use a `MutableStateFlow` exposed as an immutable `StateFlow`.  Consider using a data class or sealed class for the `UiState`.
-* **Recommeded:** Don’t pass `Context` to your `ViewModel`. To avoid memory leaks only UI (Composables) should have a reference to `context`.
+* **Recommeded:** Don’t pass `Context` to your `ViewModel`. To avoid memory leaks only UI (Composables) should have a reference to `context`. If you really need to use `Context` in `ViewModel`, you can use AndroidViewModel instead which provides access to an Application context, e.g:
+```kotlin
+class MyViewModel @Inject constructor(val context: Application): AndroidViewModel(context)
+```
+
 * **Recommeded:** Don’t use `fetchData()` in a ViewModel  `init {}` block. If you do end up in a case where you need to do something on initial load, you use `stateIn()` instead. 
 
 
