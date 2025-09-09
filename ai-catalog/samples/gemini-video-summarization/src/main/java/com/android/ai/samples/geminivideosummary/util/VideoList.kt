@@ -37,10 +37,6 @@ val sampleVideoList = listOf(
         "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_10.mp4".toUri(),
     ),
     VideoItem(
-        R.string.video_title_rio_de_janeiro,
-        "gs://cloud-samples-data/generative-ai/video/rio_de_janeiro_beyond_the_map_rio.mp4".toUri(),
-    ),
-    VideoItem(
         R.string.video_title_youtube_google_tv,
         "https://www.youtube.com/watch?v=QFMIP5GOo70".toUri(),
     ),

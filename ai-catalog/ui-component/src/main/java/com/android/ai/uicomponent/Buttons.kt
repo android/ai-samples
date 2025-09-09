@@ -60,7 +60,9 @@ import com.android.ai.theme.Contrast
 @Composable
 fun PrimaryButton(
     text: String,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
+        .height(40.dp)
+        .requiredWidthIn(min = 40.dp),
     contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     containerColor: Color = MaterialTheme.colorScheme.primary,
     icon: Painter? = null,
@@ -68,9 +70,7 @@ fun PrimaryButton(
     onClick: () -> Unit,
 ) {
     Button(
-        modifier = modifier
-            .height(40.dp)
-            .requiredWidthIn(min = 40.dp),
+        modifier = modifier,
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = contentColor,
             containerColor = containerColor,
