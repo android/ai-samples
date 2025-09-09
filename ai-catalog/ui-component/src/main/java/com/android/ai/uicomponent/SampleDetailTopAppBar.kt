@@ -91,7 +91,7 @@ fun SampleDetailTopAppBar(
             )
         },
         scrollBehavior = scrollBehavior,
-        modifier = modifier,
+        modifier = modifier.padding(bottom = 12.dp),
     )
 }
 

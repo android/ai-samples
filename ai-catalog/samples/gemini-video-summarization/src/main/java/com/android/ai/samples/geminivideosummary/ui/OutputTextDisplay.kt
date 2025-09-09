@@ -23,14 +23,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
 import com.google.com.android.ai.samples.geminivideosummary.R
 
-/**
- * Composable function that displays text.
- *
- * This function renders the generated text, providing a styled display within a scrollable container.
- */
 @Composable
 fun OutputTextDisplay(outputText: String, modifier: Modifier = Modifier) {
     Text(
@@ -39,10 +33,9 @@ fun OutputTextDisplay(outputText: String, modifier: Modifier = Modifier) {
             stringResource(R.string.output_text_generated_placeholder),
             outputText,
         ),
-        fontStyle = FontStyle.Italic,
+        style = MaterialTheme.typography.bodyLarge,
         modifier = modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState()),
-        style = MaterialTheme.typography.labelLarge,
     )
 }

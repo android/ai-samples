@@ -15,22 +15,21 @@
  */
 package com.android.ai.samples.geminivideosummary.viewmodel
 
-import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.ai.samples.geminivideosummary.util.VideoItem
 import com.android.ai.samples.geminivideosummary.util.sampleVideoList
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.content
-import java.util.Locale
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * ViewModel class responsible for handling video summarization using Gemini API.
@@ -45,12 +44,8 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
     private val _uiState = MutableStateFlow(VideoSummarizationState())
     val uiState: StateFlow<VideoSummarizationState> = _uiState.asStateFlow()
 
-    fun onVideoSelected(uri: Uri) {
-        _uiState.update { it.copy(selectedVideoUri = uri, summarizationState = SummarizationState.Idle) }
-    }
-
-    fun onAccentSelected(locale: Locale) {
-        _uiState.update { it.copy(selectedAccent = locale) }
+    fun onVideoSelected(videoItem: VideoItem) {
+        _uiState.update { it.copy(selectedVideo = videoItem, summarizationState = SummarizationState.Idle) }
     }
 
     fun onTtsStateChanged(newTtsState: TtsState) {
@@ -71,7 +66,7 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
     }
 
     fun summarize() {
-        val videoSource = _uiState.value.selectedVideoUri ?: return
+        val videoSource = _uiState.value.selectedVideo?.uri ?: return
         viewModelScope.launch {
             val promptData =
                 "Summarize this video in the form of top 3-4 takeaways only. Write in the form of bullet points. Don't assume if you don't know"
@@ -92,7 +87,7 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
                 }
                 _uiState.update {
                     it.copy(
-                        summarizationState = SummarizationState.Success(outputStringBuilder.toString()),
+                        summarizationState = SummarizationState.Success(summarizedText = outputStringBuilder.toString()),
                     )
                 }
             } catch (error: Exception) {
@@ -107,6 +102,10 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
     }
 
     fun dismissError() {
+        _uiState.update { it.copy(summarizationState = SummarizationState.Idle) }
+    }
+
+    fun redo() {
         _uiState.update { it.copy(summarizationState = SummarizationState.Idle) }
     }
 }
@@ -128,7 +127,6 @@ sealed interface TtsState {
 }
 
 data class VideoSummarizationState(
-    val selectedVideoUri: Uri? = sampleVideoList.first().uri,
+    val selectedVideo: VideoItem? = sampleVideoList[0],
     val summarizationState: SummarizationState = SummarizationState.Idle,
-    val selectedAccent: Locale = Locale.US,
 )
