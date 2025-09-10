@@ -29,12 +29,12 @@ data class VideoItem(
 
 val sampleVideoList = listOf(
     VideoItem(
-        R.string.video_title_big_buck_bunny,
-        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4".toUri(),
-    ),
-    VideoItem(
         R.string.video_title_android_spotlight_shorts,
         "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_10.mp4".toUri(),
+    ),
+    VideoItem(
+        R.string.video_title_big_buck_bunny,
+        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4".toUri(),
     ),
     VideoItem(
         R.string.video_title_tears_of_steel,
