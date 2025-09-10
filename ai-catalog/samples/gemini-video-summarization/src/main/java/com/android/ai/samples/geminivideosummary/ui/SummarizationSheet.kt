@@ -39,6 +39,7 @@ import com.android.ai.samples.geminivideosummary.viewmodel.TtsState
 import com.android.ai.samples.geminivideosummary.viewmodel.VideoSummarizationState
 import com.android.ai.theme.extendedColorScheme
 import com.android.ai.uicomponent.SecondaryButton
+import com.android.ai.uicomponent.UndoButton
 import com.google.com.android.ai.samples.geminivideosummary.R
 import java.util.Locale
 
@@ -99,9 +100,7 @@ fun SummarizationSheet(
                     Modifier
                         .weight(1f)
                         .height(1.dp))
-                SecondaryButton(
-                    text = "",
-                    icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_redo),
+                UndoButton(
                     onClick = onRedo,
                 )
             }

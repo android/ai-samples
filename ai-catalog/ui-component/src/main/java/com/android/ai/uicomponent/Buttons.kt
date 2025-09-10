@@ -306,7 +306,7 @@ fun UndoButton(
         ) {
             CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Undo,
+                    painter = painterResource(id = R.drawable.ic_redo),
                     contentDescription = stringResource(R.string.undo),
                 )
             }
