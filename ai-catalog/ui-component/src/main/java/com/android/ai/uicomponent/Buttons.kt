@@ -264,7 +264,8 @@ fun SecondaryButtonPreview() {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BackButton(modifier: Modifier = Modifier, imageVector: ImageVector = Icons.AutoMirrored.Filled.ArrowBack, onClick: () -> Unit) {
+fun BackButton(modifier: Modifier = Modifier, imageVector: ImageVector = Icons.AutoMirrored.Filled.ArrowBack, onClick: () -> Unit,
+) {
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.outline) {
         OutlinedIconButton(
             shape = IconButtonDefaults.smallSquareShape,
@@ -302,7 +303,7 @@ fun UndoButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
         ) {
             CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Undo,
+                    painter = painterResource(id = R.drawable.ic_redo),
                     contentDescription = stringResource(R.string.undo),
                 )
             }

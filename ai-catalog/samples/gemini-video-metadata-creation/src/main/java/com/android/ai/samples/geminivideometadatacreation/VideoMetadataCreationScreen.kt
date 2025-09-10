@@ -50,6 +50,8 @@ import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.ai.samples.geminivideometadatacreation.player.VideoPlayer
+import com.android.ai.samples.geminivideometadatacreation.player.VideoSelectionDropdown
 import com.android.ai.samples.geminivideometadatacreation.ui.ButtonGrid
 import com.android.ai.samples.geminivideometadatacreation.util.sampleVideoList
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.MetadataCreationState
@@ -102,6 +104,17 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            VideoSelectionDropdown(
+                selectedVideoUri = uiState.selectedVideoUri,
+                isDropdownExpanded = isDropdownExpanded,
+                videoOptions = sampleVideoList,
+                onVideoUriSelected = { uri ->
+                    viewModel.onVideoSelected(uri)
+                    viewModel.resetMetadataState()
+                },
+                onDropdownExpanded = { isDropdownExpanded = it },
+            )
+
             VideoPlayer(
                 player = uiState.player,
                 videoPicker = {
