@@ -15,6 +15,7 @@
  */
 package com.android.ai.samples.genai_writing_assistance
 
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -127,6 +128,7 @@ fun GenAIWritingAssistanceContent(
     onAddRewriteTextClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -134,6 +136,7 @@ fun GenAIWritingAssistanceContent(
                 sampleName = stringResource(R.string.genai_writing_assistance_title_bar),
                 sampleDescription = stringResource(R.string.genai_writing_assistance_description),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-writing-assistance",
+                onBackClick = { backDispatcher?.onBackPressed() }
             )
         },
     ) { innerPadding ->

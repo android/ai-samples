@@ -15,6 +15,7 @@
  */
 package com.android.ai.samples.geminivideosummary.ui
 
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -145,6 +146,7 @@ private fun VideoSummarizationScreen(
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
     val videoItemList = sampleVideoList.map { item -> VideoSelectableItem(stringResource(item.titleResId), item) }
 
@@ -158,6 +160,7 @@ private fun VideoSummarizationScreen(
                 sampleName = stringResource(R.string.video_summarization_title),
                 sampleDescription = stringResource(R.string.video_summarization_description),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-video-summarization",
+                onBackClick = { backDispatcher?.onBackPressed() }
             )
         },
     ) { innerPadding ->

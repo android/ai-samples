@@ -15,6 +15,7 @@
  */
 package com.android.ai.samples.genai_summarization
 
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
@@ -87,6 +88,7 @@ fun GenAISummarizationContent(
     onAddSampleTextClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -94,6 +96,7 @@ fun GenAISummarizationContent(
                 sampleName = stringResource(R.string.genai_summarization_title_bar),
                 sampleDescription = stringResource(R.string.genai_summarization_description),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-summarization",
+                onBackClick = { backDispatcher?.onBackPressed() }
             )
         },
     ) { innerPadding ->
