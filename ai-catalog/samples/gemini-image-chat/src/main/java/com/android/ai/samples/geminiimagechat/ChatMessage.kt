@@ -16,12 +16,10 @@
 package com.android.ai.samples.geminiimagechat
 
 import android.graphics.Bitmap
-import android.net.Uri
 
 data class ChatMessage(
     val text: String,
     val timestamp: Long,
     val isIncoming: Boolean = false,
-    val senderIconUrl: Uri? = null,
     val image: Bitmap? = null,
 )

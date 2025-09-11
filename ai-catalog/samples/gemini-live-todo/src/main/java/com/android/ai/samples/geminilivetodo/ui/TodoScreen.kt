@@ -92,7 +92,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-live-todo",
                 topAppBarState = topAppBarState,
                 scrollBehavior = scrollBehavior,
-                onBackClick = { backDispatcher?.onBackPressed() }
+                onBackClick = { backDispatcher?.onBackPressed() },
             )
         },
         floatingActionButtonPosition = FabPosition.Center,

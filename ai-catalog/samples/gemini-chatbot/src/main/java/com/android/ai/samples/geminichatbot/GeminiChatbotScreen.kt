@@ -95,7 +95,7 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
                 sampleDescription = stringResource(R.string.geminichatbot_description),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-chatbot",
                 modifier = Modifier.background(MaterialTheme.colorScheme.surface),
-                onBackClick = { backDispatcher?.onBackPressed() }
+                onBackClick = { backDispatcher?.onBackPressed() },
             )
         },
     ) { innerPadding ->

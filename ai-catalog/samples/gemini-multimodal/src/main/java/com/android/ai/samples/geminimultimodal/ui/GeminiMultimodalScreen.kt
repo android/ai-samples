@@ -18,9 +18,9 @@ package com.android.ai.samples.geminimultimodal.ui
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.TakePicturePreview
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -129,7 +129,7 @@ private fun GeminiMultimodalScreen(
                 sampleName = stringResource(R.string.geminimultimodal_title),
                 sampleDescription = stringResource(R.string.geminimultimodal_subtitle),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-multimodal",
-                onBackClick = { backDispatcher?.onBackPressed() }
+                onBackClick = { backDispatcher?.onBackPressed() },
             )
         },
     ) { innerPadding ->
