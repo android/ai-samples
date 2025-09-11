@@ -167,7 +167,9 @@ private fun VideoSummarizationScreen(
                         selectedVideo = uiState.selectedVideo?.uri,
                         isExpanded = isDropdownExpanded,
                         onDropdownExpandedChanged = onDropdownExpandedChanged,
-                        onVideoSelected = { video -> onVideoSelected(sampleVideoList.first { it.uri == video.uri }) },
+                        onVideoSelected = { videoData ->
+                            sampleVideoList.firstOrNull { it.uri == videoData.uri }?.let(onVideoSelected)
+                        },
                     )
                 },
                 forceShowControls = isDropdownExpanded,

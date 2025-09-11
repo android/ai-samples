@@ -27,6 +27,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -35,6 +36,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -67,6 +70,8 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType.Companion.Uri
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -126,6 +131,7 @@ fun BoxScope.PlayerScaffold(
     cover: () -> Boolean,
     surface: @Composable () -> Unit,
     controls: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
     forceShowControls: Boolean = false,
 ) {
     var showControls by remember { mutableStateOf(true) }
@@ -136,7 +142,7 @@ fun BoxScope.PlayerScaffold(
         }
     }
     Box(
-        Modifier
+        modifier
             .matchParentSize()
             .drawWithContent {
                 drawRect(Color.Black)
@@ -193,14 +199,19 @@ fun VideoPickerDropdown(
         modifier
             .background(MaterialTheme.colorScheme.onSurface, RoundedCornerShape(percent = 100))
             .height(24.dp)
+            .widthIn(max = 200.dp)
             .clickable(onClick = { onDropdownExpandedChanged(!isExpanded) }),
     ) {
         Spacer(Modifier.width(8.dp))
-        Box(Modifier.align(Alignment.CenterVertically)) {
+        Box(Modifier
+            .align(Alignment.CenterVertically)
+            .weight(1f, fill = false)) {
             Text(
                 text = videoItems.find { it.uri == selectedVideo }?.title ?: "",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.inverseOnSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
         Spacer(Modifier.width(4.dp))
@@ -218,6 +229,7 @@ fun VideoPickerDropdown(
     DropdownMenu(
         expanded = isExpanded,
         onDismissRequest = { onDropdownExpandedChanged(false) },
+        modifier = Modifier.widthIn(max = 240.dp)
     ) {
         videoItems.forEach { video ->
             DropdownMenuItem(
@@ -245,6 +257,27 @@ private fun VideoPickerDropdownPreview() {
     AISampleCatalogTheme(darkTheme = true) {
         VideoPickerDropdown(
             videoItems = sampleVideosForPicker,
+            selectedVideo = selectedVideo.uri,
+            onVideoSelected = { selectedVideo = it },
+            isExpanded = false,
+            onDropdownExpandedChanged = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun VideoPickerDropdownPreview_LongTitle() {
+    AISampleCatalogTheme(darkTheme = true) {
+        val sampleData = listOf(
+            VideoPickerData(
+                "A very long video title will be cut off",
+                "https://example.com".toUri(),
+            ),
+        )
+        var selectedVideo by remember { mutableStateOf(sampleData.first()) }
+        VideoPickerDropdown(
+            videoItems = sampleData,
             selectedVideo = selectedVideo.uri,
             onVideoSelected = { selectedVideo = it },
             isExpanded = false,
@@ -353,21 +386,47 @@ private fun RowScope.CenterControls(
     centerButton: @Composable () -> Unit,
     endButton: @Composable () -> Unit,
 ) {
-    Box(
+    Spacer(
         Modifier
-            .padding(horizontal = 24.dp, vertical = 20.dp)
-            .align(Alignment.CenterVertically),
+            .weight(0.1f)
+            .widthIn(min = 4.dp, max = 24.dp)
+    )
+    Box(
+        modifier = Modifier
+            .padding(vertical = 20.dp)
+            .weight(1f)
+            .align(Alignment.CenterVertically)
+            .wrapContentWidth(align = Alignment.End),
     ) { startButton() }
+    Spacer(
+        Modifier
+            .weight(0.1f)
+            .widthIn(min = 4.dp, max = 24.dp)
+    )
     Box(
         Modifier
-            .padding(8.dp)
-            .align(Alignment.CenterVertically),
+            .weight(1f)
+            .padding(vertical = 8.dp)
+            .align(Alignment.CenterVertically)
+            .wrapContentWidth(Alignment.CenterHorizontally),
     ) { centerButton() }
-    Box(
+    Spacer(
         Modifier
-            .padding(horizontal = 24.dp, vertical = 20.dp)
-            .align(Alignment.CenterVertically),
+            .weight(0.1f)
+            .widthIn(min = 4.dp, max = 24.dp)
+    )
+    Box(
+        modifier = Modifier
+            .weight(1f)
+            .padding(vertical = 20.dp)
+            .align(Alignment.CenterVertically)
+            .wrapContentWidth(align = Alignment.Start),
     ) { endButton() }
+    Spacer(
+        Modifier
+            .weight(0.1f)
+            .widthIn(min = 4.dp, max = 24.dp)
+    )
 }
 
 @Preview
@@ -390,6 +449,37 @@ private fun CenterControlsPreview() {
     }
 }
 
+@Preview(widthDp = 320)
+@Composable
+private fun CenterControlsPreview_Widths() {
+    val widths = listOf(600.dp, 300.dp, 260.dp, 220.dp)
+    AISampleCatalogTheme {
+        Column {
+            widths.forEach { width ->
+                Row(
+                    Modifier
+                        .width(width)
+                        .padding(8.dp)
+                        .border(1.dp, Color.Red)
+                        .align(Alignment.CenterHorizontally)
+                ) {
+                    CenterControls(
+                        startButton = {
+                            SeekBackButtonPreview()
+                        },
+                        centerButton = {
+                            PlayPauseButtonPreview()
+                        },
+                        endButton = {
+                            SeekForwardButtonPreview()
+                        },
+                    )
+                }
+            }
+        }
+    }
+}
+
 @OptIn(UnstableApi::class)
 @Composable
 private fun PlayPauseButton(showPlay: () -> Boolean, isEnabled: () -> Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
@@ -405,8 +495,8 @@ private fun PlayPauseButton(showPlay: () -> Boolean, isEnabled: () -> Boolean, o
         Icon(
             imageVector = if (showPlay()) Icons.Default.PlayArrow else Icons.Default.Pause,
             contentDescription =
-            if (showPlay()) stringResource(R.string.playpause_button_play)
-            else stringResource(R.string.playpause_button_pause),
+                if (showPlay()) stringResource(R.string.playpause_button_play)
+                else stringResource(R.string.playpause_button_pause),
         )
     }
 }
