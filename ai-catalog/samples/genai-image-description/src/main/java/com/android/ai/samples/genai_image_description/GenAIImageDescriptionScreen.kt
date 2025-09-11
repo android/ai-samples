@@ -64,7 +64,6 @@ import com.android.ai.theme.extendedColorScheme
 import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.PrimaryButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
-import com.android.ai.uicomponent.SecondaryButton
 import com.android.ai.uicomponent.UndoButton
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -173,7 +172,6 @@ private fun GenAIImageDescriptionScreen(
                     onClick = onImagePickerClick,
                 )
             }
-
             if (
                 uiState !is GenAIImageDescriptionUiState.Initial &&
                 uiState !is GenAIImageDescriptionUiState.CheckingFeatureStatus
@@ -191,13 +189,13 @@ private fun GenAIImageDescriptionScreen(
                     else -> "" // Show nothing for the Initial state
                 }
 
-                UndoButton (
+                UndoButton(
                     modifier = Modifier.align(Alignment.TopEnd)
                         .padding(
                             top = 18.dp,
                             end = 18.dp,
                         ),
-                ){
+                ) {
                     onClearClick()
                 }
                 Box(

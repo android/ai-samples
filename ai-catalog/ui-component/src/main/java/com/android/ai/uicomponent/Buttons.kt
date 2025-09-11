@@ -29,7 +29,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.Button
@@ -264,8 +263,7 @@ fun SecondaryButtonPreview() {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BackButton(modifier: Modifier = Modifier, imageVector: ImageVector = Icons.AutoMirrored.Filled.ArrowBack, onClick: () -> Unit,
-) {
+fun BackButton(modifier: Modifier = Modifier, imageVector: ImageVector = Icons.AutoMirrored.Filled.ArrowBack, onClick: () -> Unit) {
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.outline) {
         OutlinedIconButton(
             shape = IconButtonDefaults.smallSquareShape,
@@ -294,10 +292,7 @@ fun BackButtonPreview() {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun UndoButton(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
+fun UndoButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.outline) {
         OutlinedIconButton(
             shape = IconButtonDefaults.smallRoundShape,
@@ -323,4 +318,3 @@ fun UndoButtonPreview() {
         )
     }
 }
-

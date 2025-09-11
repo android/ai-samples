@@ -58,6 +58,9 @@ import com.android.ai.samples.geminivideometadatacreation.viewmodel.MetadataCrea
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.MetadataType
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.VideoMetadataCreationState
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.VideoMetadataCreationViewModel
+import com.android.ai.uicomponent.VideoPickerData
+import com.android.ai.uicomponent.VideoPickerDropdown
+import com.android.ai.uicomponent.VideoPlayer
 
 /**
  * Composable function for the AI Video Metadata Creation screen.
@@ -114,7 +117,20 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
 
             VideoPlayer(
                 player = uiState.player,
-                modifier = Modifier.aspectRatio(16f / 9f),
+                videoPicker = {
+                    VideoPickerDropdown(
+                        videoItems = sampleVideoList.map { VideoPickerData(context.getString(it.titleResId), it.uri) },
+                        selectedVideo = uiState.selectedVideoUri,
+                        isExpanded = isDropdownExpanded,
+                        onDropdownExpandedChanged = { isDropdownExpanded = it },
+                        onVideoSelected = { video ->
+                            viewModel.onVideoSelected(video.uri)
+                            viewModel.resetMetadataState()
+                        },
+                    )
+                },
+                forceShowControls = isDropdownExpanded,
+                modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
             )
 
             MetadataCreationSection(

@@ -16,30 +16,21 @@
 package com.android.ai.samples.geminivideosummary.ui
 
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -61,7 +52,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
-import com.android.ai.samples.geminivideosummary.player.VideoPlayer
 import com.android.ai.samples.geminivideosummary.util.VideoItem
 import com.android.ai.samples.geminivideosummary.util.sampleVideoList
 import com.android.ai.samples.geminivideosummary.viewmodel.SummarizationState
@@ -69,14 +59,13 @@ import com.android.ai.samples.geminivideosummary.viewmodel.TtsState
 import com.android.ai.samples.geminivideosummary.viewmodel.VideoSummarizationState
 import com.android.ai.samples.geminivideosummary.viewmodel.VideoSummarizationViewModel
 import com.android.ai.theme.AISampleCatalogTheme
-import com.android.ai.theme.extendedColorScheme
 import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
-import com.android.ai.uicomponent.SecondaryButton
 import com.android.ai.uicomponent.SelectableItem
-import com.android.ai.uicomponent.SelectionDropdown
+import com.android.ai.uicomponent.VideoPickerData
+import com.android.ai.uicomponent.VideoPickerDropdown
+import com.android.ai.uicomponent.VideoPlayer
 import com.google.com.android.ai.samples.geminivideosummary.R
-import java.util.Locale
 
 /**
  * Composable function for the AI Video Summarization screen.
@@ -123,12 +112,14 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
         onTtsStateChanged = viewModel::onTtsStateChanged,
         onDismissError = viewModel::dismissError,
         onRedo = viewModel::redo,
-        onTtsInitializationResult = viewModel::onTtsInitializationResult
+        onTtsInitializationResult = viewModel::onTtsInitializationResult,
     )
 }
 
-class VideoSelectableItem(override val itemLabel: String, override val itemData: VideoItem) :
-    SelectableItem<VideoItem>
+class VideoSelectableItem(
+    override val itemLabel: String,
+    override val itemData: VideoItem,
+) : SelectableItem<VideoItem>
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -142,7 +133,7 @@ private fun VideoSummarizationScreen(
     onTtsStateChanged: (TtsState) -> Unit,
     onDismissError: () -> Unit,
     onRedo: () -> Unit,
-    onTtsInitializationResult: (Boolean, String?) -> Unit
+    onTtsInitializationResult: (Boolean, String?) -> Unit,
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
@@ -171,17 +162,22 @@ private fun VideoSummarizationScreen(
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            SelectionDropdown(
-                selectedItem = uiState.selectedVideo?.let {VideoSelectableItem(stringResource(uiState.selectedVideo.titleResId), uiState.selectedVideo) },
-                isDropdownExpanded = isDropdownExpanded,
-                itemList = videoItemList,
-                onItemSelected = {onVideoSelected(it.itemData)},
-                onDropdownExpanded = onDropdownExpandedChanged,
+            VideoPlayer(
+                player = exoPlayer,
+                videoPicker = {
+                    VideoPickerDropdown(
+                        videoItems = sampleVideoList.map { VideoPickerData(stringResource(it.titleResId), it.uri) },
+                        selectedVideo = uiState.selectedVideo?.uri,
+                        isExpanded = isDropdownExpanded,
+                        onDropdownExpandedChanged = onDropdownExpandedChanged,
+                        onVideoSelected = { videoData ->
+                            sampleVideoList.firstOrNull { it.uri == videoData.uri }?.let(onVideoSelected)
+                        },
+                    )
+                },
+                forceShowControls = isDropdownExpanded,
+                modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
             )
-
-            if (exoPlayer != null) {
-                VideoPlayer(exoPlayer = exoPlayer, modifier = Modifier.fillMaxWidth())
-            }
 
             SummarizationSection(
                 uiState = uiState,
@@ -190,7 +186,7 @@ private fun VideoSummarizationScreen(
                 onDismissError = onDismissError,
                 onTtsInitializationResult = onTtsInitializationResult,
                 onRedo = onRedo,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
         }
     }
@@ -205,7 +201,7 @@ private fun SummarizationSection(
     onDismissError: () -> Unit,
     onTtsInitializationResult: (Boolean, String?) -> Unit,
     onRedo: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var showSummary by rememberSaveable { mutableStateOf(false) }
 
@@ -221,7 +217,7 @@ private fun SummarizationSection(
     }
 
     Box(
-        modifier = modifier
+        modifier = modifier,
     ) {
         Column {
             when (val summarizationState = uiState.summarizationState) {
@@ -249,7 +245,7 @@ private fun SummarizationSection(
                             onTtsStateChanged = onTtsStateChanged,
                             onTtsInitializationResult = onTtsInitializationResult,
                             onRedo = onRedoClick,
-                            onDismiss = { showSummary = false }
+                            onDismiss = { showSummary = false },
                         )
                     }
                 }
