@@ -60,6 +60,8 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.ui.google.fonts)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui.compose)
     implementation(libs.ui.tooling.preview)
     debugImplementation(libs.ui.tooling)
 }
