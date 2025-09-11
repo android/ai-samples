@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
@@ -51,6 +52,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -123,6 +125,14 @@ private fun GeminiImageChatScreen(
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    val lazyListState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(uiState.messages) {
+        coroutineScope.launch {
+            lazyListState.animateScrollToItem(0)
+        }
+    }
 
     Scaffold(
         modifier = Modifier
@@ -148,6 +158,7 @@ private fun GeminiImageChatScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
                 messages = uiState.messages,
+                listState = lazyListState
             )
 
             when (val state = uiState.geminiMessageState) {
@@ -211,8 +222,9 @@ private fun GeminiImageChatScreen(
 }
 
 @Composable
-fun MessageList(messages: List<ChatMessage>, modifier: Modifier = Modifier) {
+fun MessageList(messages: List<ChatMessage>, modifier: Modifier = Modifier, listState: androidx.compose.foundation.lazy.LazyListState) {
     LazyColumn(
+        state = listState,
         modifier = modifier.padding(bottom = 54.dp),
         reverseLayout = true,
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
@@ -251,38 +263,47 @@ fun MessageBubble(message: ChatMessage, modifier: Modifier = Modifier) {
             )
         }
         Box(
-            modifier = modifier.fillMaxWidth(),
-            contentAlignment = if (message.isIncoming) Alignment.CenterStart else Alignment.CenterEnd,
+
         ) {
-            Surface(
-                modifier = Modifier
-                    .widthIn(max = 300.dp)
-                    .border(
-                        2.dp,
-                        if (message.isIncoming) Color.Transparent else MaterialTheme.colorScheme.outline,
-                        shape = if (message.isIncoming) roundCornerShapeReceive else roundCornerShapeSend,
-                    )
-                    .clip(
-                        shape = if (message.isIncoming) roundCornerShapeReceive else roundCornerShapeSend,
-                    ),
-                color = if (message.isIncoming) {
-                    MaterialTheme.colorScheme.tertiary
-                } else {
-                    MaterialTheme.colorScheme.surface
-                },
+            Column(
+                modifier = modifier.fillMaxWidth(),
+                horizontalAlignment = if (message.isIncoming) Alignment.Start else Alignment.End,
             ) {
-                Column {
-                    Text(
-                        modifier = Modifier.padding(16.dp),
-                        text = message.text,
-                    )
-                    message.image?.let { it: Bitmap ->
-                        Image(
-                            modifier = Modifier.padding(16.dp),
-                            bitmap = it.asImageBitmap(),
-                            contentDescription = null,
-                        )
+                message.text.isNotEmpty().let {
+                    Surface(
+                        modifier = Modifier
+                            .widthIn(max = 300.dp)
+                            .border(
+                                2.dp,
+                                if (message.isIncoming) Color.Transparent else MaterialTheme.colorScheme.outline,
+                                shape = if (message.isIncoming) roundCornerShapeReceive else roundCornerShapeSend,
+                            )
+                            .clip(
+                                shape = if (message.isIncoming) roundCornerShapeReceive else roundCornerShapeSend,
+                            ),
+                        color = if (message.isIncoming) {
+                            MaterialTheme.colorScheme.tertiary
+                        } else {
+                            MaterialTheme.colorScheme.surface
+                        },
+                    ) {
+                        Column {
+                            Text(
+                                modifier = Modifier.padding(16.dp),
+                                text = message.text,
+                            )
+                        }
                     }
+                }
+                message.image?.let { it: Bitmap ->
+                    Image(
+                        modifier = Modifier
+                            .width(200.dp)
+                            .padding(16.dp)
+                            .clip(shape = RoundedCornerShape(12.dp)),
+                        bitmap = it.asImageBitmap(),
+                        contentDescription = null,
+                    )
                 }
             }
         }
