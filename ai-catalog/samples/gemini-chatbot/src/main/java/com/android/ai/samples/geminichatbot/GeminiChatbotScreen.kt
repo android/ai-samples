@@ -15,6 +15,7 @@
  */
 package com.android.ai.samples.geminichatbot
 
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -80,6 +81,7 @@ fun GeminiChatbotScreen(viewModel: GeminiChatbotViewModel = hiltViewModel()) {
 private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (String) -> Unit, onDismissError: () -> Unit) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
     Scaffold(
         modifier = Modifier
@@ -93,6 +95,7 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
                 sampleDescription = stringResource(R.string.geminichatbot_description),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-chatbot",
                 modifier = Modifier.background(MaterialTheme.colorScheme.surface),
+                onBackClick = { backDispatcher?.onBackPressed() }
             )
         },
     ) { innerPadding ->

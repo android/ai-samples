@@ -17,6 +17,7 @@ package com.android.ai.samples.imagen.ui
 
 import android.graphics.BitmapFactory
 import android.widget.Toast
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -76,6 +77,7 @@ fun ImagenScreen(viewModel: ImagenViewModel = hiltViewModel()) {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Unit) {
     val isGenerating = uiState is ImagenUIState.Loading
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
@@ -83,6 +85,7 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
                 sampleName = stringResource(R.string.title_image_generation_screen),
                 sampleDescription = stringResource(R.string.subtitle_image_generation_screen),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/imagen",
+                onBackClick = { backDispatcher?.onBackPressed() }
             )
         },
     ) { innerPadding ->
