@@ -17,6 +17,7 @@ package com.android.ai.samples.geminichatbot
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.ai.uicomponent.ChatMessage
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
@@ -25,12 +26,12 @@ import com.google.firebase.ai.type.HarmCategory
 import com.google.firebase.ai.type.SafetySetting
 import com.google.firebase.ai.type.content
 import com.google.firebase.ai.type.generationConfig
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 sealed interface GeminiMessageState {
     data object WaitingForMessage : GeminiMessageState
@@ -91,7 +92,7 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
                         timestamp = System.currentTimeMillis(),
                         isIncoming = true,
                     )
-                } ?: error("Model returned an empty response") // This error will be caught by the try/catch
+                } ?: error("Model returned an empty response")
 
                 _uiState.update {
                     it.copy(messages = listOf(newMessage) + it.messages, geminiMessageState = GeminiMessageState.WaitingForMessage)

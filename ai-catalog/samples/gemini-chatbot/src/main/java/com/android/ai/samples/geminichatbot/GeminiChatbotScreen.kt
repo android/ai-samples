@@ -58,7 +58,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.theme.AISampleCatalogTheme
+import com.android.ai.uicomponent.ChatMessage
 import com.android.ai.uicomponent.GenerateButton
+import com.android.ai.uicomponent.MessageList
 import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.TextInput
 
@@ -145,7 +147,8 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
                         icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_send),
                         modifier = Modifier
                             .width(72.dp)
-                            .height(72.dp),
+                            .height(55.dp)
+                            .padding(2.dp),
                         enabled = uiState.geminiMessageState !is GeminiMessageState.Generating,
                         onClick = {
                             onSendMessage(textFieldState.text.toString())
@@ -157,81 +160,6 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
                     .padding(10.dp)
                     .align(Alignment.BottomCenter),
             )
-        }
-    }
-}
-
-@Composable
-fun MessageList(messages: List<ChatMessage>, modifier: Modifier = Modifier) {
-    LazyColumn(
-        modifier = modifier.padding(bottom = 54.dp),
-        reverseLayout = true,
-        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
-    ) {
-        items(items = messages, key = { it.timestamp }) { message ->
-            MessageBubble(
-                message = message,
-                modifier = Modifier.padding(bottom = 16.dp),
-            )
-        }
-    }
-}
-
-private val roundCornerShapeSend = RoundedCornerShape(
-    topStart = 40.dp,
-    topEnd = 4.dp,
-    bottomStart = 40.dp,
-    bottomEnd = 40.dp,
-)
-
-private val roundCornerShapeReceive = RoundedCornerShape(
-    topStart = 4.dp,
-    topEnd = 40.dp,
-    bottomStart = 40.dp,
-    bottomEnd = 40.dp,
-)
-
-@Composable
-fun MessageBubble(message: ChatMessage, modifier: Modifier = Modifier) {
-    Row {
-        if (message.isIncoming) {
-            Icon(
-                painterResource(com.android.ai.uicomponent.R.drawable.ic_spark),
-                contentDescription = null,
-                modifier = Modifier.padding(end = 8.dp),
-            )
-        }
-        Box(
-            modifier = modifier.fillMaxWidth(),
-            contentAlignment = if (message.isIncoming) Alignment.CenterStart else Alignment.CenterEnd,
-        ) {
-            Surface(
-                modifier = Modifier.widthIn(max = 300.dp)
-                    .border(
-                        2.dp,
-                        if (message.isIncoming) Color.Transparent else MaterialTheme.colorScheme.outline,
-                        shape = if (message.isIncoming) roundCornerShapeReceive else roundCornerShapeSend,
-                    )
-                    .clip(
-                        shape = if (message.isIncoming) roundCornerShapeReceive else roundCornerShapeSend,
-                    ),
-                color = if (message.isIncoming) {
-                    MaterialTheme.colorScheme.tertiary
-                } else {
-                    MaterialTheme.colorScheme.surface
-                },
-            ) {
-                Text(
-                    modifier = Modifier.padding(start = 24.dp, top = 16.dp, end = 24.dp, bottom = 16.dp),
-                    text = message.text,
-                    color = if (message.isIncoming) {
-                        MaterialTheme.colorScheme.onTertiary
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-            }
         }
     }
 }

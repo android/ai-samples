@@ -21,33 +21,21 @@ import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -60,9 +48,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -73,7 +58,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.samples.util.loadBitmapWithCorrectOrientation
 import com.android.ai.theme.AISampleCatalogTheme
+import com.android.ai.uicomponent.ChatMessage
 import com.android.ai.uicomponent.GenerateButton
+import com.android.ai.uicomponent.MessageList
 import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.SecondaryButton
 import com.android.ai.uicomponent.TextInput
@@ -217,95 +204,6 @@ private fun GeminiImageChatScreen(
                     .padding(10.dp)
                     .align(Alignment.BottomCenter),
             )
-        }
-    }
-}
-
-@Composable
-fun MessageList(messages: List<ChatMessage>, modifier: Modifier = Modifier, listState: androidx.compose.foundation.lazy.LazyListState) {
-    LazyColumn(
-        state = listState,
-        modifier = modifier.padding(bottom = 54.dp),
-        reverseLayout = true,
-        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
-    ) {
-        items(items = messages, key = { it.timestamp }) { message ->
-            MessageBubble(
-                message = message,
-                modifier = Modifier.padding(bottom = 16.dp),
-            )
-        }
-    }
-}
-
-private val roundCornerShapeSend = RoundedCornerShape(
-    topStart = 40.dp,
-    topEnd = 4.dp,
-    bottomStart = 40.dp,
-    bottomEnd = 40.dp,
-)
-
-private val roundCornerShapeReceive = RoundedCornerShape(
-    topStart = 4.dp,
-    topEnd = 40.dp,
-    bottomStart = 40.dp,
-    bottomEnd = 40.dp,
-)
-
-@Composable
-fun MessageBubble(message: ChatMessage, modifier: Modifier = Modifier) {
-    Row {
-        if (message.isIncoming) {
-            Icon(
-                painterResource(com.android.ai.uicomponent.R.drawable.ic_spark),
-                contentDescription = null,
-                modifier = Modifier.padding(end = 8.dp),
-            )
-        }
-        Box(
-
-        ) {
-            Column(
-                modifier = modifier.fillMaxWidth(),
-                horizontalAlignment = if (message.isIncoming) Alignment.Start else Alignment.End,
-            ) {
-                message.text.isNotEmpty().let {
-                    Surface(
-                        modifier = Modifier
-                            .widthIn(max = 300.dp)
-                            .border(
-                                2.dp,
-                                if (message.isIncoming) Color.Transparent else MaterialTheme.colorScheme.outline,
-                                shape = if (message.isIncoming) roundCornerShapeReceive else roundCornerShapeSend,
-                            )
-                            .clip(
-                                shape = if (message.isIncoming) roundCornerShapeReceive else roundCornerShapeSend,
-                            ),
-                        color = if (message.isIncoming) {
-                            MaterialTheme.colorScheme.tertiary
-                        } else {
-                            MaterialTheme.colorScheme.surface
-                        },
-                    ) {
-                        Column {
-                            Text(
-                                modifier = Modifier.padding(16.dp),
-                                text = message.text,
-                            )
-                        }
-                    }
-                }
-                message.image?.let { it: Bitmap ->
-                    Image(
-                        modifier = Modifier
-                            .width(200.dp)
-                            .padding(16.dp)
-                            .clip(shape = RoundedCornerShape(12.dp)),
-                        bitmap = it.asImageBitmap(),
-                        contentDescription = null,
-                    )
-                }
-            }
         }
     }
 }
