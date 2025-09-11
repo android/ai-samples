@@ -180,11 +180,11 @@ private fun GeminiImageChatScreen(
                 placeholder = stringResource(R.string.gemini_image_chat_input_placeholder),
                 primaryButton = {
                     GenerateButton(
-                        text = "",
                         icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_send),
                         modifier = Modifier
                             .width(72.dp)
-                            .height(72.dp),
+                            .height(55.dp)
+                            .padding(2.dp),
                         enabled = uiState.geminiMessageState !is GeminiMessageState.Generating,
                         onClick = {
                             onSendMessage(textFieldState.text.toString(), null)
@@ -195,8 +195,11 @@ private fun GeminiImageChatScreen(
                 secondaryButton = {
                     SecondaryButton(
                         icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
+                        modifier = Modifier
+                            .width(48.dp)
+                            .height(56.dp)
+                            .padding(2.dp),
                         onClick = onImagePickerClick,
-                        text = ""
                     )
                 },
                 modifier = Modifier
