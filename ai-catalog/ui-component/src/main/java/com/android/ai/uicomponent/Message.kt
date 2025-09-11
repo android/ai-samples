@@ -93,49 +93,45 @@ fun MessageBubble(message: ChatMessage, modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(end = 8.dp),
             )
         }
-        Box(
-
+        Column(
+            modifier = modifier.fillMaxWidth(),
+            horizontalAlignment = if (message.isIncoming) Alignment.Start else Alignment.End,
         ) {
-            Column(
-                modifier = modifier.fillMaxWidth(),
-                horizontalAlignment = if (message.isIncoming) Alignment.Start else Alignment.End,
-            ) {
-                if (message.text.isNotEmpty()) {
-                    Surface(
-                        modifier = Modifier
-                            .widthIn(max = 300.dp)
-                            .border(
-                                2.dp,
-                                if (message.isIncoming) Color.Transparent else MaterialTheme.colorScheme.outline,
-                                shape = if (message.isIncoming) roundCornerShapeReceive else roundCornerShapeSend,
-                            )
-                            .clip(
-                                shape = if (message.isIncoming) roundCornerShapeReceive else roundCornerShapeSend,
-                            ),
-                        color = if (message.isIncoming) {
-                            MaterialTheme.colorScheme.tertiary
-                        } else {
-                            MaterialTheme.colorScheme.surface
-                        },
-                    ) {
-                        Column {
-                            Text(
-                                modifier = Modifier.padding(16.dp),
-                                text = message.text,
-                            )
-                        }
+            if (message.text.isNotEmpty()) {
+                Surface(
+                    modifier = Modifier
+                        .widthIn(max = 300.dp)
+                        .border(
+                            2.dp,
+                            if (message.isIncoming) Color.Transparent else MaterialTheme.colorScheme.outline,
+                            shape = if (message.isIncoming) roundCornerShapeReceive else roundCornerShapeSend,
+                        )
+                        .clip(
+                            shape = if (message.isIncoming) roundCornerShapeReceive else roundCornerShapeSend,
+                        ),
+                    color = if (message.isIncoming) {
+                        MaterialTheme.colorScheme.tertiary
+                    } else {
+                        MaterialTheme.colorScheme.surface
+                    },
+                ) {
+                    Column {
+                        Text(
+                            modifier = Modifier.padding(16.dp),
+                            text = message.text,
+                        )
                     }
                 }
-                message.image?.let { it: Bitmap ->
-                    Image(
-                        modifier = Modifier
-                            .widthIn(max = 300.dp)
-                            .padding(16.dp)
-                            .clip(shape = RoundedCornerShape(12.dp)),
-                        bitmap = it.asImageBitmap(),
-                        contentDescription = null,
-                    )
-                }
+            }
+            message.image?.let { it: Bitmap ->
+                Image(
+                    modifier = Modifier
+                        .widthIn(max = 300.dp)
+                        .padding(16.dp)
+                        .clip(shape = RoundedCornerShape(12.dp)),
+                    bitmap = it.asImageBitmap(),
+                    contentDescription = null,
+                )
             }
         }
     }
@@ -150,7 +146,7 @@ private fun MessageBubbleIncomingPreview() {
                 text = "Hi there!",
                 timestamp = 124,
                 isIncoming = true,
-            )
+            ),
         )
     }
 }
@@ -164,7 +160,7 @@ private fun MessageBubbleOutgoingPreview() {
                 text = "I’m super sleepy today, what coffee drink has the most caffeine, but not too much. Also something hot.",
                 timestamp = 123,
                 isIncoming = false,
-            )
+            ),
         )
     }
 }
@@ -185,7 +181,7 @@ private fun MessageListPreview() {
                     timestamp = 123,
                     isIncoming = false,
                 ),
-            )
+            ),
         )
     }
 }

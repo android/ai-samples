@@ -15,12 +15,12 @@
  */
 package com.android.ai.samples.geminiimagechat
 
-import android.graphics.Bitmap
 import android.net.Uri
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.AlertDialog
@@ -48,7 +49,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -56,6 +59,7 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.android.ai.samples.util.loadBitmapWithCorrectOrientation
 import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.ChatMessage
@@ -83,9 +87,9 @@ fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel())
 
     GeminiImageChatScreen(
         uiState = uiState,
-        onSendMessage = { message, bitmap ->
+        onSendMessage = { message ->
             coroutineScope.launch {
-                val finalBitmap = bitmap ?: imageUri?.let {
+                val finalBitmap = imageUri?.let {
                     withContext(Dispatchers.IO) {
                         loadBitmapWithCorrectOrientation(context, it)
                     }
@@ -98,16 +102,21 @@ fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel())
         onImagePickerClick = {
             photoPickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
         },
-    )
+        imageUri = imageUri
+    ) {
+        imageUri = null
+    }
 }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun GeminiImageChatScreen(
     uiState: GeminiImageChatUiState,
-    onSendMessage: (String, Bitmap?) -> Unit,
+    onSendMessage: (String) -> Unit,
     onDismissError: () -> Unit,
     onImagePickerClick: () -> Unit,
+    imageUri: Uri? = null,
+    onImageClicked: () -> Unit
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
@@ -185,20 +194,34 @@ private fun GeminiImageChatScreen(
                             .padding(2.dp),
                         enabled = uiState.geminiMessageState !is GeminiMessageState.Generating,
                         onClick = {
-                            onSendMessage(textFieldState.text.toString(), null)
+                            onSendMessage(textFieldState.text.toString())
                             textFieldState.setTextAndPlaceCursorAtEnd("")
                         },
                     )
                 },
                 secondaryButton = {
-                    SecondaryButton(
-                        icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
-                        modifier = Modifier
-                            .width(48.dp)
-                            .height(56.dp)
-                            .padding(2.dp),
-                        onClick = onImagePickerClick,
-                    )
+                    if (imageUri != null) {
+                        AsyncImage(
+                            model = imageUri,
+                            contentDescription = null,
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.clickable(
+                                onClick = onImageClicked
+                            ).width(50.dp)
+                                .height(56.dp)
+                                .padding(2.dp)
+                                .clip(RoundedCornerShape(2.dp)),
+                        )
+                    } else {
+                        SecondaryButton(
+                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
+                            modifier = Modifier
+                                .width(48.dp)
+                                .height(56.dp)
+                                .padding(2.dp),
+                            onClick = onImagePickerClick,
+                        )
+                    }
                 },
                 modifier = Modifier
                     .padding(10.dp)
@@ -220,9 +243,10 @@ private fun GeminiImageChatScreenPreview() {
                     ChatMessage("I’m super sleepy today...", 123, false),
                 ),
             ),
-            onSendMessage = { _, _ -> },
+            onSendMessage = { _ -> },
             onDismissError = {},
             onImagePickerClick = {},
+            onImageClicked = {}
         )
     }
 }
