@@ -21,10 +21,10 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.provider.MediaStore
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -155,7 +155,7 @@ private fun MagicSelfieScreen(
                 sampleName = stringResource(R.string.magic_selfie_title),
                 sampleDescription = stringResource(R.string.magic_selfie_subtitle),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/magic-selfie",
-                onBackClick = { backDispatcher?.onBackPressed() }
+                onBackClick = { backDispatcher?.onBackPressed() },
             )
         },
     ) { innerPadding ->

@@ -85,7 +85,7 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
                 sampleName = stringResource(R.string.title_image_generation_screen),
                 sampleDescription = stringResource(R.string.subtitle_image_generation_screen),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/imagen",
-                onBackClick = { backDispatcher?.onBackPressed() }
+                onBackClick = { backDispatcher?.onBackPressed() },
             )
         },
     ) { innerPadding ->

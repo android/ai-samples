@@ -15,59 +15,59 @@
  */
 package com.android.ai.samples.geminiimagechat
 
-import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Code
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.android.ai.samples.util.loadBitmapWithCorrectOrientation
+import com.android.ai.theme.AISampleCatalogTheme
+import com.android.ai.uicomponent.ChatMessage
+import com.android.ai.uicomponent.GenerateButton
+import com.android.ai.uicomponent.MessageList
+import com.android.ai.uicomponent.SampleDetailTopAppBar
+import com.android.ai.uicomponent.SecondaryButton
+import com.android.ai.uicomponent.TextInput
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -75,20 +75,60 @@ import kotlinx.coroutines.withContext
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel()) {
-    val topAppBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var message by rememberSaveable { mutableStateOf("") }
-
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val photoPickerLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
         uri?.let {
             imageUri = it
         }
     }
-
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+
+    GeminiImageChatScreen(
+        uiState = uiState,
+        onSendMessage = { message ->
+            coroutineScope.launch {
+                val finalBitmap = imageUri?.let {
+                    withContext(Dispatchers.IO) {
+                        loadBitmapWithCorrectOrientation(context, it)
+                    }
+                }
+                viewModel.sendMessage(message, finalBitmap)
+                imageUri = null
+            }
+        },
+        onDismissError = viewModel::dismissError,
+        onImagePickerClick = {
+            photoPickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+        },
+        imageUri = imageUri
+    ) {
+        imageUri = null
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun GeminiImageChatScreen(
+    uiState: GeminiImageChatUiState,
+    onSendMessage: (String) -> Unit,
+    onDismissError: () -> Unit,
+    onImagePickerClick: () -> Unit,
+    imageUri: Uri? = null,
+    onImageClicked: () -> Unit
+) {
+    val topAppBarState = rememberTopAppBarState()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    val lazyListState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(uiState.messages) {
+        coroutineScope.launch {
+            lazyListState.animateScrollToItem(0)
+        }
+    }
 
     Scaffold(
         modifier = Modifier
@@ -96,28 +136,27 @@ fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel())
             .nestedScroll(scrollBehavior.nestedScrollConnection)
             .imePadding(),
         topBar = {
-            TopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                ),
-                title = {
-                    Text(text = stringResource(id = R.string.gemini_image_chat_title_bar))
-                },
-                actions = {
-                    SeeCodeButton()
-                },
+            SampleDetailTopAppBar(
+                sampleName = stringResource(R.string.gemini_image_chat_title),
+                sampleDescription = stringResource(R.string.gemini_image_chat_description),
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-image-chat",
+                onBackClick = { backDispatcher?.onBackPressed() },
+                topAppBarState = topAppBarState,
+                scrollBehavior = scrollBehavior
             )
         },
     ) { innerPadding ->
-        Column {
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+        ) {
             MessageList(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .weight(1f),
+                    .padding(horizontal = 16.dp),
                 messages = uiState.messages,
-                contentPadding = innerPadding,
+                listState = lazyListState
             )
 
             when (val state = uiState.geminiMessageState) {
@@ -125,17 +164,17 @@ fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel())
                     CircularProgressIndicator(
                         modifier = Modifier
                             .padding(vertical = 8.dp)
-                            .align(Alignment.CenterHorizontally),
+                            .align(Alignment.Center),
                     )
                 }
 
                 is GeminiMessageState.Error -> {
                     AlertDialog(
-                        onDismissRequest = { viewModel.dismissError() },
+                        onDismissRequest = onDismissError,
                         title = { Text(text = stringResource(R.string.error)) },
                         text = { Text(text = state.errorMessage ?: stringResource(R.string.something_went_wrong)) },
                         confirmButton = {
-                            Button(onClick = { viewModel.dismissError() }) {
+                            Button(onClick = onDismissError) {
                                 Text(text = stringResource(R.string.dismiss_button))
                             }
                         },
@@ -144,114 +183,72 @@ fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel())
                 else -> {}
             }
 
-            InputBar(
-                value = message,
+            val textFieldState = rememberTextFieldState()
+            TextInput(
+                state = textFieldState,
                 placeholder = stringResource(R.string.gemini_image_chat_input_placeholder),
-                onInputChanged = {
-                    message = it
+                primaryButton = {
+                    GenerateButton(
+                        icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_send),
+                        modifier = Modifier
+                            .width(72.dp)
+                            .height(55.dp)
+                            .padding(2.dp),
+                        enabled = uiState.geminiMessageState !is GeminiMessageState.Generating,
+                        onClick = {
+                            onSendMessage(textFieldState.text.toString())
+                            textFieldState.setTextAndPlaceCursorAtEnd("")
+                        },
+                    )
                 },
-                onSendClick = {
-                    coroutineScope.launch {
-                        val bitmap = imageUri?.let {
-                            withContext(Dispatchers.IO) {
-                                loadBitmapWithCorrectOrientation(context, it)
-                            }
-                        }
-                        viewModel.sendMessage(message, bitmap)
-                        imageUri = null
-                        message = ""
+                secondaryButton = {
+                    if (imageUri != null) {
+                        AsyncImage(
+                            model = imageUri,
+                            contentDescription = null,
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.clickable(
+                                onClick = onImageClicked
+                            ).width(50.dp)
+                                .height(56.dp)
+                                .padding(2.dp)
+                                .clip(RoundedCornerShape(2.dp)),
+                        )
+                    } else {
+                        SecondaryButton(
+                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
+                            modifier = Modifier
+                                .width(48.dp)
+                                .height(56.dp)
+                                .padding(2.dp),
+                            onClick = onImagePickerClick,
+                        )
                     }
                 },
-                sendEnabled = uiState.geminiMessageState !is GeminiMessageState.Generating,
-                addImage = {
-                    photoPickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
-                },
-                imageUri = imageUri,
+                modifier = Modifier
+                    .padding(10.dp)
+                    .align(Alignment.BottomCenter),
             )
         }
     }
 }
 
+@PreviewScreenSizes
 @Composable
-fun MessageList(messages: List<ChatMessage>, contentPadding: PaddingValues, modifier: Modifier = Modifier) {
-    if (messages.isEmpty()) {
-        Column(
-            modifier = modifier
-                .padding(contentPadding)
-                .fillMaxSize(),
-        ) {
-            Text(
-                stringResource(R.string.gemini_image_chat_guidance),
-                fontStyle = FontStyle.Italic,
-                fontSize = 20.sp,
-                modifier = Modifier.padding(14.dp),
-            )
-        }
-    } else {
-        LazyColumn(
-            modifier = modifier,
-            contentPadding = contentPadding,
-            reverseLayout = true,
-            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
-        ) {
-            items(items = messages) { message ->
-                MessageBubble(
-                    message = message,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun MessageBubble(message: ChatMessage, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxWidth(),
-        contentAlignment = if (message.isIncoming) Alignment.CenterStart else Alignment.CenterEnd,
-    ) {
-        Surface(
-            modifier = Modifier.widthIn(max = 300.dp),
-            color = if (message.isIncoming) {
-                MaterialTheme.colorScheme.secondaryContainer
-            } else {
-                MaterialTheme.colorScheme.primary
-            },
-            shape = MaterialTheme.shapes.large,
-        ) {
-            Column {
-                Text(
-                    modifier = Modifier.padding(16.dp),
-                    text = message.text,
-                )
-                message.image?.let { it: Bitmap ->
-                    Image(
-                        modifier = Modifier.padding(16.dp),
-                        bitmap = it.asImageBitmap(),
-                        contentDescription = null,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun SeeCodeButton() {
-    val context = LocalContext.current
-    val githubLink = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-image-chat"
-
-    Button(
-        onClick = {
-            val intent = Intent(Intent.ACTION_VIEW, githubLink.toUri())
-            context.startActivity(intent)
-        },
-        modifier = Modifier.padding(end = 8.dp),
-    ) {
-        Icon(Icons.Filled.Code, contentDescription = "See code")
-        Text(
-            modifier = Modifier.padding(start = 8.dp),
-            fontSize = 12.sp,
-            text = stringResource(R.string.see_code),
+@OptIn(ExperimentalMaterial3Api::class)
+private fun GeminiImageChatScreenPreview() {
+    AISampleCatalogTheme {
+        GeminiImageChatScreen(
+            uiState = GeminiImageChatUiState(
+                messages = listOf(
+                    ChatMessage("Hi there!", 124, true),
+                    ChatMessage("I’m super sleepy today...", 123, false),
+                ),
+            ),
+            onSendMessage = { _ -> },
+            onDismissError = {},
+            onImagePickerClick = {},
+            onImageClicked = {}
         )
     }
 }

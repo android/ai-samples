@@ -60,10 +60,10 @@ import com.android.ai.theme.Contrast
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PrimaryButton(
-    text: String,
     modifier: Modifier = Modifier
         .height(40.dp)
         .requiredWidthIn(min = 40.dp),
+    text: String = "",
     contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     containerColor: Color = MaterialTheme.colorScheme.primary,
     icon: Painter? = null,
@@ -137,7 +137,6 @@ fun PrimaryButtonDarkPreview() {
 fun PrimaryButtonWithIconPreview() {
     AISampleCatalogTheme {
         PrimaryButton(
-            text = "",
             icon = rememberVectorPainter(Icons.Filled.Code),
             onClick = {},
         )
@@ -146,8 +145,8 @@ fun PrimaryButtonWithIconPreview() {
 
 @Composable
 fun GenerateButton(
-    text: String,
     modifier: Modifier = Modifier,
+    text: String = "",
     contentColor: Color = MaterialTheme.colorScheme.onTertiary,
     containerColor: Color = MaterialTheme.colorScheme.tertiary,
     enabled: Boolean = true,
@@ -217,8 +216,8 @@ fun GenerateButtonDisabledPreview() {
 
 @Composable
 fun SecondaryButton(
-    text: String,
     modifier: Modifier = Modifier,
+    text: String = "",
     icon: Painter? = null,
     enabled: Boolean = true,
     colors: ButtonColors = ButtonDefaults.outlinedButtonColors(
@@ -230,7 +229,8 @@ fun SecondaryButton(
         modifier = modifier.height(48.dp),
         colors = colors,
         enabled = enabled,
-        border = BorderStroke(width = 1.dp, color = colors.contentColor),
+        border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outline),
+        contentPadding = if (text.isEmpty()) PaddingValues(0.dp) else ButtonDefaults.ContentPadding,
         onClick = { onClick() },
     ) {
         if (icon != null) {
@@ -238,9 +238,11 @@ fun SecondaryButton(
                 painter = icon,
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(colors.contentColor),
-                modifier = Modifier.size(width = 24.dp, height = 24.dp),
+                modifier = Modifier.size(24.dp),
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            if (text.isNotEmpty()) {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
         }
         Text(
             text = text,
