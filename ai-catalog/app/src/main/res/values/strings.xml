@@ -11,6 +11,7 @@
     <string name="genai_writing_assistance_sample_title">Polish text with Gemini Nano</string>
     <string name="genai_writing_assistance_sample_description">Proofread and rewrite short content on-device with GenAI API powered by Gemini Nano</string>
     <string name="top_bar_title">Android AI Samples</string>
+    <string name="top_bar_title_expanded">Android\nAI Samples</string>
     <string name="open_sample_button">Open sample</string>
     <string name="imagen_sample_title">Image generation with Imagen</string>
     <string name="imagen_sample_description">Generate images with Imagen, Google image generation model</string>
