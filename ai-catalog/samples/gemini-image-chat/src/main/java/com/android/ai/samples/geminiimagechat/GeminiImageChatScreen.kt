@@ -119,7 +119,7 @@ private fun GeminiImageChatScreen(
     onImageClicked: () -> Unit
 ) {
     val topAppBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     val lazyListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -141,6 +141,8 @@ private fun GeminiImageChatScreen(
                 sampleDescription = stringResource(R.string.gemini_image_chat_description),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-image-chat",
                 onBackClick = { backDispatcher?.onBackPressed() },
+                topAppBarState = topAppBarState,
+                scrollBehavior = scrollBehavior
             )
         },
     ) { innerPadding ->
