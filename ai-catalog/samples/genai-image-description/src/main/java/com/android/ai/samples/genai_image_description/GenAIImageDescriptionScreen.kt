@@ -20,6 +20,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +42,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageShader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
@@ -56,9 +60,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.android.ai.samples.geminimultimodal.R
 import com.android.ai.theme.AISampleCatalogTheme
+import com.android.ai.theme.extendedColorScheme
 import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.PrimaryButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
+import com.android.ai.uicomponent.UndoButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,6 +101,7 @@ private fun GenAIImageDescriptionScreen(
     onClearClick: () -> Unit,
 ) {
     val context = LocalContext.current
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -103,6 +110,7 @@ private fun GenAIImageDescriptionScreen(
                 sampleName = stringResource(R.string.genai_image_description_title),
                 sampleDescription = stringResource(R.string.genai_image_description_subtitle),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-image-description",
+                onBackClick = { backDispatcher?.onBackPressed() }
             )
         },
     ) { innerPadding ->
@@ -164,33 +172,54 @@ private fun GenAIImageDescriptionScreen(
                     onClick = onImagePickerClick,
                 )
             }
-//
-//            // Generate image description button
-//            Button(
-//                onClick = {
-//                    showBottomSheet = true
-//                    viewModel.getImageDescription(imageUri, context)
-//                }, modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-//            ) {
-//                Text(
-//                    text = stringResource(id = R.string.genai_image_description_run_inference),
-//                )
-//            }
-        }
+            if (
+                uiState !is GenAIImageDescriptionUiState.Initial &&
+                uiState !is GenAIImageDescriptionUiState.CheckingFeatureStatus
+            ) {
+                val outputText = when (val state = uiState) {
+                    is GenAIImageDescriptionUiState.DownloadingFeature -> stringResource(
+                        id = R.string.image_desc_downloading,
+                        state.bytesDownloaded,
+                        state.bytesToDownload,
+                    )
 
-//        if (showBottomSheet) {
-//            ModalBottomSheet(
-//                onDismissRequest = {
-//                    showBottomSheet = false
-//                    viewModel.clearGeneratedText()
-//                }, sheetState = sheetState,
-//            ) {
-//                Text(
-//                    text = imageDescriptionResult.value,
-//                    modifier = Modifier.padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp),
-//                )
-//            }
-//        }
+                    is GenAIImageDescriptionUiState.Error -> stringResource(state.errorMessageStringRes)
+                    is GenAIImageDescriptionUiState.Generating -> state.partialOutput
+                    is GenAIImageDescriptionUiState.Success -> state.generatedOutput
+                    else -> "" // Show nothing for the Initial state
+                }
+
+                UndoButton(
+                    modifier = Modifier.align(Alignment.TopEnd)
+                        .padding(
+                            top = 18.dp,
+                            end = 18.dp,
+                        ),
+                ) {
+                    onClearClick()
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    extendedColorScheme.startGradient,
+                                ),
+                            ),
+                        ),
+                ) {
+                    Text(
+                        text = outputText,
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier
+                            .padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp)
+                            .align(Alignment.BottomCenter),
+                    )
+                }
+            }
+        }
     }
 }
 

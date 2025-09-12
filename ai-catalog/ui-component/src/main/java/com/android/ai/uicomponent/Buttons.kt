@@ -51,6 +51,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.ai.theme.AISampleCatalogTheme
@@ -284,6 +285,35 @@ fun BackButton(modifier: Modifier = Modifier, imageVector: ImageVector = Icons.A
 fun BackButtonPreview() {
     AISampleCatalogTheme {
         BackButton(
+            onClick = {},
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun UndoButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
+    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.outline) {
+        OutlinedIconButton(
+            shape = IconButtonDefaults.smallRoundShape,
+            onClick = { onClick() },
+            modifier = modifier,
+        ) {
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_redo),
+                    contentDescription = stringResource(R.string.undo),
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun UndoButtonPreview() {
+    AISampleCatalogTheme {
+        UndoButton(
             onClick = {},
         )
     }

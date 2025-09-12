@@ -17,6 +17,7 @@ package com.android.ai.samples.geminilivetodo.ui
 
 import android.app.Activity
 import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -80,6 +81,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
 
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -90,6 +92,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-live-todo",
                 topAppBarState = topAppBarState,
                 scrollBehavior = scrollBehavior,
+                onBackClick = { backDispatcher?.onBackPressed() }
             )
         },
         floatingActionButtonPosition = FabPosition.Center,

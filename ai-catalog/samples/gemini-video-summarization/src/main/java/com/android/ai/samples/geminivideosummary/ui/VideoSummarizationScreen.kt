@@ -15,6 +15,7 @@
  */
 package com.android.ai.samples.geminivideosummary.ui
 
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -111,12 +112,14 @@ fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewMo
         onTtsStateChanged = viewModel::onTtsStateChanged,
         onDismissError = viewModel::dismissError,
         onRedo = viewModel::redo,
-        onTtsInitializationResult = viewModel::onTtsInitializationResult
+        onTtsInitializationResult = viewModel::onTtsInitializationResult,
     )
 }
 
-class VideoSelectableItem(override val itemLabel: String, override val itemData: VideoItem) :
-    SelectableItem<VideoItem>
+class VideoSelectableItem(
+    override val itemLabel: String,
+    override val itemData: VideoItem,
+) : SelectableItem<VideoItem>
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -130,10 +133,13 @@ private fun VideoSummarizationScreen(
     onTtsStateChanged: (TtsState) -> Unit,
     onDismissError: () -> Unit,
     onRedo: () -> Unit,
-    onTtsInitializationResult: (Boolean, String?) -> Unit
+    onTtsInitializationResult: (Boolean, String?) -> Unit,
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+
+    val videoItemList = sampleVideoList.map { item -> VideoSelectableItem(stringResource(item.titleResId), item) }
 
     Scaffold(
         modifier = Modifier
@@ -145,6 +151,7 @@ private fun VideoSummarizationScreen(
                 sampleName = stringResource(R.string.video_summarization_title),
                 sampleDescription = stringResource(R.string.video_summarization_description),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-video-summarization",
+                onBackClick = { backDispatcher?.onBackPressed() }
             )
         },
     ) { innerPadding ->
@@ -163,7 +170,9 @@ private fun VideoSummarizationScreen(
                         selectedVideo = uiState.selectedVideo?.uri,
                         isExpanded = isDropdownExpanded,
                         onDropdownExpandedChanged = onDropdownExpandedChanged,
-                        onVideoSelected = { video -> onVideoSelected(sampleVideoList.first { it.uri == video.uri })},
+                        onVideoSelected = { videoData ->
+                            sampleVideoList.firstOrNull { it.uri == videoData.uri }?.let(onVideoSelected)
+                        },
                     )
                 },
                 forceShowControls = isDropdownExpanded,
@@ -177,7 +186,7 @@ private fun VideoSummarizationScreen(
                 onDismissError = onDismissError,
                 onTtsInitializationResult = onTtsInitializationResult,
                 onRedo = onRedo,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
         }
     }
@@ -192,7 +201,7 @@ private fun SummarizationSection(
     onDismissError: () -> Unit,
     onTtsInitializationResult: (Boolean, String?) -> Unit,
     onRedo: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var showSummary by rememberSaveable { mutableStateOf(false) }
 
@@ -208,7 +217,7 @@ private fun SummarizationSection(
     }
 
     Box(
-        modifier = modifier
+        modifier = modifier,
     ) {
         Column {
             when (val summarizationState = uiState.summarizationState) {
@@ -236,7 +245,7 @@ private fun SummarizationSection(
                             onTtsStateChanged = onTtsStateChanged,
                             onTtsInitializationResult = onTtsInitializationResult,
                             onRedo = onRedoClick,
-                            onDismiss = { showSummary = false }
+                            onDismiss = { showSummary = false },
                         )
                     }
                 }

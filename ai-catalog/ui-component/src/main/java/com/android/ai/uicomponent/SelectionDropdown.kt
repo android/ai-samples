@@ -33,7 +33,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,7 +47,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.ai.theme.AISampleCatalogTheme
-
 
 interface SelectableItem<T> {
     val itemLabel: String
@@ -80,17 +78,17 @@ fun <T> SelectionDropdown(
                     1.dp,
                     MaterialTheme.colorScheme.outline,
                     shape = shape,
-                )
+                ),
         ) {
             Text(
-                text = selectedItem?.itemLabel?: selectPlaceHolder,
+                text = selectedItem?.itemLabel ?: selectPlaceHolder,
                 style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.inverseOnSurface),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
                     .padding(horizontal = 16.dp),
                 overflow = TextOverflow.Ellipsis,
-                maxLines = 1
+                maxLines = 1,
 
             )
 
@@ -102,10 +100,10 @@ fun <T> SelectionDropdown(
                     .clickable { onDropdownExpanded(!isDropdownExpanded) }
                     .background(
                         color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        shape = CircleShape
+                        shape = CircleShape,
                     )
                     .width(40.dp)
-                    .height(40.dp)
+                    .height(40.dp),
             )
         }
 
@@ -113,7 +111,7 @@ fun <T> SelectionDropdown(
             expanded = isDropdownExpanded,
             onDismissRequest = { onDropdownExpanded(false) },
             modifier = Modifier
-                .wrapContentWidth()
+                .wrapContentWidth(),
         ) {
             itemList.forEach { it ->
                 DropdownMenuItem(
@@ -129,8 +127,10 @@ fun <T> SelectionDropdown(
     }
 }
 
-
-class PreviewSelectableItem(override val itemLabel: String, override val itemData: String) : SelectableItem<String>
+class PreviewSelectableItem(
+    override val itemLabel: String,
+    override val itemData: String,
+) : SelectableItem<String>
 val previewListOfItems = listOf<SelectableItem<String>>(
     PreviewSelectableItem("Item 1", "item_1"),
     PreviewSelectableItem("Item 2", "item_2"),
@@ -152,7 +152,7 @@ private fun SelectionDropdownPreviewCollapsed() {
             itemList = previewListOfItems,
             selectPlaceHolder = "",
             onItemSelected = { selectedItem = it },
-            onDropdownExpanded = { isExpanded = it }
+            onDropdownExpanded = { isExpanded = it },
         )
     }
 }
@@ -171,7 +171,7 @@ private fun SelectionDropdownPreviewExpanded() {
             itemList = previewListOfItems,
             selectPlaceHolder = "",
             onItemSelected = { selectedItem = it },
-            onDropdownExpanded = { isExpanded = it }
+            onDropdownExpanded = { isExpanded = it },
         )
     }
 }
