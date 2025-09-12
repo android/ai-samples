@@ -43,7 +43,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -116,7 +115,7 @@ private fun VideoMetadataCreationScreen(
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.video_metadata_creation_title),
                 sampleDescription = stringResource(R.string.video_metadata_creation_title),
-                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-video-summarization",
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-video-metadata-creation",
                 onBackClick = { backDispatcher?.onBackPressed() }
             )
         },
@@ -171,7 +170,7 @@ private fun MetadataCreationSection(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        ButtonGrid(
+        ButtonRow(
             selectedMetadataType = selectedMetadataType,
             onMetadataCreationClicked = onMetadataTypeClicked,
         )
