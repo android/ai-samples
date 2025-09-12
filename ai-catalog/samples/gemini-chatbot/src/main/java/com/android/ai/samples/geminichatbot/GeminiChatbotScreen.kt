@@ -17,30 +17,21 @@ package com.android.ai.samples.geminichatbot
 
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
@@ -48,8 +39,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -58,7 +47,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.ai.theme.AISampleCatalogTheme
+import com.android.ai.uicomponent.ChatMessage
 import com.android.ai.uicomponent.GenerateButton
+import com.android.ai.uicomponent.MessageList
 import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.TextInput
 
@@ -80,7 +71,7 @@ fun GeminiChatbotScreen(viewModel: GeminiChatbotViewModel = hiltViewModel()) {
 @OptIn(ExperimentalMaterial3Api::class)
 private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (String) -> Unit, onDismissError: () -> Unit) {
     val topAppBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
     Scaffold(
@@ -95,7 +86,9 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
                 sampleDescription = stringResource(R.string.geminichatbot_description),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-chatbot",
                 modifier = Modifier.background(MaterialTheme.colorScheme.surface),
-                onBackClick = { backDispatcher?.onBackPressed() }
+                onBackClick = { backDispatcher?.onBackPressed() },
+                topAppBarState = topAppBarState,
+                scrollBehavior = scrollBehavior
             )
         },
     ) { innerPadding ->
@@ -145,7 +138,8 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
                         icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_send),
                         modifier = Modifier
                             .width(72.dp)
-                            .height(72.dp),
+                            .height(55.dp)
+                            .padding(2.dp),
                         enabled = uiState.geminiMessageState !is GeminiMessageState.Generating,
                         onClick = {
                             onSendMessage(textFieldState.text.toString())
@@ -157,81 +151,6 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
                     .padding(10.dp)
                     .align(Alignment.BottomCenter),
             )
-        }
-    }
-}
-
-@Composable
-fun MessageList(messages: List<ChatMessage>, modifier: Modifier = Modifier) {
-    LazyColumn(
-        modifier = modifier.padding(bottom = 54.dp),
-        reverseLayout = true,
-        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
-    ) {
-        items(items = messages, key = { it.timestamp }) { message ->
-            MessageBubble(
-                message = message,
-                modifier = Modifier.padding(bottom = 16.dp),
-            )
-        }
-    }
-}
-
-private val roundCornerShapeSend = RoundedCornerShape(
-    topStart = 40.dp,
-    topEnd = 4.dp,
-    bottomStart = 40.dp,
-    bottomEnd = 40.dp,
-)
-
-private val roundCornerShapeReceive = RoundedCornerShape(
-    topStart = 4.dp,
-    topEnd = 40.dp,
-    bottomStart = 40.dp,
-    bottomEnd = 40.dp,
-)
-
-@Composable
-fun MessageBubble(message: ChatMessage, modifier: Modifier = Modifier) {
-    Row {
-        if (message.isIncoming) {
-            Icon(
-                painterResource(com.android.ai.uicomponent.R.drawable.ic_spark),
-                contentDescription = null,
-                modifier = Modifier.padding(end = 8.dp),
-            )
-        }
-        Box(
-            modifier = modifier.fillMaxWidth(),
-            contentAlignment = if (message.isIncoming) Alignment.CenterStart else Alignment.CenterEnd,
-        ) {
-            Surface(
-                modifier = Modifier.widthIn(max = 300.dp)
-                    .border(
-                        2.dp,
-                        if (message.isIncoming) Color.Transparent else MaterialTheme.colorScheme.outline,
-                        shape = if (message.isIncoming) roundCornerShapeReceive else roundCornerShapeSend,
-                    )
-                    .clip(
-                        shape = if (message.isIncoming) roundCornerShapeReceive else roundCornerShapeSend,
-                    ),
-                color = if (message.isIncoming) {
-                    MaterialTheme.colorScheme.tertiary
-                } else {
-                    MaterialTheme.colorScheme.surface
-                },
-            ) {
-                Text(
-                    modifier = Modifier.padding(start = 24.dp, top = 16.dp, end = 24.dp, bottom = 16.dp),
-                    text = message.text,
-                    color = if (message.isIncoming) {
-                        MaterialTheme.colorScheme.onTertiary
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    },
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-            }
         }
     }
 }

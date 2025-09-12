@@ -105,7 +105,7 @@ fun SampleDetailTopAppBarPreview() {
             sampleName = "Sample Name",
             sampleDescription = "Sample Description",
             sourceCodeUrl = "https://example.com/source-code",
-            onBackClick = {}
+            onBackClick = {},
         )
     }
 }
@@ -126,7 +126,7 @@ fun SampleDetailTopAppBarPreview_CollapseWhenContentIsScrolled() {
                     sourceCodeUrl = "https://example.com/source-code",
                     topAppBarState = topAppBarState,
                     scrollBehavior = scrollBehavior,
-                    onBackClick = {}
+                    onBackClick = {},
                 )
             },
         ) { innerPadding ->
@@ -154,7 +154,7 @@ fun SampleDetailTopAppBarPreview_CollapseWhenToolbarIsScrolled() {
                     sampleName = "Sample Name",
                     sampleDescription = "Sample Description",
                     sourceCodeUrl = "https://example.com/source-code",
-                    onBackClick = {}
+                    onBackClick = {},
                 )
             },
         ) { innerPadding ->

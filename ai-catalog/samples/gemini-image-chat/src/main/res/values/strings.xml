@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="gemini_image_chat_title_bar">Gemini Image Chat</string>
+    <string name="gemini_image_chat_title">Gemini Image Chat</string>
+    <string name="gemini_image_chat_description">A simple implementation of chatbot using Gemini Flash model that can understand both text and images.</string>
     <string name="gemini_image_chat_input_placeholder">Type your message</string>
     <string name="gemini_image_chat_guidance">Start by describing an initial image. Then iterate on it by suggesting gemini to apply changes (background, colors, view angle, etc…).</string>
     <string name="see_code">See code</string>

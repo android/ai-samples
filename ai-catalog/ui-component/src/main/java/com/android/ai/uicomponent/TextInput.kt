@@ -18,12 +18,15 @@ package com.android.ai.uicomponent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -114,11 +117,10 @@ fun TextInputPreview() {
             },
             secondaryButton = {
                 SecondaryButton(
-                    text = "",
                     icon = painterResource(id = R.drawable.ic_add),
                     modifier = Modifier
-                        .width(72.dp)
-                        .padding(4.dp),
+                        .width(45.dp)
+                        .height(56.dp),
                     onClick = {},
                 )
             },
