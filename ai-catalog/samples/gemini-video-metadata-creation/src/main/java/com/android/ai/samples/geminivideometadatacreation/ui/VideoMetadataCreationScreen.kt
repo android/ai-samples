@@ -16,6 +16,7 @@
 package com.android.ai.samples.geminivideometadatacreation.ui
 
 import android.net.Uri
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -109,12 +110,14 @@ private fun VideoMetadataCreationScreen(
 ) {
     var isDropdownExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     Scaffold(
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.video_metadata_creation_title),
                 sampleDescription = stringResource(R.string.video_metadata_creation_title),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-video-summarization",
+                onBackClick = { backDispatcher?.onBackPressed() }
             )
         },
     ) { innerPadding ->
