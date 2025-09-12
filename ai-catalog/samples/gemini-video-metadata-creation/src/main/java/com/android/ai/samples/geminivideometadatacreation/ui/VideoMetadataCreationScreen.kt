@@ -46,8 +46,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -91,10 +91,9 @@ fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hilt
         onMetadataTypeClicked = { type: MetadataType ->
             viewModel.onMetadataTypeSelected(type)
             viewModel.generateMetadata(type)
-        }
+        },
     )
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -116,7 +115,7 @@ private fun VideoMetadataCreationScreen(
                 sampleName = stringResource(R.string.video_metadata_creation_title),
                 sampleDescription = stringResource(R.string.video_metadata_creation_title),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-video-metadata-creation",
-                onBackClick = { backDispatcher?.onBackPressed() }
+                onBackClick = { backDispatcher?.onBackPressed() },
             )
         },
     ) { innerPadding ->
@@ -142,20 +141,20 @@ private fun VideoMetadataCreationScreen(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .fillMaxWidth()
-                    .aspectRatio(16f / 9f)
+                    .aspectRatio(16f / 9f),
             )
 
             Spacer(Modifier.height(16.dp))
             Text(
                 stringResource(R.string.create), style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp),
             )
 
             MetadataCreationSection(
                 selectedMetadataType = selectedMetadataType,
                 metadataCreationState = metadataCreationState,
                 onDismissError = onDismissError,
-                onMetadataTypeClicked = onMetadataTypeClicked
+                onMetadataTypeClicked = onMetadataTypeClicked,
             )
         }
     }
@@ -200,7 +199,7 @@ private fun MetadataCreationSection(
                         .fillMaxWidth()
                         .padding(16.dp)
                         .background(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.shapes.large)
-                        .padding(16.dp)
+                        .padding(16.dp),
                 ) {
                     metadataCreationState.generatedUi()
                 }
@@ -224,7 +223,7 @@ fun VideoMetadataCreationScreenPreview() {
         metadataCreationState = MetadataCreationState.Idle,
         onVideoSelected = {},
         onDismissError = {},
-        onMetadataTypeClicked = {}
+        onMetadataTypeClicked = {},
     )
 }
 
@@ -234,11 +233,9 @@ fun MetadataCreationSectionPreview() {
     MetadataCreationSection(
         selectedMetadataType = MetadataType.DESCRIPTION,
         metadataCreationState = MetadataCreationState.Success(
-            { Box(Modifier.size(100.dp).background(Color.Red)) }
+            { Box(Modifier.size(100.dp).background(Color.Red)) },
         ),
         onDismissError = {},
-        onMetadataTypeClicked = {}
+        onMetadataTypeClicked = {},
     )
 }
-
-

@@ -143,7 +143,10 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
     }
 }
 
-enum class MetadataType(@DrawableRes val iconRes: Int, @StringRes val titleRes: Int) {
+enum class MetadataType(
+    @DrawableRes val iconRes: Int,
+    @StringRes val titleRes: Int,
+) {
     THUMBNAILS(R.drawable.photo_spark, R.string.thumbnails),
     DESCRIPTION(R.drawable.summarize_auto, R.string.description),
     HASHTAGS(R.drawable.bulleted_spark, R.string.hashtags),

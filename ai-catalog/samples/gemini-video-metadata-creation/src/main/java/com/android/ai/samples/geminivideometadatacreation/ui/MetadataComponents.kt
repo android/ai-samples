@@ -139,7 +139,7 @@ fun LinksUi(links: List<String>) {
 fun ThumbnailsUi(thumbnailTimestamps: List<Long>, thumbnailImages: List<Bitmap>) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.CenterHorizontally),
-        modifier = Modifier.horizontalScroll(rememberScrollState())
+        modifier = Modifier.horizontalScroll(rememberScrollState()),
     ) {
         thumbnailTimestamps.forEachIndexed { i, timestamp ->
             Column {

@@ -38,9 +38,7 @@ import com.android.ai.samples.geminivideometadatacreation.viewmodel.MetadataType
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ButtonRow(
-    selectedMetadataType: MetadataType?,
-    onMetadataCreationClicked: (MetadataType) -> Unit, modifier: Modifier = Modifier) {
+fun ButtonRow(selectedMetadataType: MetadataType?, onMetadataCreationClicked: (MetadataType) -> Unit, modifier: Modifier = Modifier) {
     val metadataTypes = MetadataType.entries
 
     Row(
@@ -54,19 +52,19 @@ fun ButtonRow(
                 checked = isSelected,
                 onCheckedChange = { onMetadataCreationClicked(metadataType) },
                 colors = ToggleButtonDefaults.outlinedToggleButtonColors(
-                    contentColor = MaterialTheme.colorScheme.tertiary
+                    contentColor = MaterialTheme.colorScheme.tertiary,
                 ),
-                modifier = Modifier.padding(horizontal = 6.dp)
+                modifier = Modifier.padding(horizontal = 6.dp),
             ) {
                 Icon(
                     painterResource(metadataType.iconRes),
-                    contentDescription = null
+                    contentDescription = null,
                 )
                 Spacer(Modifier.size(8.dp))
                 Text(
                     stringResource(metadataType.titleRes).uppercase(),
                     style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             }
         }
