@@ -21,6 +21,7 @@ import android.text.format.DateUtils
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -32,6 +33,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AssistChip
@@ -135,8 +137,9 @@ fun LinksUi(links: List<String>) {
 
 @Composable
 fun ThumbnailsUi(thumbnailTimestamps: List<Long>, thumbnailImages: List<Bitmap>) {
-    FlowRow(
+    Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.CenterHorizontally),
+        modifier = Modifier.horizontalScroll(rememberScrollState()),
     ) {
         thumbnailTimestamps.forEachIndexed { i, timestamp ->
             Column {
