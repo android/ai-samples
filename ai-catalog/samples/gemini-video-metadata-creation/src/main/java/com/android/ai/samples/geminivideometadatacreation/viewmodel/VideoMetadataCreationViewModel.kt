@@ -147,12 +147,12 @@ enum class MetadataType(
     @DrawableRes val iconRes: Int,
     @StringRes val titleRes: Int,
 ) {
-    THUMBNAILS(R.drawable.photo_spark, R.string.thumbnails),
-    DESCRIPTION(R.drawable.summarize_auto, R.string.description),
-    HASHTAGS(R.drawable.bulleted_spark, R.string.hashtags),
-    ACCOUNT_TAGS(R.drawable.label_spark, R.string.account_tags),
-    CHAPTERS(R.drawable.tab_spark, R.string.chapters),
-    LINKS(R.drawable.bulleted_spark, R.string.links),
+    THUMBNAILS(com.android.ai.uicomponent.R.drawable.ic_ai_img, R.string.thumbnails),
+    DESCRIPTION(com.android.ai.uicomponent.R.drawable.ic_ai_summary, R.string.description),
+    HASHTAGS(com.android.ai.uicomponent.R.drawable.ic_ai_hashtags, R.string.hashtags),
+    ACCOUNT_TAGS(com.android.ai.uicomponent.R.drawable.ic_ai_tags, R.string.account_tags),
+    CHAPTERS(com.android.ai.uicomponent.R.drawable.ic_ai_chapters, R.string.chapters),
+    LINKS(com.android.ai.uicomponent.R.drawable.ic_ai_hashtags, R.string.links),
 }
 
 sealed interface MetadataCreationState {
