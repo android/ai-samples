@@ -29,6 +29,7 @@ import com.android.ai.samples.geminimultimodal.ui.GeminiMultimodalScreen
 import com.android.ai.samples.geminivideometadatacreation.VideoMetadataCreationScreen
 import com.android.ai.samples.geminivideosummary.VideoSummarizationScreen
 import com.android.ai.samples.geminivideometadatacreation.VideoMetadataCreationScreen
+import com.android.ai.samples.geminivideometadatacreation.ui.VideoMetadataCreationScreen
 import com.android.ai.samples.geminivideosummary.ui.VideoSummarizationScreen
 import com.android.ai.samples.genai_image_description.GenAIImageDescriptionScreen
 import com.android.ai.samples.genai_summarization.GenAISummarizationScreen
