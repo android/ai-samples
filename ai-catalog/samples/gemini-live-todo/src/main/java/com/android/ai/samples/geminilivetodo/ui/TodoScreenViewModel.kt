@@ -174,8 +174,6 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                 ),
             )
 
-
-
             try {
                 session = generativeModel.connect()
             } catch (e: Exception) {
