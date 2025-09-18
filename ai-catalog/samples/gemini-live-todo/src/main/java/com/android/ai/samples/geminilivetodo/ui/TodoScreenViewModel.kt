@@ -94,10 +94,15 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                             Manifest.permission.RECORD_AUDIO,
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
+                        Log.d(TAG, "Start audio conversation")
+
                         it.startAudioConversation(::handleFunctionCall)
                         liveSessionState.value = LiveSessionState.Running
                     }
                 } else {
+
+                    Log.d(TAG, "Stop audio conversation")
+
                     it.stopAudioConversation()
                     liveSessionState.value = LiveSessionState.Ready
                 }
@@ -158,8 +163,8 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                 emptyMap(),
             )
 
-            val generativeModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).liveModel(
-                "gemini-2.0-flash-live-preview-04-09",
+            val generativeModel = Firebase.ai(backend = GenerativeBackend.googleAI()).liveModel(
+                "gemini-live-2.5-flash-preview",
                 generationConfig = liveGenerationConfig,
                 systemInstruction = systemInstruction,
                 tools = listOf(
@@ -181,6 +186,8 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
     }
 
     private fun handleFunctionCall(functionCall: FunctionCallPart): FunctionResponsePart {
+        Log.d(TAG, "handleFunctionCall ${functionCall.name}")
+
         return when (functionCall.name) {
             "getTodoList" -> {
                 val todoList = todoRepository.getTodoList().reversed()
