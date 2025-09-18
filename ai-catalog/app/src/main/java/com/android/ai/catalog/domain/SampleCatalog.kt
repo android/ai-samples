@@ -34,6 +34,85 @@ import com.android.ai.samples.genai_writing_assistance.GenAIWritingAssistanceScr
 import com.android.ai.samples.imagen.ui.ImagenScreen
 import com.android.ai.samples.magicselfie.ui.MagicSelfieScreen
 import com.android.ai.theme.extendedColorScheme
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Sample(
+    val route: String,
+    val description: String,
+    val tags: List<String>,
+    val sourceUrl: String
+)
+
+val samples = listOf(
+    Sample(
+        route = "GeminiImageChatScreen",
+        description = "Conversational Image generation with Gemini",
+        tags = listOf("Gemini Flash", "Firebase"),
+        sourceUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-image-chat"
+    ),
+    Sample(
+        route = "GeminiMultimodalScreen",
+        description = "A very simple example of multimodal generation using the Gemini Flash model.",
+        tags = listOf("Gemini Flash", "Firebase"),
+        sourceUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-multimodal"
+    ),
+    Sample(
+        route = "GeminiChitchatScreen",
+        description = "A simple implementation of chatbot using Gemini Flash model.",
+        tags = listOf("Gemini Flash", "Firebase"),
+        sourceUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-chatbot"
+    ),
+    Sample(
+        route = "GenAISummarizationScreen",
+        description = "Summarize text using Gemini Nano and ML Kit.",
+        tags = listOf("Gemini Nano", "ML Kit"),
+        sourceUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-summarization"
+    ),
+    Sample(
+        route = "GenAIImageDescriptionScreen",
+        description = "Generate image descriptions using Gemini Nano and ML Kit.",
+        tags = listOf("Gemini Nano", "ML Kit"),
+        sourceUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-image-description"
+    ),
+    Sample(
+        route = "GenAIWritingAssistanceScreen",
+        description = "Assist with writing using Gemini Nano and ML Kit.",
+        tags = listOf("Gemini Nano", "ML Kit"),
+        sourceUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-writing-assistance"
+    ),
+    Sample(
+        route = "ImagenImageGenerationScreen",
+        description = "Generate images using Imagen on Firebase.",
+        tags = listOf("Imagen", "Firebase"),
+        sourceUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/imagen"
+    ),
+    Sample(
+        route = "MagicSelfieScreen",
+        description = "Create magic selfies using Imagen on Firebase and ML Kit.",
+        tags = listOf("Imagen", "Firebase", "ML Kit"),
+        sourceUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/magic-selfie"
+    ),
+    Sample(
+        route = "VideoSummarizationScreen",
+        description = "Summarize videos using Gemini Flash on Firebase and Media3.",
+        tags = listOf("Gemini Flash", "Firebase", "Media3"),
+        sourceUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-video-summarization"
+    ),
+    Sample(
+        route = "VideoMetadataCreationScreen",
+        description = "Create video metadata using Gemini Flash on Firebase and Media3.",
+        tags = listOf("Gemini Flash", "Firebase", "Media3"),
+        sourceUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-video-metadata-creation"
+    ),
+    Sample(
+        route = "GeminiLiveTodoScreen",
+        description = "Create a to-do list from live audio using Gemini Flash and Firebase.",
+        tags = listOf("Gemini Flash", "Firebase"),
+        sourceUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-live-todo"
+    )
+)
+
 
 @RequiresPermission(Manifest.permission.RECORD_AUDIO)
 val sampleCatalog = listOf(

@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.ui.tooling.preview)
+    implementation(libs.kotlinx.serialization.json)
     debugImplementation(libs.ui.tooling)
     ksp(libs.hilt.compiler)
 

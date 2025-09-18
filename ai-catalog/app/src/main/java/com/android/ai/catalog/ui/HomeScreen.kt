@@ -58,10 +58,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.android.ai.catalog.R
+import com.android.ai.catalog.domain.Sample
 import com.android.ai.catalog.domain.sampleCatalog
+import com.android.ai.catalog.domain.samples
 import com.android.ai.theme.AISampleCatalogTheme
 import com.google.ai.samples.agentassistant.AgentAssistantScreenContent
 import com.google.firebase.FirebaseApp
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.encodeToJsonElement
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -110,7 +116,12 @@ fun HomeScreen(
             onDismissRequest = { showBottomSheet = false },
             sheetState = bottomSheetState,
         ) {
-            AgentAssistantScreenContent(Modifier.imePadding())
+            val listSerializer = ListSerializer(Sample.serializer())
+            AgentAssistantScreenContent(
+                onNavigate = { route -> onNavigate(route) },
+                samples = Json.encodeToJsonElement(listSerializer, samples) as JsonArray,
+                modifier = Modifier.imePadding()
+            )
         }
     }
 }

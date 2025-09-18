@@ -27,6 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,10 +40,29 @@ import com.android.ai.samples.agentassistant.R
 import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.MessageList
 import com.android.ai.uicomponent.TextInput
+import kotlinx.serialization.json.JsonArray
 
 @Composable
-fun AgentAssistantScreenContent(modifier: Modifier = Modifier, viewModel: GeminiChatbotViewModel = viewModel()) {
+fun AgentAssistantScreenContent(
+    onNavigate: (String) -> Unit,
+    samples: JsonArray,
+    modifier: Modifier = Modifier,
+    viewModel: AgentAssistantViewModel = viewModel(factory = AgentAssistantViewModelFactory(samples))
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(uiState.navigationEvent) {
+        when (val event = uiState.navigationEvent) {
+            is NavigationEvent.NavigateToSample -> {
+                try {
+                    event.sampleRoute?.let(onNavigate)
+                } catch (e: Exception) {
+                    viewModel.navigationFailed(e)
+                }
+                viewModel.onNavigationHandled()
+            }
+            else -> {}
+        }
+    }
     AgentAssistantScreenContent(
         uiState = uiState,
         onDismissError = viewModel::dismissError,
@@ -53,7 +73,7 @@ fun AgentAssistantScreenContent(modifier: Modifier = Modifier, viewModel: Gemini
 
 @Composable
 private fun AgentAssistantScreenContent(
-    uiState: GeminiChatbotUiState,
+    uiState: AgentAssistantUiState,
     onDismissError: () -> Unit,
     onSendMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
