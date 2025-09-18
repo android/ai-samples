@@ -174,6 +174,8 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                 ),
             )
 
+
+
             try {
                 session = generativeModel.connect()
             } catch (e: Exception) {
@@ -197,7 +199,7 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                         "message" to JsonPrimitive("List of tasks in the todo list: $todoList"),
                     ),
                 )
-                FunctionResponsePart(functionCall.name, response)
+                FunctionResponsePart(functionCall.name, response, functionCall.id)
             }
             "addTodo" -> {
                 val taskDescription = functionCall.args["taskDescription"]!!.jsonPrimitive.content
@@ -208,7 +210,7 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                         "message" to JsonPrimitive("Task $taskDescription added to the todo list"),
                     ),
                 )
-                FunctionResponsePart(functionCall.name, response)
+                FunctionResponsePart(functionCall.name, response, functionCall.id)
             }
             "removeTodo" -> {
                 val taskId = functionCall.args["todoId"]!!.jsonPrimitive.long
@@ -219,7 +221,7 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                         "message" to JsonPrimitive("Task was removed from the todo list"),
                     ),
                 )
-                FunctionResponsePart(functionCall.name, response)
+                FunctionResponsePart(functionCall.name, response, functionCall.id)
             }
             "toggleTodoStatus" -> {
                 val taskId = functionCall.args["todoId"]!!.jsonPrimitive.long
@@ -230,13 +232,13 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                         "message" to JsonPrimitive("Task was toggled in the todo list"),
                     ),
                 )
-                FunctionResponsePart(functionCall.name, response)
+                FunctionResponsePart(functionCall.name, response, functionCall.id)
             }
             else -> {
                 val response = JsonObject(
                     mapOf("error" to JsonPrimitive("Unknown function: ${functionCall.name}")),
                 )
-                FunctionResponsePart(functionCall.name, response)
+                FunctionResponsePart(functionCall.name, response, functionCall.id)
             }
         }
     }
