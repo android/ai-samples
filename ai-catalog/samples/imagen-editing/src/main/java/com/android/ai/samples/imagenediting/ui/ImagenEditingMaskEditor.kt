@@ -16,24 +16,29 @@
 package com.android.ai.samples.imagenediting.ui
 
 import android.graphics.Bitmap
-import android.graphics.Canvas as AndroidCanvas
-import android.graphics.Paint as AndroidPaint
+import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -41,94 +46,122 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
+import com.android.ai.samples.imagenediting.R
+import kotlin.math.min
 
 @Composable
-fun ImageMaskEditor(sourceBitmap: Bitmap, onMaskGenerated: (source: Bitmap, mask: Bitmap) -> Unit) {
-    var currentDrawingPath by remember { mutableStateOf(Path()) }
-    var pathVersion by remember { mutableIntStateOf(0) }
+fun ImagenEditingMaskEditor(sourceBitmap: Bitmap, onMaskFinalized: (Bitmap) -> Unit, onCancel: () -> Unit, modifier: Modifier = Modifier) {
+    val paths = remember { mutableStateListOf<Path>() }
+    var currentPath by remember { mutableStateOf<Path?>(null) }
+    var scale by remember { mutableFloatStateOf(1f) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    var offsetY by remember { mutableFloatStateOf(0f) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Image(
-            bitmap = sourceBitmap.asImageBitmap(),
-            contentDescription = "Source image to edit",
+    Box(modifier = modifier) {
+        Column(
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Fit,
-        )
-
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragStart = { offset ->
-                            currentDrawingPath = Path().apply {
-                                moveTo(offset.x, offset.y)
-                            }
-                            pathVersion++
-                        },
-                        onDrag = { change, _ ->
-                            currentDrawingPath.lineTo(change.position.x, change.position.y)
-                            pathVersion++
-                            change.consume()
-                        },
-                        onDragEnd = {},
-                    )
-                },
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            val pathForDrawing = currentDrawingPath.apply {}
-            if (!pathForDrawing.isEmpty) {
-                drawPath(
-                    path = pathForDrawing,
-                    color = Color.White,
-                    style = Stroke(
-                        width = 40f,
-                        cap = StrokeCap.Round,
-                        join = StrokeJoin.Round,
-                    ),
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .pointerInput(Unit) {
+                        detectDragGestures(
+                            onDragStart = { startOffset ->
+                                val transformedStart = Offset(
+                                    (startOffset.x - offsetX) / scale,
+                                    (startOffset.y - offsetY) / scale,
+                                )
+                                currentPath = Path().apply { moveTo(transformedStart.x, transformedStart.y) }
+                            },
+                            onDrag = { change, _ ->
+                                currentPath?.let {
+                                    val transformedChange = Offset(
+                                        (change.position.x - offsetX) / scale,
+                                        (change.position.y - offsetY) / scale,
+                                    )
+                                    it.lineTo(transformedChange.x, transformedChange.y)
+                                    currentPath = Path().apply { addPath(it) }
+                                }
+                                change.consume()
+                            },
+                            onDragEnd = {
+                                currentPath?.let { paths.add(it) }
+                                currentPath = null
+                            },
+                        )
+                    },
+            ) {
+                Image(
+                    bitmap = sourceBitmap.asImageBitmap(),
+                    contentDescription = stringResource(R.string.editing_image_to_mask),
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit,
                 )
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val canvasWidth = size.width
+                    val canvasHeight = size.height
+                    val bitmapWidth = sourceBitmap.width.toFloat()
+                    val bitmapHeight = sourceBitmap.height.toFloat()
+                    scale = min(canvasWidth / bitmapWidth, canvasHeight / bitmapHeight)
+                    offsetX = (canvasWidth - bitmapWidth * scale) / 2
+                    offsetY = (canvasHeight - bitmapHeight * scale) / 2
+                    withTransform(
+                        {
+                            translate(left = offsetX, top = offsetY)
+                            scale(scale, scale, pivot = Offset.Zero)
+                        },
+                    ) {
+                        val strokeWidth = 70f / scale
+                        val stroke = Stroke(width = strokeWidth, cap = StrokeCap.Round, join = StrokeJoin.Round)
+                        val pathColor = Color.White.copy(alpha = 0.5f)
+                        paths.forEach { path ->
+                            drawPath(path = path, color = pathColor, style = stroke)
+                        }
+                        currentPath?.let { path ->
+                            drawPath(path = path, color = pathColor, style = stroke)
+                        }
+                    }
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                Button(onClick = { if (paths.isNotEmpty()) paths.removeAt(paths.lastIndex) }, enabled = paths.isNotEmpty()) {
+                    Text("Undo")
+                }
+                Button(onClick = onCancel) {
+                    Text("Cancel")
+                }
+                Button(
+                    onClick = {
+                        val maskBitmap = createBitmap(sourceBitmap.width, sourceBitmap.height)
+                        val canvas = android.graphics.Canvas(maskBitmap)
+                        val paint = Paint().apply {
+                            color = android.graphics.Color.WHITE
+                            strokeWidth = 70f
+                            style = Paint.Style.STROKE
+                            strokeCap = Paint.Cap.ROUND
+                            strokeJoin = Paint.Join.ROUND
+                            isAntiAlias = true
+                        }
+                        paths.forEach { path -> canvas.drawPath(path.asAndroidPath(), paint) }
+                        onMaskFinalized(maskBitmap)
+                    },
+                ) {
+                    Text("Finalize Mask")
+                }
             }
         }
-
-        Button(
-            onClick = {
-                val maskBitmap = createMaskBitmap(
-                    sourceBitmap.width,
-                    sourceBitmap.height,
-                    currentDrawingPath,
-                )
-                onMaskGenerated(sourceBitmap, maskBitmap)
-            },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(16.dp),
-        ) {
-            Text("Apply Generative Edit")
-        }
     }
-}
-
-private fun createMaskBitmap(width: Int, height: Int, composePath: Path?): Bitmap {
-    val maskBitmap = createBitmap(width, height)
-    val canvas = AndroidCanvas(maskBitmap)
-    canvas.drawColor(android.graphics.Color.BLACK)
-
-    composePath?.let {
-        if (!it.isEmpty) {
-            val androidPath = it.asAndroidPath()
-            val paint = AndroidPaint().apply {
-                color = android.graphics.Color.WHITE
-                isAntiAlias = true
-                style = AndroidPaint.Style.STROKE
-                strokeWidth = 40f
-                strokeCap = AndroidPaint.Cap.ROUND
-                strokeJoin = AndroidPaint.Join.ROUND
-            }
-            canvas.drawPath(androidPath, paint)
-        }
-    }
-    return maskBitmap
 }

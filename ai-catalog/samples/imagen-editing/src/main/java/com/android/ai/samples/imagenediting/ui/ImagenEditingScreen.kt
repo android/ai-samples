@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -171,7 +172,7 @@ fun ImagenEditingGeneratedContent(
         contentAlignment = Alignment.Center,
     ) {
         if (showMaskEditor && bitmapForMasking != null) {
-            MaskEditor(
+            ImagenEditingMaskEditor(
                 sourceBitmap = bitmapForMasking,
                 onMaskFinalized = { maskBitmap ->
                     onMaskFinalized(bitmapForMasking, maskBitmap)
@@ -186,14 +187,22 @@ fun ImagenEditingGeneratedContent(
                 }
 
                 is ImagenEditingUIState.ImageGenerated -> {
-                    Image(
-                        bitmap = uiState.bitmap.asImageBitmap(),
-                        contentDescription = stringResource(R.string.editing_generated_image),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clickable { onImageClick(uiState.bitmap) },
-                        contentScale = ContentScale.Fit,
-                    )
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Image(
+                            bitmap = uiState.bitmap.asImageBitmap(),
+                            contentDescription = stringResource(R.string.editing_generated_image),
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Fit,
+                        )
+                        Button(
+                            onClick = { onImageClick(uiState.bitmap) },
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(16.dp),
+                        ) {
+                            Text(text = stringResource(R.string.editing_edit_mask_button))
+                        }
+                    }
                 }
 
                 is ImagenEditingUIState.ImageMasked -> {
