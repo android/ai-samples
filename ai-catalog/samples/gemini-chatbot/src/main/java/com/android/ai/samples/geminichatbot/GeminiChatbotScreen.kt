@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.AlertDialog
@@ -96,9 +97,11 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
         ) {
             MessageList(
                 modifier = Modifier
+                    .widthIn(max = 646.dp)
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp),
                 messages = uiState.messages,
@@ -149,7 +152,9 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
                 },
                 modifier = Modifier
                     .padding(10.dp)
-                    .align(Alignment.BottomCenter),
+                    .align(Alignment.BottomCenter)
+                    .widthIn(max = 646.dp)
+                    .fillMaxWidth(),
             )
         }
     }

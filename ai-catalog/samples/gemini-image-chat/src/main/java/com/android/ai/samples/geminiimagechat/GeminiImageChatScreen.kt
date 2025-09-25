@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -150,10 +151,11 @@ private fun GeminiImageChatScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
         ) {
             MessageList(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .widthIn(max = 646.dp)
                     .padding(horizontal = 16.dp),
                 messages = uiState.messages,
                 listState = lazyListState
@@ -227,7 +229,9 @@ private fun GeminiImageChatScreen(
                 },
                 modifier = Modifier
                     .padding(10.dp)
-                    .align(Alignment.BottomCenter),
+                    .align(Alignment.BottomCenter)
+                    .widthIn(max = 646.dp)
+                    .fillMaxWidth(),
             )
         }
     }
