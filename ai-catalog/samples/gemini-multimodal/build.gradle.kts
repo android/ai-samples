@@ -70,6 +70,8 @@ dependencies {
     implementation(libs.firebase.ai)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.material3.window)
     debugImplementation(libs.ui.tooling)

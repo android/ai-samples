@@ -19,10 +19,12 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
+import android.provider.MediaStore
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts.TakePicturePreview
-import androidx.compose.foundation.Image
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -76,6 +78,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.android.ai.samples.geminimultimodal.R
 import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.GenerateButton
@@ -90,12 +93,12 @@ import com.android.ai.uicomponent.TextInput
 @Composable
 fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var bitmap by rememberSaveable { mutableStateOf<Bitmap?>(null) }
+    var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val cameraLauncher = rememberLauncherForActivityResult(TakePicturePreview()) { result ->
-        result?.let {
-            bitmap = it
+    val photoPickerLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
+        uri?.let {
+            imageUri = it
         }
     }
 
@@ -114,11 +117,11 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
     GeminiMultimodalScreen(
         isExpandedScreen = isExpandedScreen,
         uiState = uiState,
-        bitmap = bitmap,
+        imageUri = imageUri,
         snackbarHostState = snackbarHostState,
         onGenerateClick = viewModel::generate,
-        onTakePictureClick = {
-            cameraLauncher.launch(null)
+        onImagePickerClick = {
+            photoPickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
         },
     )
 }
@@ -128,10 +131,10 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
 private fun GeminiMultimodalScreen(
     isExpandedScreen: Boolean,
     uiState: GeminiMultimodalUiState,
-    bitmap: Bitmap?,
+    imageUri: Uri?,
     snackbarHostState: SnackbarHostState,
     onGenerateClick: (Bitmap, String) -> Unit,
-    onTakePictureClick: () -> Unit,
+    onImagePickerClick: () -> Unit,
 ) {
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
@@ -151,17 +154,17 @@ private fun GeminiMultimodalScreen(
             ExpandedScreen(
                 innerPadding,
                 uiState,
-                bitmap,
+                imageUri,
                 onGenerateClick,
-                onTakePictureClick
+                onImagePickerClick
             )
         } else {
             CompactScreen(
                 innerPadding,
                 uiState,
-                bitmap,
+                imageUri,
                 onGenerateClick,
-                onTakePictureClick
+                onImagePickerClick
             )
         }
     }
@@ -178,9 +181,10 @@ val gradientBrush = Brush.radialGradient(
 private fun CompactScreen(
     innerPadding: PaddingValues,
     uiState: GeminiMultimodalUiState,
-    bitmap: Bitmap?,
+    imageUri: Uri?,
     onGenerateClick: (Bitmap, String) -> Unit,
-    onTakePictureClick: () -> Unit
+    onTakePictureClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val imageBitmap = remember {
@@ -218,7 +222,7 @@ private fun CompactScreen(
                 ),
         ) {
             PictureAndResult(
-                bitmap,
+                imageUri,
                 uiState,
                 onTakePictureClick,
                 Modifier.align(Alignment.Center)
@@ -230,7 +234,7 @@ private fun CompactScreen(
             PromptInput(
                 textFieldState,
                 uiState,
-                bitmap,
+                imageUri,
                 onGenerateClick,
                 keyboardController,
                 onTakePictureClick,
@@ -243,9 +247,10 @@ private fun CompactScreen(
 private fun ExpandedScreen(
     innerPadding: PaddingValues,
     uiState: GeminiMultimodalUiState,
-    bitmap: Bitmap?,
+    imageUri: Uri?,
     onGenerateClick: (Bitmap, String) -> Unit,
-    onTakePictureClick: () -> Unit
+    onImagePickerClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val imageBitmap = remember {
@@ -290,9 +295,9 @@ private fun ExpandedScreen(
             contentAlignment = Alignment.Center
         ) {
             PictureAndResult(
-                bitmap,
+                imageUri,
                 uiState,
-                onTakePictureClick,
+                onImagePickerClick,
             )
         }
         Box(
@@ -309,10 +314,10 @@ private fun ExpandedScreen(
             PromptInput(
                 textFieldState,
                 uiState,
-                bitmap,
+                imageUri,
                 onGenerateClick,
                 keyboardController,
-                onTakePictureClick
+                onImagePickerClick
             )
         }
     }
@@ -322,12 +327,13 @@ private fun ExpandedScreen(
 private fun PromptInput(
     textFieldState: TextFieldState,
     uiState: GeminiMultimodalUiState,
-    bitmap: Bitmap?,
+    imageUri: Uri?,
     onGenerateClick: (Bitmap, String) -> Unit,
     keyboardController: SoftwareKeyboardController?,
     onTakePictureClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     TextInput(
         state = textFieldState,
         placeholder = stringResource(R.string.geminimultimodal_prompt_placeholder),
@@ -339,9 +345,10 @@ private fun PromptInput(
                     .width(72.dp)
                     .height(55.dp)
                     .padding(4.dp),
-                enabled = uiState !is GeminiMultimodalUiState.Loading && bitmap != null,
+                enabled = uiState !is GeminiMultimodalUiState.Loading && imageUri != null,
                 onClick = {
-                    if (bitmap != null) {
+                    if (imageUri != null) {
+                        val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
                         onGenerateClick(bitmap, textFieldState.text.toString())
                     }
                     keyboardController?.hide()
@@ -349,7 +356,7 @@ private fun PromptInput(
             )
         },
         secondaryButton = {
-            if (bitmap != null) {
+            if (imageUri != null) {
                 SecondaryButton(
                     text = "",
                     enabled = uiState !is GeminiMultimodalUiState.Loading,
@@ -369,14 +376,14 @@ private fun PromptInput(
 
 @Composable
 fun PictureAndResult(
-    bitmap: Bitmap?,
+    imageUri: Uri?,
     uiState: GeminiMultimodalUiState,
     onTakePictureClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (bitmap != null) {
-        Image(
-            bitmap = bitmap.asImageBitmap(),
+    if (imageUri != null) {
+        AsyncImage(
+            model = imageUri,
             contentDescription = "Picture",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize(),
@@ -395,7 +402,7 @@ fun PictureAndResult(
     when (uiState) {
         is GeminiMultimodalUiState.Loading -> {
             Box(
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxSize()
                     .background(
                         brush = gradientBrush,
@@ -408,7 +415,7 @@ fun PictureAndResult(
 
         is GeminiMultimodalUiState.Success -> {
             Box(
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxSize()
                     .background(
                         brush = gradientBrush,
@@ -438,10 +445,10 @@ private fun GeminiMultimodalScreenPreview() {
         GeminiMultimodalScreen(
             isExpandedScreen = false,
             uiState = GeminiMultimodalUiState.Initial,
-            bitmap = null,
+            imageUri = null,
             snackbarHostState = remember { SnackbarHostState() },
             onGenerateClick = { _, _ -> },
-            onTakePictureClick = {},
+            onImagePickerClick = {},
         )
     }
 }
@@ -454,10 +461,10 @@ private fun GeminiMultimodalScreenTabletPreview() {
         GeminiMultimodalScreen(
             isExpandedScreen = true,
             uiState = GeminiMultimodalUiState.Initial,
-            bitmap = null,
+            imageUri = null,
             snackbarHostState = remember { SnackbarHostState() },
             onGenerateClick = { _, _ -> },
-            onTakePictureClick = {},
+            onImagePickerClick = {},
         )
     }
 }
