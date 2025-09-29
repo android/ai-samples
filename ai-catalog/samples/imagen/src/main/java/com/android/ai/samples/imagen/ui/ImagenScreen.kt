@@ -117,6 +117,7 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
             Box(
                 Modifier
                     .padding(16.dp)
+                    .imePadding()
                     .widthIn(max = 440.dp)
                     .fillMaxHeight(0.85f)
                     .border(
@@ -153,7 +154,7 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
                             modifier = Modifier
                                 .width(72.dp)
                                 .height(55.dp)
-                                .padding(2.dp),
+                                .padding(4.dp),
                             enabled = !isGenerating,
                             onClick = {
                                 onGenerateClick(textFieldState.text.toString())
@@ -163,7 +164,6 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
                     },
                     modifier = Modifier
                         .widthIn(max = 646.dp)
-                        .imePadding()
                         .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
                         .align(Alignment.BottomCenter)
                     ,

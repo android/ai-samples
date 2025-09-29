@@ -179,7 +179,8 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                         icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_mic),
                         modifier = Modifier
                             .width(72.dp)
-                            .height(72.dp),
+                            .height(55.dp)
+                            .padding(4.dp),
                         onClick = {
                             viewModel.toggleLiveSession(activity)
                         },
@@ -189,6 +190,10 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                     SecondaryButton(
                         text = "",
                         icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add),
+                        modifier = Modifier
+                            .width(48.dp)
+                            .height(55.dp)
+                            .padding(4.dp),
                     ) {
                         viewModel.addTodo(textFieldState.text.toString())
                         textFieldState.clearText()
