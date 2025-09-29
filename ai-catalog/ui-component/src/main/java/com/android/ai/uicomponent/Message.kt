@@ -119,9 +119,9 @@ fun MessageBubble(message: ChatMessage, modifier: Modifier = Modifier) {
                     },
                 ) {
                     Column {
-                        Text(
-                            modifier = Modifier.padding(16.dp),
+                        MarkdownText(
                             text = message.text,
+                            modifier = Modifier.padding(16.dp)
                         )
                     }
                 }
