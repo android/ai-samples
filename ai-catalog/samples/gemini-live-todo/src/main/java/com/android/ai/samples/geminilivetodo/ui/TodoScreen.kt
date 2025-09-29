@@ -29,6 +29,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -117,7 +119,10 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                 }
                 is TodoScreenUiState.Success -> {
                     val todos = (uiState as TodoScreenUiState.Success).todos
-                    LazyColumn(modifier = Modifier.weight(1f)) {
+                    LazyColumn(modifier = Modifier
+                        .widthIn(max = 646.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .weight(1f)) {
                         itemsIndexed(todos.reversed(), key = { index: Int, item: Todo -> item.id }) { index, todo ->
                             TodoItem(
                                 task = todo,
@@ -189,6 +194,9 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                         textFieldState.clearText()
                     }
                 },
+                modifier = Modifier
+                    .widthIn(max = 646.dp)
+                    .align(Alignment.CenterHorizontally)
             )
         }
     }
