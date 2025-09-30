@@ -18,12 +18,14 @@ package com.android.ai.samples.geminichatbot
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.AlertDialog
@@ -96,11 +98,13 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
         ) {
             MessageList(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
+                    .widthIn(max = 646.dp)
+                    .fillMaxSize()
+                    .padding(start = 16.dp, end = 16.dp),
                 messages = uiState.messages,
             )
 
@@ -134,12 +138,11 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
                 placeholder = stringResource(R.string.geminichatbot_input_placeholder),
                 primaryButton = {
                     GenerateButton(
-                        text = "",
                         icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_send),
                         modifier = Modifier
                             .width(72.dp)
                             .height(55.dp)
-                            .padding(2.dp),
+                            .padding(4.dp),
                         enabled = uiState.geminiMessageState !is GeminiMessageState.Generating,
                         onClick = {
                             onSendMessage(textFieldState.text.toString())
@@ -149,7 +152,9 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
                 },
                 modifier = Modifier
                     .padding(10.dp)
-                    .align(Alignment.BottomCenter),
+                    .align(Alignment.BottomCenter)
+                    .widthIn(max = 646.dp)
+                    .fillMaxWidth(),
             )
         }
     }

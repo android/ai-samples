@@ -29,6 +29,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -117,7 +119,10 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                 }
                 is TodoScreenUiState.Success -> {
                     val todos = (uiState as TodoScreenUiState.Success).todos
-                    LazyColumn(modifier = Modifier.weight(1f)) {
+                    LazyColumn(modifier = Modifier
+                        .widthIn(max = 646.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .weight(1f)) {
                         itemsIndexed(todos.reversed(), key = { index: Int, item: Todo -> item.id }) { index, todo ->
                             TodoItem(
                                 task = todo,
@@ -174,7 +179,8 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                         icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_mic),
                         modifier = Modifier
                             .width(72.dp)
-                            .height(72.dp),
+                            .height(55.dp)
+                            .padding(4.dp),
                         onClick = {
                             viewModel.toggleLiveSession(activity)
                         },
@@ -184,11 +190,18 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                     SecondaryButton(
                         text = "",
                         icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add),
+                        modifier = Modifier
+                            .width(48.dp)
+                            .height(55.dp)
+                            .padding(4.dp),
                     ) {
                         viewModel.addTodo(textFieldState.text.toString())
                         textFieldState.clearText()
                     }
                 },
+                modifier = Modifier
+                    .widthIn(max = 646.dp)
+                    .align(Alignment.CenterHorizontally)
             )
         }
     }

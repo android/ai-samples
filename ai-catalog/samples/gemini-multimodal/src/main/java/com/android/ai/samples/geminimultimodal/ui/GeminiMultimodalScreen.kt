@@ -16,16 +16,21 @@
 package com.android.ai.samples.geminimultimodal.ui
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
+import android.provider.MediaStore
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts.TakePicturePreview
-import androidx.compose.foundation.Image
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -33,6 +38,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -41,12 +47,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,32 +69,36 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.compose.ui.tooling.preview.Devices.PHONE
+import androidx.compose.ui.tooling.preview.Devices.TABLET
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.android.ai.samples.geminimultimodal.R
 import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.GenerateButton
+import com.android.ai.uicomponent.MarkdownText
 import com.android.ai.uicomponent.PrimaryButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.SecondaryButton
 import com.android.ai.uicomponent.TextInput
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val cameraLauncher = rememberLauncherForActivityResult(TakePicturePreview()) { result ->
-        result?.let {
-            bitmap = it
+    val photoPickerLauncher = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
+        uri?.let {
+            imageUri = it
         }
     }
 
@@ -98,27 +111,31 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
         }
     }
 
+    val windowSizeClass = calculateWindowSizeClass(activity = LocalContext.current as Activity)
+    val isExpandedScreen = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
+
     GeminiMultimodalScreen(
+        isExpandedScreen = isExpandedScreen,
         uiState = uiState,
-        bitmap = bitmap,
+        imageUri = imageUri,
         snackbarHostState = snackbarHostState,
         onGenerateClick = viewModel::generate,
-        onTakePictureClick = {
-            cameraLauncher.launch(null)
+        onImagePickerClick = {
+            photoPickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
         },
     )
 }
 
-@Composable
 @OptIn(ExperimentalMaterial3Api::class)
+@Composable
 private fun GeminiMultimodalScreen(
+    isExpandedScreen: Boolean,
     uiState: GeminiMultimodalUiState,
-    bitmap: Bitmap?,
+    imageUri: Uri?,
     snackbarHostState: SnackbarHostState,
     onGenerateClick: (Bitmap, String) -> Unit,
-    onTakePictureClick: () -> Unit,
+    onImagePickerClick: () -> Unit,
 ) {
-    val context = LocalContext.current
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
     Scaffold(
@@ -133,30 +150,64 @@ private fun GeminiMultimodalScreen(
             )
         },
     ) { innerPadding ->
-
-        val imageBitmap = remember {
-            val bitmap = BitmapFactory.decodeResource(context.resources, com.android.ai.uicomponent.R.drawable.img_fill)
-            bitmap.asImageBitmap()
-        }
-        val imageShader = remember {
-            ImageShader(
-                image = imageBitmap,
-                tileModeX = TileMode.Repeated,
-                tileModeY = TileMode.Repeated,
+        if (isExpandedScreen) {
+            ExpandedScreen(
+                innerPadding,
+                uiState,
+                imageUri,
+                onGenerateClick,
+                onImagePickerClick
+            )
+        } else {
+            CompactScreen(
+                innerPadding,
+                uiState,
+                imageUri,
+                onGenerateClick,
+                onImagePickerClick
             )
         }
+    }
+}
 
-        val gradientBrush = Brush.radialGradient(
-            colors = listOf(
-                Color.Transparent,
-                Color(0x88000000),
-            ),
+val gradientBrush = Brush.radialGradient(
+    colors = listOf(
+        Color.Transparent,
+        Color(0x88000000),
+    ),
+)
+
+@Composable
+private fun CompactScreen(
+    innerPadding: PaddingValues,
+    uiState: GeminiMultimodalUiState,
+    imageUri: Uri?,
+    onGenerateClick: (Bitmap, String) -> Unit,
+    onTakePictureClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val imageBitmap = remember {
+        val bitmap = BitmapFactory.decodeResource(context.resources, com.android.ai.uicomponent.R.drawable.img_fill)
+        bitmap.asImageBitmap()
+    }
+    val imageShader = remember {
+        ImageShader(
+            image = imageBitmap,
+            tileModeX = TileMode.Repeated,
+            tileModeY = TileMode.Repeated,
         )
+    }
 
+    Box(
+        modifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
         Box(
             Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .padding(16.dp)
                 .imePadding()
                 .border(
@@ -165,111 +216,255 @@ private fun GeminiMultimodalScreen(
                     shape = RoundedCornerShape(40.dp),
                 )
                 .clip(RoundedCornerShape(40.dp))
-                .background(ShaderBrush(imageShader)),
+                .background(ShaderBrush(imageShader))
+                .background(
+                    brush = gradientBrush,
+                ),
         ) {
-            if (bitmap != null) {
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "Picture",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            } else {
-                PrimaryButton(
-                    text = stringResource(R.string.geminimultimodal_take_a_picture),
-                    icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
-                    modifier = Modifier
-                        .height(96.dp)
-                        .padding(start = 24.dp, end = 24.dp)
-                        .align(Alignment.Center),
-                    onClick = onTakePictureClick,
-                )
-            }
-
-            when (uiState) {
-                is GeminiMultimodalUiState.Loading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center),
-                    )
-                }
-
-                is GeminiMultimodalUiState.Success -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                brush = gradientBrush,
-                            ),
-                    )
-                    Column(
-                        modifier = Modifier
-                            .verticalScroll(rememberScrollState()),
-                    ) {
-                        Text(
-                            text = (uiState as GeminiMultimodalUiState.Success).generatedText,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            style = MaterialTheme.typography.titleLarge,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(top = 24.dp, start = 16.dp, end = 16.dp, bottom = 104.dp),
-                        )
-                    }
-                }
-
-                else -> {}
-            }
+            PictureAndResult(
+                imageUri,
+                uiState,
+                onTakePictureClick,
+                Modifier.align(Alignment.Center)
+            )
 
             val textFieldState = rememberTextFieldState()
             val keyboardController = LocalSoftwareKeyboardController.current
 
-            TextInput(
-                state = textFieldState,
-                placeholder = stringResource(R.string.geminimultimodal_prompt_placeholder),
-                primaryButton = {
-                    GenerateButton(
-                        text = "",
-                        icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
-                        modifier = Modifier
-                            .width(72.dp)
-                            .height(72.dp),
-                        enabled = uiState !is GeminiMultimodalUiState.Loading && bitmap != null,
-                        onClick = {
-                            if (bitmap != null) {
-                                onGenerateClick(bitmap, textFieldState.text.toString())
-                            }
-                            keyboardController?.hide()
-                        },
-                    )
-                },
-                secondaryButton = {
-                    if (bitmap != null) {
-                        SecondaryButton(
-                            text = "",
-                            enabled = uiState !is GeminiMultimodalUiState.Loading,
-                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add),
-                            onClick = onTakePictureClick,
-                        )
-                    }
-                },
-                modifier = Modifier
-                    .padding(10.dp)
-                    .height(80.dp)
-                    .align(Alignment.BottomCenter),
+            PromptInput(
+                textFieldState,
+                uiState,
+                imageUri,
+                onGenerateClick,
+                keyboardController,
+                onTakePictureClick,
+                Modifier.align(Alignment.BottomCenter))
+        }
+    }
+}
+
+@Composable
+private fun ExpandedScreen(
+    innerPadding: PaddingValues,
+    uiState: GeminiMultimodalUiState,
+    imageUri: Uri?,
+    onGenerateClick: (Bitmap, String) -> Unit,
+    onImagePickerClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val imageBitmap = remember {
+        val bitmap = BitmapFactory.decodeResource(context.resources, com.android.ai.uicomponent.R.drawable.img_fill)
+        bitmap.asImageBitmap()
+    }
+    val imageShader = remember {
+        ImageShader(
+            image = imageBitmap,
+            tileModeX = TileMode.Repeated,
+            tileModeY = TileMode.Repeated,
+        )
+    }
+
+    val gradientBrush = Brush.radialGradient(
+        colors = listOf(
+            Color.Transparent,
+            Color(0x88000000),
+        ),
+    )
+
+    Row(
+        modifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize()
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f)
+                .padding(16.dp)
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.outline,
+                    shape = RoundedCornerShape(40.dp),
+                )
+                .clip(RoundedCornerShape(40.dp))
+                .background(ShaderBrush(imageShader))
+                .background(
+                    brush = gradientBrush,
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            PictureAndResult(
+                imageUri,
+                uiState,
+                onImagePickerClick,
+            )
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .imePadding()
+                .weight(1f)
+                .padding(16.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            val textFieldState = rememberTextFieldState()
+            val keyboardController = LocalSoftwareKeyboardController.current
+
+            PromptInput(
+                textFieldState,
+                uiState,
+                imageUri,
+                onGenerateClick,
+                keyboardController,
+                onImagePickerClick
             )
         }
     }
 }
 
-@PreviewScreenSizes
+@Composable
+private fun PromptInput(
+    textFieldState: TextFieldState,
+    uiState: GeminiMultimodalUiState,
+    imageUri: Uri?,
+    onGenerateClick: (Bitmap, String) -> Unit,
+    keyboardController: SoftwareKeyboardController?,
+    onTakePictureClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    TextInput(
+        state = textFieldState,
+        placeholder = stringResource(R.string.geminimultimodal_prompt_placeholder),
+        primaryButton = {
+            GenerateButton(
+                text = "",
+                icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
+                modifier = Modifier
+                    .width(72.dp)
+                    .height(55.dp)
+                    .padding(4.dp),
+                enabled = uiState !is GeminiMultimodalUiState.Loading && imageUri != null,
+                onClick = {
+                    if (imageUri != null) {
+                        val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
+                        onGenerateClick(bitmap, textFieldState.text.toString())
+                    }
+                    keyboardController?.hide()
+                },
+            )
+        },
+        secondaryButton = {
+            if (imageUri != null) {
+                SecondaryButton(
+                    text = "",
+                    enabled = uiState !is GeminiMultimodalUiState.Loading,
+                    icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add),
+                    onClick = onTakePictureClick,
+                    modifier = Modifier
+                        .width(48.dp)
+                        .height(56.dp)
+                        .padding(4.dp),
+                )
+            }
+        },
+        modifier = modifier
+            .padding(10.dp),
+    )
+}
+
+@Composable
+fun PictureAndResult(
+    imageUri: Uri?,
+    uiState: GeminiMultimodalUiState,
+    onTakePictureClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (imageUri != null) {
+        AsyncImage(
+            model = imageUri,
+            contentDescription = "Picture",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize(),
+        )
+    } else {
+        PrimaryButton(
+            text = stringResource(R.string.geminimultimodal_take_a_picture),
+            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
+            modifier = modifier
+                .height(96.dp)
+                .padding(start = 24.dp, end = 24.dp),
+            onClick = onTakePictureClick,
+        )
+    }
+
+    when (uiState) {
+        is GeminiMultimodalUiState.Loading -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = gradientBrush,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        is GeminiMultimodalUiState.Success -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = gradientBrush,
+                    ),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(rememberScrollState()),
+                ) {
+                    MarkdownText(
+                        text = (uiState as GeminiMultimodalUiState.Success).generatedText,
+                        modifier = Modifier.padding(top = 24.dp, start = 16.dp, end = 16.dp, bottom = 104.dp)
+                    )
+                }
+            }
+        }
+
+        else -> {}
+    }
+}
+
+@Preview(name = "Tablet", device = PHONE)
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun GeminiMultimodalScreenPreview() {
     AISampleCatalogTheme {
         GeminiMultimodalScreen(
+            isExpandedScreen = false,
             uiState = GeminiMultimodalUiState.Initial,
-            bitmap = null,
+            imageUri = null,
             snackbarHostState = remember { SnackbarHostState() },
             onGenerateClick = { _, _ -> },
-            onTakePictureClick = {},
+            onImagePickerClick = {},
+        )
+    }
+}
+
+@Preview(name = "Tablet", device = TABLET)
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun GeminiMultimodalScreenTabletPreview() {
+    AISampleCatalogTheme {
+        GeminiMultimodalScreen(
+            isExpandedScreen = true,
+            uiState = GeminiMultimodalUiState.Initial,
+            imageUri = null,
+            snackbarHostState = remember { SnackbarHostState() },
+            onGenerateClick = { _, _ -> },
+            onImagePickerClick = {},
         )
     }
 }
