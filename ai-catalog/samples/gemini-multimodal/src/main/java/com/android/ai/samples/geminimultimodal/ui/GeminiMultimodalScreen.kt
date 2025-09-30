@@ -15,33 +15,25 @@
  */
 package com.android.ai.samples.geminimultimodal.ui
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -59,14 +51,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageShader
-import androidx.compose.ui.graphics.ShaderBrush
-import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
@@ -76,20 +60,19 @@ import androidx.compose.ui.tooling.preview.Devices.PHONE
 import androidx.compose.ui.tooling.preview.Devices.TABLET
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.decodeBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import com.android.ai.samples.geminimultimodal.R
 import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.GenerateButton
-import com.android.ai.uicomponent.MarkdownText
-import com.android.ai.uicomponent.PrimaryButton
+import com.android.ai.uicomponent.ImageInput
+import com.android.ai.uicomponent.ImageInputType
 import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.SecondaryButton
 import com.android.ai.uicomponent.TextInput
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@OptIn( ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -164,18 +147,12 @@ private fun GeminiMultimodalScreen(
                 uiState,
                 imageUri,
                 onGenerateClick,
-                onImagePickerClick
+                onImagePickerClick,
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
     }
 }
-
-val gradientBrush = Brush.radialGradient(
-    colors = listOf(
-        Color.Transparent,
-        Color(0x88000000),
-    ),
-)
 
 @Composable
 private fun CompactScreen(
@@ -184,64 +161,31 @@ private fun CompactScreen(
     imageUri: Uri?,
     onGenerateClick: (Bitmap, String) -> Unit,
     onTakePictureClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-    val imageBitmap = remember {
-        val bitmap = BitmapFactory.decodeResource(context.resources, com.android.ai.uicomponent.R.drawable.img_fill)
-        bitmap.asImageBitmap()
+    val type = when {
+        imageUri != null && uiState is GeminiMultimodalUiState.Success -> ImageInputType.WithImage.WithText(imageUri, uiState.generatedText)
+        imageUri != null && uiState is GeminiMultimodalUiState.Loading -> ImageInputType.WithImage.Analyzing(imageUri)
+        imageUri != null -> ImageInputType.WithImage.Image(imageUri)
+        else -> ImageInputType.Empty(onAddImage = onTakePictureClick)
     }
-    val imageShader = remember {
-        ImageShader(
-            image = imageBitmap,
-            tileModeX = TileMode.Repeated,
-            tileModeY = TileMode.Repeated,
+    ImageInput(
+        type = type,
+        modifier = modifier.padding(innerPadding),
+    ) {
+        val textFieldState = rememberTextFieldState()
+        val keyboardController = LocalSoftwareKeyboardController.current
+        PromptInput(
+            textFieldState,
+            uiState,
+            imageUri,
+            onGenerateClick,
+            keyboardController,
+            onTakePictureClick,
         )
     }
-
-    Box(
-        modifier = Modifier
-            .padding(innerPadding)
-            .fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Box(
-            Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .imePadding()
-                .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(40.dp),
-                )
-                .clip(RoundedCornerShape(40.dp))
-                .background(ShaderBrush(imageShader))
-                .background(
-                    brush = gradientBrush,
-                ),
-        ) {
-            PictureAndResult(
-                imageUri,
-                uiState,
-                onTakePictureClick,
-                Modifier.align(Alignment.Center)
-            )
-
-            val textFieldState = rememberTextFieldState()
-            val keyboardController = LocalSoftwareKeyboardController.current
-
-            PromptInput(
-                textFieldState,
-                uiState,
-                imageUri,
-                onGenerateClick,
-                keyboardController,
-                onTakePictureClick,
-                Modifier.align(Alignment.BottomCenter))
-        }
-    }
 }
+
 
 @Composable
 private fun ExpandedScreen(
@@ -250,76 +194,42 @@ private fun ExpandedScreen(
     imageUri: Uri?,
     onGenerateClick: (Bitmap, String) -> Unit,
     onImagePickerClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-    val imageBitmap = remember {
-        val bitmap = BitmapFactory.decodeResource(context.resources, com.android.ai.uicomponent.R.drawable.img_fill)
-        bitmap.asImageBitmap()
+    val type = when {
+        imageUri != null && uiState is GeminiMultimodalUiState.Success -> ImageInputType.WithImage.WithText(imageUri, uiState.generatedText)
+        imageUri != null && uiState is GeminiMultimodalUiState.Loading -> ImageInputType.WithImage.Analyzing(imageUri)
+        imageUri != null -> ImageInputType.WithImage.Image(imageUri)
+        else -> ImageInputType.Empty(onAddImage = onImagePickerClick)
     }
-    val imageShader = remember {
-        ImageShader(
-            image = imageBitmap,
-            tileModeX = TileMode.Repeated,
-            tileModeY = TileMode.Repeated,
-        )
-    }
-
-    val gradientBrush = Brush.radialGradient(
-        colors = listOf(
-            Color.Transparent,
-            Color(0x88000000),
-        ),
-    )
-
     Row(
-        modifier = Modifier
+        modifier = modifier
             .padding(innerPadding)
-            .fillMaxSize()
+            .fillMaxSize(),
     ) {
-        Box(
+        ImageInput(
+            type = type,
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxHeight()
                 .weight(1f)
-                .padding(16.dp)
-                .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(40.dp),
-                )
-                .clip(RoundedCornerShape(40.dp))
-                .background(ShaderBrush(imageShader))
-                .background(
-                    brush = gradientBrush,
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            PictureAndResult(
-                imageUri,
-                uiState,
-                onImagePickerClick,
-            )
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .imePadding()
-                .weight(1f)
-                .padding(16.dp),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            val textFieldState = rememberTextFieldState()
-            val keyboardController = LocalSoftwareKeyboardController.current
+                .padding(horizontal = 16.dp),
+        )
 
-            PromptInput(
-                textFieldState,
-                uiState,
-                imageUri,
-                onGenerateClick,
-                keyboardController,
-                onImagePickerClick
-            )
-        }
+        val textFieldState = rememberTextFieldState()
+        val keyboardController = LocalSoftwareKeyboardController.current
+        PromptInput(
+            textFieldState,
+            uiState,
+            imageUri,
+            onGenerateClick,
+            keyboardController,
+            onImagePickerClick,
+            modifier = Modifier
+                .weight(1f)
+                .align(Alignment.Bottom)
+                .imePadding()
+                .padding(horizontal = 16.dp),
+        )
     }
 }
 
@@ -331,7 +241,7 @@ private fun PromptInput(
     onGenerateClick: (Bitmap, String) -> Unit,
     keyboardController: SoftwareKeyboardController?,
     onTakePictureClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     TextInput(
@@ -348,7 +258,7 @@ private fun PromptInput(
                 enabled = uiState !is GeminiMultimodalUiState.Loading && imageUri != null,
                 onClick = {
                     if (imageUri != null) {
-                        val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
+                        val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, imageUri))
                         onGenerateClick(bitmap, textFieldState.text.toString())
                     }
                     keyboardController?.hide()
@@ -374,70 +284,8 @@ private fun PromptInput(
     )
 }
 
-@Composable
-fun PictureAndResult(
-    imageUri: Uri?,
-    uiState: GeminiMultimodalUiState,
-    onTakePictureClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    if (imageUri != null) {
-        AsyncImage(
-            model = imageUri,
-            contentDescription = "Picture",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize(),
-        )
-    } else {
-        PrimaryButton(
-            text = stringResource(R.string.geminimultimodal_take_a_picture),
-            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
-            modifier = modifier
-                .height(96.dp)
-                .padding(start = 24.dp, end = 24.dp),
-            onClick = onTakePictureClick,
-        )
-    }
 
-    when (uiState) {
-        is GeminiMultimodalUiState.Loading -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        brush = gradientBrush,
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator()
-            }
-        }
-
-        is GeminiMultimodalUiState.Success -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        brush = gradientBrush,
-                    ),
-            ) {
-                Column(
-                    modifier = Modifier
-                        .verticalScroll(rememberScrollState()),
-                ) {
-                    MarkdownText(
-                        text = (uiState as GeminiMultimodalUiState.Success).generatedText,
-                        modifier = Modifier.padding(top = 24.dp, start = 16.dp, end = 16.dp, bottom = 104.dp)
-                    )
-                }
-            }
-        }
-
-        else -> {}
-    }
-}
-
-@Preview(name = "Tablet", device = PHONE)
+@Preview(name = "Phone", device = PHONE)
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun GeminiMultimodalScreenPreview() {
