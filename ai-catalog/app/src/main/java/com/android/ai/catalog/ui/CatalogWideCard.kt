@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
@@ -45,7 +46,7 @@ fun CatalogWideCard(catalogItem: SampleCatalogItem, onClick: () -> Unit) {
             start = 16.dp,
             end = 16.dp,
             top = 16.dp,
-        ),
+        ).widthIn(max = 646.dp),
         onClick = onClick,
         shape = RoundedCornerShape(
             topStart = 0.dp,

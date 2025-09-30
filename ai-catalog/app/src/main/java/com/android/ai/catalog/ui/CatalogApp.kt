@@ -22,9 +22,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -85,10 +87,9 @@ fun CatalogApp(modifier: Modifier = Modifier) {
                             scrolledContainerColor = MaterialTheme.colorScheme.surface,
                             titleContentColor = MaterialTheme.colorScheme.primary,
                         ),
+                        navigationIcon = { AppBarPill() },
                         title = { expanded ->
                             if (expanded) {
-                                AppBarPill()
-                                Spacer(modifier = Modifier.height(12.dp))
                                 Text(
                                     text = stringResource(id = R.string.top_bar_title_expanded),
                                     style = MaterialTheme.typography.displaySmall,
@@ -98,7 +99,6 @@ fun CatalogApp(modifier: Modifier = Modifier) {
                                 )
                             } else {
                                 Row {
-                                    AppBarPill()
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
                                         text = stringResource(id = R.string.top_bar_title),
@@ -123,6 +123,8 @@ fun CatalogApp(modifier: Modifier = Modifier) {
                 )
                 LazyColumn(
                     contentPadding = innerPadding,
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     items(sampleCatalog) {
                         val onClick = {
@@ -170,19 +172,17 @@ object HomeScreen
 
 @Composable
 fun AppBarPill() {
-    Row(
-        modifier = Modifier
-            .height(40.dp)
-            .width(58.dp)
-            .background(
-                color = MaterialTheme.colorScheme.primary,
-                shape = RoundedCornerShape(24.dp),
-            ),
-    ) {
+    Row{
+    Spacer(Modifier.width(12.dp))
         Icon(
             painter = painterResource(R.drawable.spark_android),
             contentDescription = null,
-            modifier = Modifier.padding(10.dp),
+            modifier = Modifier.height(40.dp)
+                .width(58.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(24.dp),
+                ).padding(10.dp),
             tint = MaterialTheme.colorScheme.onPrimary,
         )
     }

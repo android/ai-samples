@@ -20,6 +20,7 @@ import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +29,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -50,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -150,11 +153,13 @@ private fun GeminiImageChatScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
         ) {
             MessageList(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .widthIn(max = 646.dp)
+                    .fillMaxSize()
+                    .padding(start = 16.dp, end = 16.dp),
                 messages = uiState.messages,
                 listState = lazyListState
             )
@@ -193,7 +198,7 @@ private fun GeminiImageChatScreen(
                         modifier = Modifier
                             .width(72.dp)
                             .height(55.dp)
-                            .padding(2.dp),
+                            .padding(4.dp),
                         enabled = uiState.geminiMessageState !is GeminiMessageState.Generating,
                         onClick = {
                             onSendMessage(textFieldState.text.toString())
@@ -210,8 +215,8 @@ private fun GeminiImageChatScreen(
                             modifier = Modifier.clickable(
                                 onClick = onImageClicked
                             ).width(50.dp)
-                                .height(56.dp)
-                                .padding(2.dp)
+                                .height(55.dp)
+                                .padding(4.dp)
                                 .clip(RoundedCornerShape(2.dp)),
                         )
                     } else {
@@ -219,15 +224,17 @@ private fun GeminiImageChatScreen(
                             icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
                             modifier = Modifier
                                 .width(48.dp)
-                                .height(56.dp)
-                                .padding(2.dp),
+                                .height(55.dp)
+                                .padding(4.dp),
                             onClick = onImagePickerClick,
                         )
                     }
                 },
                 modifier = Modifier
                     .padding(10.dp)
-                    .align(Alignment.BottomCenter),
+                    .align(Alignment.BottomCenter)
+                    .widthIn(max = 646.dp)
+                    .fillMaxWidth(),
             )
         }
     }

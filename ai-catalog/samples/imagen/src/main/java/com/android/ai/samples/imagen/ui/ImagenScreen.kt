@@ -22,11 +22,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -88,6 +91,7 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
                 onBackClick = { backDispatcher?.onBackPressed() },
             )
         },
+        modifier = Modifier.fillMaxWidth(),
     ) { innerPadding ->
 
         val context = LocalContext.current
@@ -105,56 +109,66 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
         }
 
         Box(
-            Modifier
-                .fillMaxSize()
+            modifier = Modifier
                 .padding(innerPadding)
-                .padding(16.dp)
-                .imePadding()
-                .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(40.dp),
-                )
-                .clip(RoundedCornerShape(40.dp))
-                .background(ShaderBrush(imageShader)),
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-
-            when (uiState) {
-                is ImagenUIState.ImageGenerated -> Image(
-                    bitmap = uiState.bitmap.asImageBitmap(),
-                    contentDescription = uiState.contentDescription,
-                    contentScale = ContentScale.FillHeight,
-                    modifier = Modifier.fillMaxSize(),
-                )
-                ImagenUIState.Loading -> {}
-                else -> {}
-            }
-
-            val textFieldState = rememberTextFieldState()
-            val keyboardController = LocalSoftwareKeyboardController.current
-
-            TextInput(
-                state = textFieldState,
-                placeholder = stringResource(R.string.placeholder_prompt),
-                primaryButton = {
-                    GenerateButton(
-                        text = "",
-                        icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
-                        modifier = Modifier
-                            .width(72.dp)
-                            .height(72.dp),
-                        enabled = !isGenerating,
-                        onClick = {
-                            onGenerateClick(textFieldState.text.toString())
-                            keyboardController?.hide()
-                        },
+            Box(
+                Modifier
+                    .padding(16.dp)
+                    .imePadding()
+                    .widthIn(max = 440.dp)
+                    .fillMaxHeight(0.85f)
+                    .border(
+                        1.dp,
+                        MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(40.dp),
                     )
-                },
-                modifier = Modifier
-                    .padding(10.dp)
-                    .height(80.dp)
-                    .align(Alignment.BottomCenter),
-            )
+                    .clip(RoundedCornerShape(40.dp))
+                    .background(ShaderBrush(imageShader)),
+                contentAlignment = Alignment.Center,
+            ) {
+
+                when (uiState) {
+                    is ImagenUIState.ImageGenerated -> Image(
+                        bitmap = uiState.bitmap.asImageBitmap(),
+                        contentDescription = uiState.contentDescription,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    ImagenUIState.Loading -> {}
+                    else -> {}
+                }
+
+                val textFieldState = rememberTextFieldState()
+                val keyboardController = LocalSoftwareKeyboardController.current
+
+                TextInput(
+                    state = textFieldState,
+                    placeholder = stringResource(R.string.placeholder_prompt),
+                    primaryButton = {
+                        GenerateButton(
+                            text = "",
+                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
+                            modifier = Modifier
+                                .width(72.dp)
+                                .height(55.dp)
+                                .padding(4.dp),
+                            enabled = !isGenerating,
+                            onClick = {
+                                onGenerateClick(textFieldState.text.toString())
+                                keyboardController?.hide()
+                            },
+                        )
+                    },
+                    modifier = Modifier
+                        .widthIn(max = 646.dp)
+                        .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
+                        .align(Alignment.BottomCenter)
+                    ,
+                )
+            }
         }
     }
 }
