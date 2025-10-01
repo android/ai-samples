@@ -19,13 +19,16 @@ import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,6 +47,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -72,7 +76,7 @@ import com.google.mlkit.genai.rewriting.RewriterOptions
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hiltViewModel()) {
-    var showRewriteOptionsDialog by remember { mutableStateOf(false) }
+    var showRewriteOptionsDialog by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -80,7 +84,7 @@ fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hi
     val proofreadSampleTextOptions = stringArrayResource(R.array.proofread_sample_text)
     val rewriteSampleTextOptions = stringArrayResource(R.array.rewrite_sample_text)
 
-    var textInput by remember { mutableStateOf("") }
+    var textInput by rememberSaveable { mutableStateOf("") }
 
     GenAIWritingAssistanceContent(
         uiState = uiState,
@@ -140,21 +144,22 @@ fun GenAIWritingAssistanceContent(
             )
         },
     ) { innerPadding ->
-        Column(
+        Box(
             Modifier
-                .fillMaxSize()
                 .padding(innerPadding)
-                .padding(top = 16.dp)
-                .imePadding()
-                .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(40.dp),
-                )
+                .fillMaxSize()
                 .clip(RoundedCornerShape(40.dp))
                 .background(color = surfaceContainerHighestLight)
                 .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 32.dp),
+            contentAlignment = Alignment.Center,
         ) {
+            Column(
+                Modifier
+                    .padding(top = 16.dp)
+                    .imePadding()
+                    .widthIn(max = 646.dp)
+                    .fillMaxHeight()
+            ) {
             when (val state = uiState) {
                 GenAIWritingAssistanceUiState.CheckingFeatureStatus ->
                     // TODO: Replace with loading animation
@@ -171,12 +176,19 @@ fun GenAIWritingAssistanceContent(
                             state.bytesToDownload,
                         ),
                         isStatusText = true,
+                        modifier = Modifier.fillMaxWidth(),
                     )
 
                 is GenAIWritingAssistanceUiState.Error ->
                     DisplayedText(stringResource(state.errorMessageStringRes), isStatusText = true)
 
                 GenAIWritingAssistanceUiState.Initial -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ) {
+
                     TextField(
                         placeholder = { Text(stringResource(R.string.genai_writing_assistance_text_input_label)) },
                         value = textInput, onValueChange = onTextInputChanged,
@@ -189,7 +201,7 @@ fun GenAIWritingAssistanceContent(
                         ),
                         modifier = Modifier
                             .padding(4.dp)
-                            .weight(1f),
+                            .weight(1f)
                     )
 
                     if (textInput.isEmpty()) {
@@ -226,19 +238,21 @@ fun GenAIWritingAssistanceContent(
                         )
                     }
                 }
+                }
 
                 is GenAIWritingAssistanceUiState.Generating ->
                     // TODO: Replace with loading animation
-                    DisplayedText(stringResource(R.string.genai_writing_assistance_generating))
+                    DisplayedText(stringResource(R.string.genai_writing_assistance_generating), modifier = Modifier.fillMaxWidth())
 
                 is GenAIWritingAssistanceUiState.Success -> {
-                    DisplayedText(state.generatedOutput, modifier = modifier.weight(1f))
+                    DisplayedText(state.generatedOutput, modifier = modifier.weight(1f).fillMaxWidth())
 
                     UndoButton(
                         modifier = Modifier.padding(start = 8.dp, top = 8.dp),
                         onClick = onClearClicked,
                     )
                 }
+            }
             }
         }
     }

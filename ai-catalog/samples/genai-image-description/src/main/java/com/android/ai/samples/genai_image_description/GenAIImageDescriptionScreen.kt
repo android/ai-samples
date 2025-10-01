@@ -24,10 +24,14 @@ import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -127,96 +131,104 @@ private fun GenAIImageDescriptionScreen(
         }
 
         val roundedCornerShape = RoundedCornerShape(40.dp)
+
         Box(
-            Modifier
-                .fillMaxSize()
+            modifier = Modifier
                 .padding(innerPadding)
-                .padding(16.dp)
-                .imePadding()
-                .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.outline,
-                    shape = roundedCornerShape,
-                )
-                .clip(roundedCornerShape)
-                .background(ShaderBrush(imageShader)),
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
-
-            if (imageUri != null) {
-                AsyncImage(
-                    model = imageUri,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-
-                if (uiState is GenAIImageDescriptionUiState.Initial) {
-                    GenerateButton(
-                        text = stringResource(R.string.genai_image_description_run_inference),
-                        icon = painterResource(com.android.ai.uicomponent.R.drawable.ic_ai_edit),
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(start = 24.dp, bottom = 24.dp),
-                    ) {
-                        onGenerateClick(imageUri)
-                    }
-                }
-            } else {
-                PrimaryButton(
-                    text = stringResource(R.string.genai_image_description_add_image),
-                    icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
-                    modifier = Modifier
-                        .height(96.dp)
-                        .padding(start = 24.dp, end = 24.dp)
-                        .align(Alignment.Center),
-                    onClick = onImagePickerClick,
-                )
-            }
-            if (
-                uiState !is GenAIImageDescriptionUiState.Initial &&
-                uiState !is GenAIImageDescriptionUiState.CheckingFeatureStatus
+            Box(
+                Modifier
+                    .padding(16.dp)
+                    .border(
+                        1.dp,
+                        MaterialTheme.colorScheme.outline,
+                        shape = roundedCornerShape,
+                    )
+                    .clip(roundedCornerShape)
+                    .widthIn(max = 646.dp)
+                    .fillMaxSize()
+                    .background(ShaderBrush(imageShader)),
+                contentAlignment = Alignment.Center,
             ) {
-                val outputText = when (val state = uiState) {
-                    is GenAIImageDescriptionUiState.DownloadingFeature -> stringResource(
-                        id = R.string.image_desc_downloading,
-                        state.bytesDownloaded,
-                        state.bytesToDownload,
+
+                if (imageUri != null) {
+                    AsyncImage(
+                        model = imageUri,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
                     )
 
-                    is GenAIImageDescriptionUiState.Error -> stringResource(state.errorMessageStringRes)
-                    is GenAIImageDescriptionUiState.Generating -> state.partialOutput
-                    is GenAIImageDescriptionUiState.Success -> state.generatedOutput
-                    else -> "" // Show nothing for the Initial state
+                    if (uiState is GenAIImageDescriptionUiState.Initial) {
+                        GenerateButton(
+                            text = stringResource(R.string.genai_image_description_run_inference),
+                            icon = painterResource(com.android.ai.uicomponent.R.drawable.ic_ai_edit),
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(start = 24.dp, bottom = 24.dp),
+                        ) {
+                            onGenerateClick(imageUri)
+                        }
+                    }
+                } else {
+                    PrimaryButton(
+                        text = stringResource(R.string.genai_image_description_add_image),
+                        icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
+                        modifier = Modifier
+                            .height(96.dp)
+                            .padding(start = 24.dp, end = 24.dp)
+                            .align(Alignment.Center),
+                        onClick = onImagePickerClick,
+                    )
                 }
-
-                UndoButton(
-                    modifier = Modifier.align(Alignment.TopEnd)
-                        .padding(
-                            top = 18.dp,
-                            end = 18.dp,
-                        ),
+                if (
+                    uiState !is GenAIImageDescriptionUiState.Initial &&
+                    uiState !is GenAIImageDescriptionUiState.CheckingFeatureStatus
                 ) {
-                    onClearClick()
-                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    extendedColorScheme.startGradient,
+                    val outputText = when (val state = uiState) {
+                        is GenAIImageDescriptionUiState.DownloadingFeature -> stringResource(
+                            id = R.string.image_desc_downloading,
+                            state.bytesDownloaded,
+                            state.bytesToDownload,
+                        )
+
+                        is GenAIImageDescriptionUiState.Error -> stringResource(state.errorMessageStringRes)
+                        is GenAIImageDescriptionUiState.Generating -> state.partialOutput
+                        is GenAIImageDescriptionUiState.Success -> state.generatedOutput
+                        else -> "" // Show nothing for the Initial state
+                    }
+
+                    UndoButton(
+                        modifier = Modifier.align(Alignment.TopEnd)
+                            .padding(
+                                top = 18.dp,
+                                end = 18.dp,
+                            ),
+                    ) {
+                        onClearClick()
+                    }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        extendedColorScheme.startGradient,
+                                    ),
                                 ),
                             ),
-                        ),
-                ) {
-                    Text(
-                        text = outputText,
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier
-                            .padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp)
-                            .align(Alignment.BottomCenter),
-                    )
+                    ) {
+                        Text(
+                            text = outputText,
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier
+                                .padding(top = 8.dp, bottom = 24.dp, start = 24.dp, end = 24.dp)
+                                .align(Alignment.BottomCenter),
+                        )
+                    }
                 }
             }
         }
