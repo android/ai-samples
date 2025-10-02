@@ -29,11 +29,9 @@ uiToolingPreviewAndroid = "1.8.1"
 spotless = "7.0.4"
 uiToolingPreview = "1.8.3"
 uiTooling = "1.8.3"
-firebaseAi = "16.2.0"
 lifecycleViewmodelAndroid = "2.8.7"
 material3 = "1.5.0-alpha01"
 uiTextGoogleFonts = "1.8.1"
-runtime = "1.8.3"
 exifinterface = "1.4.1"
 material3WindowSizeClass = "1.3.2"
 richtext = "1.0.0-alpha02"
@@ -85,9 +83,6 @@ mlkit-segmentation = { module = "com.google.android.gms:play-services-mlkit-subj
 ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "uiToolingPreview" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
 androidx-lifecycle-viewmodel-android = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-android", version.ref = "lifecycleViewmodelAndroid" }
-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
-androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "exifinterface" }
-androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "exifinterface" }
 
 [plugins]

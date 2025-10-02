@@ -59,6 +59,10 @@ class GenAIImageDescriptionViewModel @Inject constructor(val context: Applicatio
         ImageDescriberOptions.builder(context).build(),
     )
 
+    fun clearGeneratedText() {
+        _uiState.value = GenAIImageDescriptionUiState.Initial
+    }
+
     fun getImageDescription(imageUri: Uri?) {
         if (imageUri == null) {
             _uiState.value = GenAIImageDescriptionUiState.Error(R.string.genai_image_description_no_image_selected)

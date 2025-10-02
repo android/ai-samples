@@ -67,7 +67,7 @@ class GenAIWritingAssistanceViewModel @Inject constructor(val context: Applicati
 
     private var rewriter: Rewriter? = null
 
-    fun proofread(text: String, context: Context) {
+    fun proofread(text: String) {
         if (text.isEmpty()) {
             _uiState.value = GenAIWritingAssistanceUiState.Error(R.string.genai_writing_assistance_no_input)
             return
