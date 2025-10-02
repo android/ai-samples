@@ -17,11 +17,14 @@ package com.android.ai.samples.genai_summarization
 
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Undo
@@ -36,8 +39,9 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -62,7 +66,7 @@ import com.android.ai.uicomponent.SecondaryButton
 fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewModel()) {
     val sampleTextOptions = stringArrayResource(R.array.summarization_sample_text)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var textInput by remember { mutableStateOf("") }
+    var textInput by rememberSaveable { mutableStateOf("") }
 
     GenAISummarizationContent(
         uiState = uiState,
@@ -100,88 +104,110 @@ fun GenAISummarizationContent(
             )
         },
     ) { innerPadding ->
-        Column(
-            Modifier
-                .fillMaxSize()
+        Box(
+            modifier = Modifier
                 .padding(innerPadding)
-                .padding(top = 16.dp)
-                .imePadding()
-                .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(40.dp),
-                )
+                .fillMaxSize()
                 .clip(RoundedCornerShape(40.dp))
                 .background(color = surfaceContainerHighestLight)
                 .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 32.dp),
+            contentAlignment = Alignment.Center
         ) {
-            when (val state = uiState) {
-                GenAISummarizationUiState.CheckingFeatureStatus ->
-                    // TODO: Replace with loading animation
-                    DisplayedText(
-                        textToDisplay = stringResource(id = R.string.summarization_checking_feature_status),
-                        isStatusText = true,
-                    )
-
-                is GenAISummarizationUiState.DownloadingFeature ->
-                    DisplayedText(
-                        stringResource(
-                            id = R.string.summarization_downloading,
-                            state.bytesDownloaded,
-                            state.bytesToDownload,
-                        ),
-                        isStatusText = true,
-                    )
-
-                is GenAISummarizationUiState.Error ->
-                    DisplayedText(state.errorMessage, isStatusText = true)
-
-                GenAISummarizationUiState.Initial -> {
-                    TextField(
-                        placeholder = { Text(stringResource(R.string.genai_summarization_text_input_label)) },
-                        value = textInput, onValueChange = onTextInputChanged,
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                        ),
-                        modifier = Modifier
-                            .padding(4.dp)
-                            .weight(1f),
-                    )
-
-                    if (textInput.isEmpty()) {
-                        SecondaryButton(
-                            text = stringResource(R.string.genai_summarization_add_text_btn),
-                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add_text),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            ),
-                            onClick = onAddSampleTextClicked,
+            Column(
+                Modifier
+                    .padding(top = 16.dp)
+                    .imePadding()
+                    .widthIn(max = 646.dp)
+                    .fillMaxHeight(),
+            ) {
+                when (val state = uiState) {
+                    GenAISummarizationUiState.CheckingFeatureStatus ->
+                        // TODO: Replace with loading animation
+                        DisplayedText(
+                            textToDisplay = stringResource(id = R.string.summarization_checking_feature_status),
+                            isStatusText = true,
+                            modifier = Modifier.fillMaxWidth(),
                         )
-                    } else {
-                        GenerateButton(
-                            text = stringResource(R.string.genai_summarization_summarize_btn),
-                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_text),
-                            modifier = Modifier.padding(start = 8.dp, top = 8.dp),
-                            onClick = onSummarizeClicked,
+
+                    is GenAISummarizationUiState.DownloadingFeature ->
+                        DisplayedText(
+                            stringResource(
+                                id = R.string.summarization_downloading,
+                                state.bytesDownloaded,
+                                state.bytesToDownload,
+                            ),
+                            isStatusText = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            )
+
+                    is GenAISummarizationUiState.Error ->
+                        DisplayedText(
+                            state.errorMessage,
+                            isStatusText = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .widthIn(max = 646.dp)
+                                .align(Alignment.CenterHorizontally),
+                        )
+
+                    GenAISummarizationUiState.Initial -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .widthIn(max = 646.dp)
+                                .weight(1f)
+                                .align(Alignment.CenterHorizontally)
+                        ) {
+                            TextField(
+                                placeholder = { Text(stringResource(R.string.genai_summarization_text_input_label)) },
+                                value = textInput, onValueChange = onTextInputChanged,
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent,
+                                ),
+                                modifier = Modifier
+                                    .padding(4.dp)
+                                    .weight(1f),
+                            )
+
+                            if (textInput.isEmpty()) {
+                                SecondaryButton(
+                                    text = stringResource(R.string.genai_summarization_add_text_btn),
+                                    icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add_text),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    ),
+                                    onClick = onAddSampleTextClicked,
+                                )
+                            } else {
+                                GenerateButton(
+                                    text = stringResource(R.string.genai_summarization_summarize_btn),
+                                    icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_text),
+                                    modifier = Modifier.padding(start = 8.dp, top = 8.dp),
+                                    onClick = onSummarizeClicked,
+                                )
+                            }
+                        }
+                    }
+
+                    is GenAISummarizationUiState.Generating ->
+                        DisplayedText(state.generatedOutput,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+
+                    is GenAISummarizationUiState.Success -> {
+                        DisplayedText(state.generatedOutput, modifier = modifier.weight(1f).fillMaxWidth())
+
+                        BackButton(
+                            modifier = Modifier
+                                .padding(start = 8.dp, top = 8.dp),
+                            imageVector = Icons.AutoMirrored.Filled.Undo,
+                            onClick = onClearClicked,
                         )
                     }
-                }
-
-                is GenAISummarizationUiState.Generating ->
-                    DisplayedText(state.generatedOutput)
-
-                is GenAISummarizationUiState.Success -> {
-                    DisplayedText(state.generatedOutput, modifier = modifier.weight(1f))
-
-                    BackButton(
-                        modifier = Modifier.padding(start = 8.dp, top = 8.dp),
-                        imageVector = Icons.AutoMirrored.Filled.Undo,
-                        onClick = onClearClicked,
-                    )
                 }
             }
         }

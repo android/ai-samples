@@ -107,9 +107,6 @@ private fun ImagenEditingScreenContent(
                 title = {
                     Text(text = stringResource(R.string.editing_title_image_generation_screen))
                 },
-                actions = {
-                    SeeCodeButton()
-                },
             )
         },
     ) { innerPadding ->
