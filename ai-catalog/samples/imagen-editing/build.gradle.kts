@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -22,16 +21,15 @@ plugins {
 }
 
 android {
-    namespace = "com.android.ai.samples.geminimultimodal"
-    compileSdk = 35
+    namespace = "com.android.ai.samples.imagenediting"
+    compileSdk = 36
 
     buildFeatures {
         compose = true
     }
 
     defaultConfig {
-        minSdk = 26
-
+        minSdk = 24
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -45,36 +43,37 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
+
     kotlinOptions {
         jvmTarget = "17"
+    }
+
+    lint {
+        warningsAsErrors = true
     }
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.material.icons.extended)
-    implementation(libs.androidx.material.icons.extended)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.ai)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.runtime.livedata)
-    implementation(libs.genai.image.description)
-    implementation(libs.coil.compose)
-    implementation(libs.kotlinx.coroutines.guava)
-    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.ui.tooling.preview)
     debugImplementation(libs.ui.tooling)
     ksp(libs.hilt.compiler)
-    implementation(project(":ui-component"))
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }
