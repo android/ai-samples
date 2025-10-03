@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.ui.tooling.preview)
+    implementation(project(":ui-component"))
     debugImplementation(libs.ui.tooling)
     ksp(libs.hilt.compiler)
 
