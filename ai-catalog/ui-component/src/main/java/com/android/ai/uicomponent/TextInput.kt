@@ -73,8 +73,8 @@ fun TextInput(
             placeholder = {
                 Text(
                     text = placeholder,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 2,
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             },
             lineLimits = TextFieldLineLimits.MultiLine(maxHeightInLines = maxLines),

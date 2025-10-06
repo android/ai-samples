@@ -42,7 +42,11 @@ class ImagenEditingViewModel @Inject constructor(private val imagenDataSource: I
         viewModelScope.launch {
             try {
                 val bitmap = imagenDataSource.generateImage(prompt)
+
+                _bitmapForMasking.value = bitmap
+                _showMaskEditor.value = true
                 _uiState.value = ImagenEditingUIState.ImageGenerated(bitmap, contentDescription = prompt)
+
             } catch (e: Exception) {
                 _uiState.value = ImagenEditingUIState.Error(e.message)
             }
@@ -69,7 +73,7 @@ class ImagenEditingViewModel @Inject constructor(private val imagenDataSource: I
         }
     }
 
-    fun onStartMasking(bitmap: Bitmap) {
+    private fun onStartMasking(bitmap: Bitmap) {
         _bitmapForMasking.value = bitmap
         _showMaskEditor.value = true
     }

@@ -79,14 +79,12 @@ fun ImagenEditingGeneratedContent(
                 )
                 currentDrawingPath = Path()
                 pathVersion++
-                bitmapToMask = null
             }
 
             ImagenEditingUIState.Loading -> {
                 CircularProgressIndicator()
                 currentDrawingPath = Path()
                 pathVersion++
-                bitmapToMask = null
             }
 
             is ImagenEditingUIState.ImageGenerated -> {

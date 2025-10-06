@@ -17,52 +17,30 @@ package com.android.ai.samples.imagenediting.ui
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.materialIcon
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -96,17 +74,12 @@ fun ImagenEditingScreen(viewModel: ImagenEditingViewModel = hiltViewModel()) {
     val showMaskEditor: Boolean by viewModel.showMaskEditor.collectAsStateWithLifecycle()
     val bitmapForMasking: Bitmap? by viewModel.bitmapForMasking.collectAsStateWithLifecycle()
 
-//    BackHandler(enabled = showMaskEditor) {
-//        viewModel.onCancelMasking()
-//    }
-
         ImagenEditingScreenContent(
             uiState = uiState,
             showMaskEditor = showMaskEditor,
             bitmapForMasking = bitmapForMasking,
             onGenerateClick = viewModel::generateImage,
             onInpaintClick = { source, mask, prompt -> viewModel.inpaintImage(source, mask, prompt) },
-            onImageToMaskClicked = { bitmap -> viewModel.onStartMasking(bitmap) },
             onImageMaskReady = { source, mask -> viewModel.onImageMaskReady(source, mask) },
             onCancelMasking = viewModel::onCancelMasking,
             modifier = Modifier.fillMaxSize(),
@@ -121,7 +94,6 @@ private fun ImagenEditingScreenContent(
     bitmapForMasking: Bitmap?,
     onGenerateClick: (String) -> Unit,
     onInpaintClick: (source: Bitmap, mask: Bitmap, prompt: String) -> Unit,
-    onImageToMaskClicked: (Bitmap) -> Unit,
     onImageMaskReady: (source: Bitmap, mask: Bitmap) -> Unit,
     onCancelMasking: () -> Unit,
     modifier: Modifier = Modifier,
@@ -181,13 +153,19 @@ private fun ImagenEditingScreenContent(
                 when (uiState) {
                     is ImagenEditingUIState.Initial -> {
                         Text(
-                            text = "Generate an image to edit",
+                            text = stringResource(R.string.generate_an_image_to_edit),
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier
                                 .padding(24.dp)
                                 .align(Alignment.Center),
                         )
-                        TextField(textFieldState, isGenerating, onGenerateClick, keyboardController)
+                        TextField(
+                            textFieldState,
+                            isGenerating,
+                            onGenerateClick,
+                            keyboardController,
+                            placeholder = stringResource(R.string.describe_the_image_to_generate),
+                        )
                     }
 
                     is ImagenEditingUIState.Loading -> {
@@ -198,47 +176,32 @@ private fun ImagenEditingScreenContent(
                                     .align(Alignment.Center)
                             )
                         }
-                        TextField(textFieldState, isGenerating, onGenerateClick, keyboardController)
                     }
 
                     is ImagenEditingUIState.ImageGenerated ->  {
-                        ImagenEditingGeneratedContent(
-                            uiState = uiState,
-                            showMaskEditor = showMaskEditor,
-                            bitmapForMasking = bitmapForMasking,
-                            onImageClick = {
-                                    onImageToMaskClicked(it)
-                            },
-                            onMaskFinalized = onImageMaskReady,
-                            onCancelMasking = onCancelMasking,
-                            modifier = Modifier
-                                .fillMaxSize(),
-                        )
-
-//                        Image(
-//                            bitmap = uiState.bitmap.asImageBitmap(),
-//                            contentDescription = uiState.contentDescription,
-//                            contentScale = ContentScale.Crop,
-//                            modifier = Modifier.fillMaxSize()
-//                        )
-//
-//                        Row (
-//                                modifier = Modifier.align(Alignment.BottomEnd)
-//                                    .padding(8.dp)
-//                                    .background(MaterialTheme.colorScheme.background,
-//                                        shape = RoundedCornerShape(32.dp))
-//                                    .padding(start = 8.dp, end = 8.dp, top = 12.dp, bottom = 12.dp)
-//                            ) {
-//                                Icon(painterResource(id = com.android.ai.uicomponent.R.drawable.ic_delete),
-//                                    contentDescription = null,
-//                                    modifier = Modifier.padding(10.dp))
-//                                Icon(painterResource(id = com.android.ai.uicomponent.R.drawable.ic_redo),
-//                                    contentDescription = null,
-//                                    modifier = Modifier.padding(10.dp))
-//                                Icon(imageVector = Icons.Default.Check,
-//                                    contentDescription = null,
-//                                    modifier = Modifier.padding(10.dp))
-//                        }
+                        if (showMaskEditor && bitmapForMasking != null) {
+                            ImagenEditingMaskEditor(
+                                sourceBitmap = bitmapForMasking,
+                                onMaskFinalized = { maskBitmap ->
+                                    onImageMaskReady(bitmapForMasking, maskBitmap)
+                                },
+                                onCancel = onCancelMasking,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        } else {
+                            Image(
+                                bitmap = uiState.bitmap.asImageBitmap(),
+                                contentDescription = uiState.contentDescription,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                            TextField(
+                                textFieldState,
+                                isGenerating,
+                                onGenerateClick,
+                                keyboardController,
+                                placeholder = "describe the image to in-paint")
+                        }
                     }
 
                     is ImagenEditingUIState.ImageMasked -> {
@@ -247,50 +210,26 @@ private fun ImagenEditingScreenContent(
                                 bitmap = uiState.originalBitmap.asImageBitmap(),
                                 contentDescription = stringResource(R.string.editing_generated_image),
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Fit,
+                                contentScale = ContentScale.Crop,
                             )
                             Image(
                                 bitmap = uiState.maskBitmap.asImageBitmap(),
                                 contentDescription = stringResource(R.string.editing_generated_mask),
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Fit,
+                                contentScale = ContentScale.Crop,
                                 colorFilter = ColorFilter.tint(Color.Red.copy(alpha = 0.5f)),
                             )
                         }
+
+                        TextField(
+                            textFieldState = textFieldState,
+                            isGenerating = isGenerating,
+                            onGenerateClick = { prompt -> onInpaintClick(uiState.originalBitmap, uiState.maskBitmap, prompt) },
+                            keyboardController)
                     }
 
                     else -> {}
                 }
-
-//                ImagenEditingGeneratedContent(
-//                    uiState = uiState,
-//                    showMaskEditor = showMaskEditor,
-//                    bitmapForMasking = bitmapForMasking,
-//                    onImageClick = {
-//                        if (uiState is ImagenEditingUIState.ImageGenerated) {
-//                            onImageToMaskClicked(it)
-//                        }
-//                    },
-//                    onMaskFinalized = onImageMaskReady,
-//                    onCancelMasking = onCancelMasking,
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .aspectRatio(1f),
-//                )
-//
-//                Spacer(modifier = Modifier.height(16.dp))
-//
-//                GenerationInput(
-//                    uiState = uiState,
-//                    onGenerateClick = onGenerateClick,
-//                    onInpaintClick = { prompt ->
-//                        if (uiState is ImagenEditingUIState.ImageMasked) {
-//                            onInpaintClick(uiState.originalBitmap, uiState.maskBitmap, prompt)
-//                        }
-//                    },
-//                    enabled = !isGenerating,
-//                    modifier = Modifier.fillMaxWidth(),
-//                )
             }
         }
     }
@@ -302,10 +241,11 @@ private fun BoxScope.TextField(
     isGenerating: Boolean,
     onGenerateClick: (String) -> Unit,
     keyboardController: SoftwareKeyboardController?,
+    placeholder: String = "",
 ) {
     TextInput(
         state = textFieldState,
-        placeholder = "an oil painting of the San Francisco Ferry Building",
+        placeholder = placeholder,
         primaryButton = {
             GenerateButton(
                 text = "",
@@ -328,74 +268,74 @@ private fun BoxScope.TextField(
     )
 }
 
-@Composable
-fun ImagenEditingGeneratedContent(
-    uiState: ImagenEditingUIState,
-    showMaskEditor: Boolean,
-    bitmapForMasking: Bitmap?,
-    onImageClick: (Bitmap) -> Unit,
-    onMaskFinalized: (source: Bitmap, mask: Bitmap) -> Unit,
-    onCancelMasking: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (showMaskEditor && bitmapForMasking != null) {
-            ImagenEditingMaskEditor(
-                sourceBitmap = bitmapForMasking,
-                onMaskFinalized = { maskBitmap ->
-                    onMaskFinalized(bitmapForMasking, maskBitmap)
-                },
-                onCancel = onCancelMasking,
-                modifier = Modifier.fillMaxSize(),
-            )
-        } else {
-            when (uiState) {
-                is ImagenEditingUIState.ImageGenerated -> {
-                        Image(
-                            bitmap = uiState.bitmap.asImageBitmap(),
-                            contentDescription = uiState.contentDescription,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                        Button(
-                            onClick = { onImageClick(uiState.bitmap) },
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(16.dp),
-                        ) {
-                            Text(text = stringResource(R.string.editing_edit_mask_button))
-                        }
-                }
-
-                is ImagenEditingUIState.ImageMasked -> {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        Image(
-                            bitmap = uiState.originalBitmap.asImageBitmap(),
-                            contentDescription = stringResource(R.string.editing_generated_image),
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit,
-                        )
-                        Image(
-                            bitmap = uiState.maskBitmap.asImageBitmap(),
-                            contentDescription = stringResource(R.string.editing_generated_mask),
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit,
-                            colorFilter = ColorFilter.tint(Color.Red.copy(alpha = 0.5f)),
-                        )
-                    }
-                }
-
-                is ImagenEditingUIState.Error -> {
-                    uiState.message?.let { Text(text = it) }
-                }
-
-                else -> {
-                    Text(text = stringResource(R.string.editing_placeholder_prompt))
-                }
-            }
-        }
-    }
-}
+//@Composable
+//fun ImagenEditingGeneratedContent(
+//    uiState: ImagenEditingUIState,
+//    showMaskEditor: Boolean,
+//    bitmapForMasking: Bitmap?,
+//    onImageClick: (Bitmap) -> Unit,
+//    onMaskFinalized: (source: Bitmap, mask: Bitmap) -> Unit,
+//    onCancelMasking: () -> Unit,
+//    modifier: Modifier = Modifier,
+//) {
+//    Box(
+//        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+//        contentAlignment = Alignment.Center,
+//    ) {
+//        if (showMaskEditor && bitmapForMasking != null) {
+//            ImagenEditingMaskEditor(
+//                sourceBitmap = bitmapForMasking,
+//                onMaskFinalized = { maskBitmap ->
+//                    onMaskFinalized(bitmapForMasking, maskBitmap)
+//                },
+//                onCancel = onCancelMasking,
+//                modifier = Modifier.fillMaxSize(),
+//            )
+//        } else {
+//            when (uiState) {
+//                is ImagenEditingUIState.ImageGenerated -> {
+//                        Image(
+//                            bitmap = uiState.bitmap.asImageBitmap(),
+//                            contentDescription = uiState.contentDescription,
+//                            contentScale = ContentScale.Inside,
+//                            modifier = Modifier.fillMaxSize()
+//                        )
+//                        Button(
+//                            onClick = { onImageClick(uiState.bitmap) },
+//                            modifier = Modifier
+//                                .align(Alignment.BottomCenter)
+//                                .padding(16.dp),
+//                        ) {
+//                            Text(text = stringResource(R.string.editing_edit_mask_button))
+//                        }
+//                }
+//
+//                is ImagenEditingUIState.ImageMasked -> {
+//                    Box(modifier = Modifier.fillMaxSize()) {
+//                        Image(
+//                            bitmap = uiState.originalBitmap.asImageBitmap(),
+//                            contentDescription = stringResource(R.string.editing_generated_image),
+//                            modifier = Modifier.fillMaxSize(),
+//                            contentScale = ContentScale.Fit,
+//                        )
+//                        Image(
+//                            bitmap = uiState.maskBitmap.asImageBitmap(),
+//                            contentDescription = stringResource(R.string.editing_generated_mask),
+//                            modifier = Modifier.fillMaxSize(),
+//                            contentScale = ContentScale.Fit,
+//                            colorFilter = ColorFilter.tint(Color.Red.copy(alpha = 0.5f)),
+//                        )
+//                    }
+//                }
+//
+//                is ImagenEditingUIState.Error -> {
+//                    uiState.message?.let { Text(text = it) }
+//                }
+//
+//                else -> {
+//                    Text(text = stringResource(R.string.editing_placeholder_prompt))
+//                }
+//            }
+//        }
+//    }
+//}
