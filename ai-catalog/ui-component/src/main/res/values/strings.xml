@@ -8,4 +8,5 @@
     <string name="undo">undo</string>
     <string name="select_placeholder">Select an option</string>
     <string name="dropdown_content_description">Option selection</string>
+    <string name="add_image">Add image</string>
 </resources>
