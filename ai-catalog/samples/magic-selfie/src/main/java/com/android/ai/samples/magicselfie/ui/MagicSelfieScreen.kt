@@ -33,9 +33,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -131,7 +134,7 @@ fun MagicSelfieScreen(viewModel: MagicSelfieViewModel = hiltViewModel()) {
 }
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 private fun MagicSelfieScreen(
     uiState: MagicSelfieUiState,
     selfieBitmap: Bitmap?,
@@ -212,6 +215,13 @@ private fun MagicSelfieScreen(
 
                 val textFieldState = rememberTextFieldState()
                 val keyboardController = LocalSoftwareKeyboardController.current
+
+                if (uiState is MagicSelfieUiState.GeneratingBackground){
+                    ContainedLoadingIndicator(
+                        modifier = Modifier.size(60.dp)
+                            .align(Alignment.Center)
+                    )
+                }
 
                 TextInput(
                     state = textFieldState,

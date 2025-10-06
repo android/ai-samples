@@ -57,7 +57,7 @@ data class ChatMessage(
 fun MessageList(messages: List<ChatMessage>, modifier: Modifier = Modifier, listState: LazyListState = rememberLazyListState()) {
     LazyColumn(
         state = listState,
-        modifier = modifier.padding(bottom = 54.dp),
+        modifier = modifier.padding(bottom = 68.dp),
         reverseLayout = true,
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom),
     ) {

@@ -28,10 +28,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
@@ -137,7 +139,12 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
-                    ImagenUIState.Loading -> {}
+                    ImagenUIState.Loading -> {
+                        ContainedLoadingIndicator(
+                            modifier = Modifier.size(60.dp)
+                                .align(Alignment.Center)
+                        )
+                    }
                     else -> {}
                 }
 
