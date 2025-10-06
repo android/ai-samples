@@ -39,4 +39,5 @@
     <string name="save_the_mask">Save the mask</string>
     <string name="describe_the_image_to_generate">describe the image to generate</string>
     <string name="generate_an_image_to_edit">Generate an image to edit</string>
+    <string name="describe_the_image_to_in_paint">describe the image to in-paint</string>
 </resources>

@@ -16,6 +16,7 @@
 package com.android.ai.samples.imagenediting.ui
 
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.imagenediting.data.ImagenEditingDataSource
@@ -90,7 +91,9 @@ class ImagenEditingViewModel @Inject constructor(private val imagenDataSource: I
     }
 
     fun onCancelMasking() {
+        Log.d("ImagenEditingViewModel", "onCancelMasking")
         _showMaskEditor.value = false
         _bitmapForMasking.value = null
+        _uiState.value = ImagenEditingUIState.Initial
     }
 }

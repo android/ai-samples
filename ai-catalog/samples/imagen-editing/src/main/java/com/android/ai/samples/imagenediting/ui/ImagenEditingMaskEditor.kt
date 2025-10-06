@@ -150,7 +150,7 @@ fun ImagenEditingMaskEditor(sourceBitmap: Bitmap, onMaskFinalized: (Bitmap) -> U
                 Row(
                     modifier = Modifier
                         .padding(16.dp)
-                        .align(Alignment.BottomCenter)
+                        .align(Alignment.BottomEnd)
                         .background(color = MaterialTheme.colorScheme.surfaceContainer, shape = RoundedCornerShape(20.dp)),
                 ) {
                     Icon(
@@ -159,7 +159,7 @@ fun ImagenEditingMaskEditor(sourceBitmap: Bitmap, onMaskFinalized: (Bitmap) -> U
                         modifier = Modifier
                             .padding(10.dp)
                             .clickable(true) {
-                                onCancel
+                                onCancel()
                             },
                     )
                     Icon(

@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -180,15 +181,29 @@ private fun ImagenEditingScreenContent(
 
                     is ImagenEditingUIState.ImageGenerated ->  {
                         if (showMaskEditor && bitmapForMasking != null) {
+                            textFieldState.clearText()
+
                             ImagenEditingMaskEditor(
                                 sourceBitmap = bitmapForMasking,
                                 onMaskFinalized = { maskBitmap ->
+                                    textFieldState.clearText()
                                     onImageMaskReady(bitmapForMasking, maskBitmap)
                                 },
-                                onCancel = onCancelMasking,
+                                onCancel = { onCancelMasking() },
                                 modifier = Modifier.fillMaxSize(),
                             )
+
+                            Text(
+                                text = "Draw a mask on the image",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier
+                                    .padding(24.dp)
+                                    .align(Alignment.TopCenter)
+                                    .background(color = MaterialTheme.colorScheme.surfaceContainer),
+                            )
                         } else {
+                            textFieldState.clearText()
+
                             Image(
                                 bitmap = uiState.bitmap.asImageBitmap(),
                                 contentDescription = uiState.contentDescription,
@@ -200,7 +215,8 @@ private fun ImagenEditingScreenContent(
                                 isGenerating,
                                 onGenerateClick,
                                 keyboardController,
-                                placeholder = "describe the image to in-paint")
+                                placeholder = stringResource(R.string.describe_the_image_to_generate),
+                            )
                         }
                     }
 
@@ -225,7 +241,8 @@ private fun ImagenEditingScreenContent(
                             textFieldState = textFieldState,
                             isGenerating = isGenerating,
                             onGenerateClick = { prompt -> onInpaintClick(uiState.originalBitmap, uiState.maskBitmap, prompt) },
-                            keyboardController)
+                            keyboardController,
+                            placeholder = stringResource(R.string.describe_the_image_to_in_paint))
                     }
 
                     else -> {}
@@ -267,75 +284,3 @@ private fun BoxScope.TextField(
             .align(Alignment.BottomCenter),
     )
 }
-
-//@Composable
-//fun ImagenEditingGeneratedContent(
-//    uiState: ImagenEditingUIState,
-//    showMaskEditor: Boolean,
-//    bitmapForMasking: Bitmap?,
-//    onImageClick: (Bitmap) -> Unit,
-//    onMaskFinalized: (source: Bitmap, mask: Bitmap) -> Unit,
-//    onCancelMasking: () -> Unit,
-//    modifier: Modifier = Modifier,
-//) {
-//    Box(
-//        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
-//        contentAlignment = Alignment.Center,
-//    ) {
-//        if (showMaskEditor && bitmapForMasking != null) {
-//            ImagenEditingMaskEditor(
-//                sourceBitmap = bitmapForMasking,
-//                onMaskFinalized = { maskBitmap ->
-//                    onMaskFinalized(bitmapForMasking, maskBitmap)
-//                },
-//                onCancel = onCancelMasking,
-//                modifier = Modifier.fillMaxSize(),
-//            )
-//        } else {
-//            when (uiState) {
-//                is ImagenEditingUIState.ImageGenerated -> {
-//                        Image(
-//                            bitmap = uiState.bitmap.asImageBitmap(),
-//                            contentDescription = uiState.contentDescription,
-//                            contentScale = ContentScale.Inside,
-//                            modifier = Modifier.fillMaxSize()
-//                        )
-//                        Button(
-//                            onClick = { onImageClick(uiState.bitmap) },
-//                            modifier = Modifier
-//                                .align(Alignment.BottomCenter)
-//                                .padding(16.dp),
-//                        ) {
-//                            Text(text = stringResource(R.string.editing_edit_mask_button))
-//                        }
-//                }
-//
-//                is ImagenEditingUIState.ImageMasked -> {
-//                    Box(modifier = Modifier.fillMaxSize()) {
-//                        Image(
-//                            bitmap = uiState.originalBitmap.asImageBitmap(),
-//                            contentDescription = stringResource(R.string.editing_generated_image),
-//                            modifier = Modifier.fillMaxSize(),
-//                            contentScale = ContentScale.Fit,
-//                        )
-//                        Image(
-//                            bitmap = uiState.maskBitmap.asImageBitmap(),
-//                            contentDescription = stringResource(R.string.editing_generated_mask),
-//                            modifier = Modifier.fillMaxSize(),
-//                            contentScale = ContentScale.Fit,
-//                            colorFilter = ColorFilter.tint(Color.Red.copy(alpha = 0.5f)),
-//                        )
-//                    }
-//                }
-//
-//                is ImagenEditingUIState.Error -> {
-//                    uiState.message?.let { Text(text = it) }
-//                }
-//
-//                else -> {
-//                    Text(text = stringResource(R.string.editing_placeholder_prompt))
-//                }
-//            }
-//        }
-//    }
-//}

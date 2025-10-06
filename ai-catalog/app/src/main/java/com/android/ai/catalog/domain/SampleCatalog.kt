@@ -103,7 +103,7 @@ val sampleCatalog = listOf(
         description = R.string.imagen_editing_sample_description,
         route = "ImagenMaskEditing",
         sampleEntryScreen = { ImagenEditingScreen() },
-        tags = listOf(SampleTags.IMAGEN, SampleTags.FIREBASE, SampleTags.MEDIA3),
+        tags = listOf(SampleTags.IMAGEN, SampleTags.FIREBASE),
         needsFirebase = true,
         keyArt = R.drawable.img_keyart_imagen,
     ),
