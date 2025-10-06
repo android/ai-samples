@@ -75,16 +75,16 @@ fun ImagenEditingScreen(viewModel: ImagenEditingViewModel = hiltViewModel()) {
     val showMaskEditor: Boolean by viewModel.showMaskEditor.collectAsStateWithLifecycle()
     val bitmapForMasking: Bitmap? by viewModel.bitmapForMasking.collectAsStateWithLifecycle()
 
-        ImagenEditingScreenContent(
-            uiState = uiState,
-            showMaskEditor = showMaskEditor,
-            bitmapForMasking = bitmapForMasking,
-            onGenerateClick = viewModel::generateImage,
-            onInpaintClick = { source, mask, prompt -> viewModel.inpaintImage(source, mask, prompt) },
-            onImageMaskReady = { source, mask -> viewModel.onImageMaskReady(source, mask) },
-            onCancelMasking = viewModel::onCancelMasking,
-            modifier = Modifier.fillMaxSize(),
-        )
+    ImagenEditingScreenContent(
+        uiState = uiState,
+        showMaskEditor = showMaskEditor,
+        bitmapForMasking = bitmapForMasking,
+        onGenerateClick = viewModel::generateImage,
+        onInpaintClick = { source, mask, prompt -> viewModel.inpaintImage(source, mask, prompt) },
+        onImageMaskReady = { source, mask -> viewModel.onImageMaskReady(source, mask) },
+        onCancelMasking = viewModel::onCancelMasking,
+        modifier = Modifier.fillMaxSize(),
+    )
 }
 
 @Composable
@@ -131,7 +131,7 @@ private fun ImagenEditingScreenContent(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Box(
                 Modifier
@@ -148,7 +148,6 @@ private fun ImagenEditingScreenContent(
                     .background(ShaderBrush(imageShader)),
                 contentAlignment = Alignment.Center,
             ) {
-                val textFieldState = rememberTextFieldState()
                 val keyboardController = LocalSoftwareKeyboardController.current
 
                 when (uiState) {
@@ -160,6 +159,9 @@ private fun ImagenEditingScreenContent(
                                 .padding(24.dp)
                                 .align(Alignment.Center),
                         )
+
+                        val textFieldState = rememberTextFieldState()
+
                         TextField(
                             textFieldState,
                             isGenerating,
@@ -174,19 +176,18 @@ private fun ImagenEditingScreenContent(
                             ContainedLoadingIndicator(
                                 modifier = Modifier
                                     .size(60.dp)
-                                    .align(Alignment.Center)
+                                    .align(Alignment.Center),
                             )
                         }
                     }
 
-                    is ImagenEditingUIState.ImageGenerated ->  {
+                    is ImagenEditingUIState.ImageGenerated -> {
                         if (showMaskEditor && bitmapForMasking != null) {
-                            textFieldState.clearText()
+                            val textFieldState = rememberTextFieldState()
 
                             ImagenEditingMaskEditor(
                                 sourceBitmap = bitmapForMasking,
                                 onMaskFinalized = { maskBitmap ->
-                                    textFieldState.clearText()
                                     onImageMaskReady(bitmapForMasking, maskBitmap)
                                 },
                                 onCancel = { onCancelMasking() },
@@ -202,13 +203,13 @@ private fun ImagenEditingScreenContent(
                                     .background(color = MaterialTheme.colorScheme.surfaceContainer),
                             )
                         } else {
-                            textFieldState.clearText()
+                            val textFieldState = rememberTextFieldState()
 
                             Image(
                                 bitmap = uiState.bitmap.asImageBitmap(),
                                 contentDescription = uiState.contentDescription,
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier.fillMaxSize(),
                             )
                             TextField(
                                 textFieldState,
@@ -236,13 +237,15 @@ private fun ImagenEditingScreenContent(
                                 colorFilter = ColorFilter.tint(Color.Red.copy(alpha = 0.5f)),
                             )
                         }
+                        val textFieldState = rememberTextFieldState()
 
                         TextField(
                             textFieldState = textFieldState,
                             isGenerating = isGenerating,
                             onGenerateClick = { prompt -> onInpaintClick(uiState.originalBitmap, uiState.maskBitmap, prompt) },
                             keyboardController,
-                            placeholder = stringResource(R.string.describe_the_image_to_in_paint))
+                            placeholder = stringResource(R.string.describe_the_image_to_in_paint),
+                        )
                     }
 
                     else -> {}
