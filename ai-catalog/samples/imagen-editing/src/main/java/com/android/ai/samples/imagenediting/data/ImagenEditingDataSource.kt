@@ -25,10 +25,8 @@ import com.google.firebase.ai.type.ImagenEditMode
 import com.google.firebase.ai.type.ImagenEditingConfig
 import com.google.firebase.ai.type.ImagenGenerationConfig
 import com.google.firebase.ai.type.ImagenImageFormat
-import com.google.firebase.ai.type.ImagenMaskReference
 import com.google.firebase.ai.type.ImagenRawImage
 import com.google.firebase.ai.type.ImagenRawMask
-import com.google.firebase.ai.type.ImagenStyleReference
 import com.google.firebase.ai.type.PublicPreviewAPI
 import com.google.firebase.ai.type.toImagenInlineImage
 import javax.inject.Inject
@@ -135,11 +133,7 @@ class ImagenEditingDataSource @Inject constructor() {
      * @return The outpainted bitmap image.
      */
     @OptIn(PublicPreviewAPI::class)
-    suspend fun outpaintImage(
-        sourceImage: Bitmap,
-        targetDimensions: Dimensions,
-        prompt: String = "",
-    ): Bitmap {
+    suspend fun outpaintImage(sourceImage: Bitmap, targetDimensions: Dimensions, prompt: String = ""): Bitmap {
         val imageResponse = editingModel.outpaintImage(
             image = sourceImage.toImagenInlineImage(),
             newDimensions = targetDimensions,
