@@ -19,7 +19,6 @@ import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
-import android.provider.MediaStore
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -72,7 +71,7 @@ import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.SecondaryButton
 import com.android.ai.uicomponent.TextInput
 
-@OptIn( ExperimentalMaterial3WindowSizeClassApi::class)
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -139,7 +138,7 @@ private fun GeminiMultimodalScreen(
                 uiState,
                 imageUri,
                 onGenerateClick,
-                onImagePickerClick
+                onImagePickerClick,
             )
         } else {
             CompactScreen(
@@ -148,7 +147,7 @@ private fun GeminiMultimodalScreen(
                 imageUri,
                 onGenerateClick,
                 onImagePickerClick,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp),
             )
         }
     }
@@ -185,7 +184,6 @@ private fun CompactScreen(
         )
     }
 }
-
 
 @Composable
 private fun ExpandedScreen(
@@ -283,7 +281,6 @@ private fun PromptInput(
             .padding(10.dp),
     )
 }
-
 
 @Preview(name = "Phone", device = PHONE)
 @Composable

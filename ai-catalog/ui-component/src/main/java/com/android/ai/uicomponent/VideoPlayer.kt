@@ -203,9 +203,11 @@ fun VideoPickerDropdown(
             .clickable(onClick = { onDropdownExpandedChanged(!isExpanded) }),
     ) {
         Spacer(Modifier.width(8.dp))
-        Box(Modifier
-            .align(Alignment.CenterVertically)
-            .weight(1f, fill = false)) {
+        Box(
+            Modifier
+                .align(Alignment.CenterVertically)
+                .weight(1f, fill = false),
+        ) {
             Text(
                 text = videoItems.find { it.uri == selectedVideo }?.title ?: "",
                 style = MaterialTheme.typography.bodySmall,
@@ -229,7 +231,7 @@ fun VideoPickerDropdown(
     DropdownMenu(
         expanded = isExpanded,
         onDismissRequest = { onDropdownExpandedChanged(false) },
-        modifier = Modifier.widthIn(max = 240.dp)
+        modifier = Modifier.widthIn(max = 240.dp),
     ) {
         videoItems.forEach { video ->
             DropdownMenuItem(
@@ -389,7 +391,7 @@ private fun RowScope.CenterControls(
     Spacer(
         Modifier
             .weight(0.1f)
-            .widthIn(min = 4.dp, max = 24.dp)
+            .widthIn(min = 4.dp, max = 24.dp),
     )
     Box(
         modifier = Modifier
@@ -401,7 +403,7 @@ private fun RowScope.CenterControls(
     Spacer(
         Modifier
             .weight(0.1f)
-            .widthIn(min = 4.dp, max = 24.dp)
+            .widthIn(min = 4.dp, max = 24.dp),
     )
     Box(
         Modifier
@@ -413,7 +415,7 @@ private fun RowScope.CenterControls(
     Spacer(
         Modifier
             .weight(0.1f)
-            .widthIn(min = 4.dp, max = 24.dp)
+            .widthIn(min = 4.dp, max = 24.dp),
     )
     Box(
         modifier = Modifier
@@ -425,7 +427,7 @@ private fun RowScope.CenterControls(
     Spacer(
         Modifier
             .weight(0.1f)
-            .widthIn(min = 4.dp, max = 24.dp)
+            .widthIn(min = 4.dp, max = 24.dp),
     )
 }
 
@@ -461,7 +463,7 @@ private fun CenterControlsPreview_Widths() {
                         .width(width)
                         .padding(8.dp)
                         .border(1.dp, Color.Red)
-                        .align(Alignment.CenterHorizontally)
+                        .align(Alignment.CenterHorizontally),
                 ) {
                     CenterControls(
                         startButton = {
@@ -495,8 +497,8 @@ private fun PlayPauseButton(showPlay: () -> Boolean, isEnabled: () -> Boolean, o
         Icon(
             imageVector = if (showPlay()) Icons.Default.PlayArrow else Icons.Default.Pause,
             contentDescription =
-                if (showPlay()) stringResource(R.string.playpause_button_play)
-                else stringResource(R.string.playpause_button_pause),
+            if (showPlay()) stringResource(R.string.playpause_button_play)
+            else stringResource(R.string.playpause_button_pause),
         )
     }
 }

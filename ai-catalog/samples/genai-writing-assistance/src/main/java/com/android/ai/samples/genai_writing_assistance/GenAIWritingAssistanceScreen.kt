@@ -139,7 +139,7 @@ fun GenAIWritingAssistanceContent(
                 sampleName = stringResource(R.string.genai_writing_assistance_title_bar),
                 sampleDescription = stringResource(R.string.genai_writing_assistance_description),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-writing-assistance",
-                onBackClick = { backDispatcher?.onBackPressed() }
+                onBackClick = { backDispatcher?.onBackPressed() },
             )
         },
     ) { innerPadding ->
@@ -157,101 +157,101 @@ fun GenAIWritingAssistanceContent(
                     .padding(top = 16.dp)
                     .imePadding()
                     .widthIn(max = 646.dp)
-                    .fillMaxHeight()
+                    .fillMaxHeight(),
             ) {
-            when (val state = uiState) {
-                GenAIWritingAssistanceUiState.CheckingFeatureStatus ->
-                    // TODO: Replace with loading animation
-                    DisplayedText(
-                        textToDisplay = stringResource(id = R.string.checking_feature_status),
-                        isStatusText = true,
-                    )
+                when (val state = uiState) {
+                    GenAIWritingAssistanceUiState.CheckingFeatureStatus ->
+                        // TODO: Replace with loading animation
+                        DisplayedText(
+                            textToDisplay = stringResource(id = R.string.checking_feature_status),
+                            isStatusText = true,
+                        )
 
-                is GenAIWritingAssistanceUiState.DownloadingFeature ->
-                    DisplayedText(
-                        stringResource(
-                            id = R.string.genai_writing_assistance_downloading,
-                            state.bytesDownloaded,
-                            state.bytesToDownload,
-                        ),
-                        isStatusText = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-
-                is GenAIWritingAssistanceUiState.Error ->
-                    DisplayedText(stringResource(state.errorMessageStringRes), isStatusText = true)
-
-                GenAIWritingAssistanceUiState.Initial -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                    ) {
-
-                    TextField(
-                        placeholder = { Text(stringResource(R.string.genai_writing_assistance_text_input_label)) },
-                        value = textInput, onValueChange = onTextInputChanged,
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                        ),
-                        modifier = Modifier
-                            .padding(4.dp)
-                            .weight(1f)
-                    )
-
-                    if (textInput.isEmpty()) {
-                        SecondaryButton(
-                            text = stringResource(R.string.genai_writing_assistance_proofread_sample_text_btn),
-                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add_text),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    is GenAIWritingAssistanceUiState.DownloadingFeature ->
+                        DisplayedText(
+                            stringResource(
+                                id = R.string.genai_writing_assistance_downloading,
+                                state.bytesDownloaded,
+                                state.bytesToDownload,
                             ),
-                            onClick = onAddProofreadTextClicked,
-                            modifier = Modifier.padding(start = 8.dp, top = 12.dp),
+                            isStatusText = true,
+                            modifier = Modifier.fillMaxWidth(),
                         )
-                        SecondaryButton(
-                            text = stringResource(R.string.genai_writing_assistance_rewrite_sample_text_btn),
-                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add_text),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            ),
-                            onClick = onAddRewriteTextClicked,
-                            modifier = Modifier.padding(start = 8.dp, top = 12.dp),
-                        )
-                    } else {
-                        GenerateButton(
-                            text = stringResource(R.string.genai_writing_assistance_proofread_btn),
-                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_text),
-                            modifier = Modifier.padding(start = 8.dp, top = 12.dp),
-                            onClick = onProofreadClicked,
-                        )
-                        GenerateButton(
-                            text = stringResource(R.string.genai_writing_assistance_rewrite_btn),
-                            icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_text),
-                            modifier = Modifier.padding(start = 8.dp, top = 12.dp),
-                            onClick = onRewriteClicked,
+
+                    is GenAIWritingAssistanceUiState.Error ->
+                        DisplayedText(stringResource(state.errorMessageStringRes), isStatusText = true)
+
+                    GenAIWritingAssistanceUiState.Initial -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                        ) {
+
+                            TextField(
+                                placeholder = { Text(stringResource(R.string.genai_writing_assistance_text_input_label)) },
+                                value = textInput, onValueChange = onTextInputChanged,
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent,
+                                ),
+                                modifier = Modifier
+                                    .padding(4.dp)
+                                    .weight(1f),
+                            )
+
+                            if (textInput.isEmpty()) {
+                                SecondaryButton(
+                                    text = stringResource(R.string.genai_writing_assistance_proofread_sample_text_btn),
+                                    icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add_text),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    ),
+                                    onClick = onAddProofreadTextClicked,
+                                    modifier = Modifier.padding(start = 8.dp, top = 12.dp),
+                                )
+                                SecondaryButton(
+                                    text = stringResource(R.string.genai_writing_assistance_rewrite_sample_text_btn),
+                                    icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add_text),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    ),
+                                    onClick = onAddRewriteTextClicked,
+                                    modifier = Modifier.padding(start = 8.dp, top = 12.dp),
+                                )
+                            } else {
+                                GenerateButton(
+                                    text = stringResource(R.string.genai_writing_assistance_proofread_btn),
+                                    icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_text),
+                                    modifier = Modifier.padding(start = 8.dp, top = 12.dp),
+                                    onClick = onProofreadClicked,
+                                )
+                                GenerateButton(
+                                    text = stringResource(R.string.genai_writing_assistance_rewrite_btn),
+                                    icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_text),
+                                    modifier = Modifier.padding(start = 8.dp, top = 12.dp),
+                                    onClick = onRewriteClicked,
+                                )
+                            }
+                        }
+                    }
+
+                    is GenAIWritingAssistanceUiState.Generating ->
+                        // TODO: Replace with loading animation
+                        DisplayedText(stringResource(R.string.genai_writing_assistance_generating), modifier = Modifier.fillMaxWidth())
+
+                    is GenAIWritingAssistanceUiState.Success -> {
+                        DisplayedText(state.generatedOutput, modifier = modifier.weight(1f).fillMaxWidth())
+
+                        UndoButton(
+                            modifier = Modifier.padding(start = 8.dp, top = 8.dp),
+                            onClick = onClearClicked,
                         )
                     }
                 }
-                }
-
-                is GenAIWritingAssistanceUiState.Generating ->
-                    // TODO: Replace with loading animation
-                    DisplayedText(stringResource(R.string.genai_writing_assistance_generating), modifier = Modifier.fillMaxWidth())
-
-                is GenAIWritingAssistanceUiState.Success -> {
-                    DisplayedText(state.generatedOutput, modifier = modifier.weight(1f).fillMaxWidth())
-
-                    UndoButton(
-                        modifier = Modifier.padding(start = 8.dp, top = 8.dp),
-                        onClick = onClearClicked,
-                    )
-                }
-            }
             }
         }
     }

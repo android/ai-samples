@@ -114,7 +114,7 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Box(
                 Modifier
@@ -137,12 +137,12 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
                         bitmap = uiState.bitmap.asImageBitmap(),
                         contentDescription = uiState.contentDescription,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     )
                     ImagenUIState.Loading -> {
                         ContainedLoadingIndicator(
                             modifier = Modifier.size(60.dp)
-                                .align(Alignment.Center)
+                                .align(Alignment.Center),
                         )
                     }
                     else -> {}
@@ -172,8 +172,7 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
                     modifier = Modifier
                         .widthIn(max = 646.dp)
                         .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
-                        .align(Alignment.BottomCenter)
-                    ,
+                        .align(Alignment.BottomCenter),
                 )
             }
         }

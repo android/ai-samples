@@ -36,7 +36,6 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -107,7 +106,7 @@ fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel())
         onImagePickerClick = {
             photoPickerLauncher.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
         },
-        imageUri = imageUri
+        imageUri = imageUri,
     ) {
         imageUri = null
     }
@@ -121,7 +120,7 @@ private fun GeminiImageChatScreen(
     onDismissError: () -> Unit,
     onImagePickerClick: () -> Unit,
     imageUri: Uri? = null,
-    onImageClicked: () -> Unit
+    onImageClicked: () -> Unit,
 ) {
     val topAppBarState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarState)
@@ -147,7 +146,7 @@ private fun GeminiImageChatScreen(
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-image-chat",
                 onBackClick = { backDispatcher?.onBackPressed() },
                 topAppBarState = topAppBarState,
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
             )
         },
     ) { innerPadding ->
@@ -155,7 +154,7 @@ private fun GeminiImageChatScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
+            contentAlignment = Alignment.BottomCenter,
         ) {
             MessageList(
                 modifier = Modifier
@@ -163,7 +162,7 @@ private fun GeminiImageChatScreen(
                     .fillMaxSize()
                     .padding(start = 16.dp, end = 16.dp),
                 messages = uiState.messages,
-                listState = lazyListState
+                listState = lazyListState,
             )
 
             when (val state = uiState.geminiMessageState) {
@@ -215,7 +214,7 @@ private fun GeminiImageChatScreen(
                             contentDescription = null,
                             contentScale = ContentScale.Fit,
                             modifier = Modifier.clickable(
-                                onClick = onImageClicked
+                                onClick = onImageClicked,
                             ).width(50.dp)
                                 .height(55.dp)
                                 .padding(4.dp)
@@ -257,7 +256,7 @@ private fun GeminiImageChatScreenPreview() {
             onSendMessage = { _ -> },
             onDismissError = {},
             onImagePickerClick = {},
-            onImageClicked = {}
+            onImageClicked = {},
         )
     }
 }

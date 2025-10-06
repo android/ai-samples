@@ -88,7 +88,10 @@ sealed class ImageInputType {
         class Image(imageUri: Uri) : WithImage(imageUri)
         class Analyzing(imageUri: Uri) : WithImage(imageUri)
         class GeneratingText(imageUri: Uri) : WithImage(imageUri)
-        class WithText(imageUri: Uri, val text: String) : WithImage(imageUri)
+        class WithText(
+            imageUri: Uri,
+            val text: String,
+        ) : WithImage(imageUri)
     }
 }
 
@@ -108,11 +111,7 @@ sealed class ImageInputType {
  * container, inside the border. This will typically be used to display an input field.
  */
 @Composable
-fun ImageInput(
-    type: ImageInputType,
-    modifier: Modifier = Modifier,
-    bottomContent: (@Composable () -> Unit)? = null,
-) {
+fun ImageInput(type: ImageInputType, modifier: Modifier = Modifier, bottomContent: (@Composable () -> Unit)? = null) {
     val cornerShape = RoundedCornerShape(40.dp)
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
         Box(
@@ -147,10 +146,7 @@ private val FLOATY_SOFT_GLOW_SOFT_GLOW_BLUE_2 = Color(0xFF3271EA)
 private val FLOATY_SOFT_GLOW_SOFT_GLOW_BLUE_1 = Color(0xFF4C8DF6)
 
 @Composable
-private fun ImageContent(
-    type: ImageInputType.WithImage,
-    bottomContent: (@Composable () -> Unit)?,
-) {
+private fun ImageContent(type: ImageInputType.WithImage, bottomContent: (@Composable () -> Unit)?) {
     val bgColor = MaterialTheme.colorScheme.surfaceContainerHigh
     Box(Modifier.fillMaxSize()) {
         AsyncImage(
@@ -191,8 +187,8 @@ private fun ImageContent(
             )
             val drawAnalyzingModifier = Modifier.drawWithCache {
                 val angleRad = 200 / 180f * PI
-                val x = cos(angleRad).toFloat() //Fractional x
-                val y = sin(angleRad).toFloat() //Fractional y
+                val x = cos(angleRad).toFloat() // Fractional x
+                val y = sin(angleRad).toFloat() // Fractional y
 
                 val radius = sqrt(size.width.pow(2) + size.height.pow(2)) / 2f
                 val offset = Offset(size.width / 2, size.height / 2) + Offset(x * radius, y * radius)
@@ -256,11 +252,7 @@ private fun ImageContent(
 }
 
 @Composable
-private fun EmptyContent(
-    hintText: String?,
-    onAddImage: (() -> Unit)?,
-    bottomContent: (@Composable () -> Unit)?,
-) {
+private fun EmptyContent(hintText: String?, onAddImage: (() -> Unit)?, bottomContent: (@Composable () -> Unit)?) {
     val context = LocalContext.current
     val bgColor = MaterialTheme.colorScheme.surfaceContainerHigh
     Box(
@@ -350,7 +342,6 @@ private fun ImageInputPreview_Empty() {
         )
     }
 }
-
 
 @Preview(widthDp = 380, heightDp = 652)
 @Composable

@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -95,7 +94,7 @@ fun CatalogApp(modifier: Modifier = Modifier) {
                                     style = MaterialTheme.typography.displaySmall,
                                     color = MaterialTheme.colorScheme.onSurface,
                                     maxLines = 2,
-                                    modifier = Modifier.padding(bottom = 12.dp)
+                                    modifier = Modifier.padding(bottom = 12.dp),
                                 )
                             } else {
                                 Row {
@@ -105,13 +104,12 @@ fun CatalogApp(modifier: Modifier = Modifier) {
                                         style = MaterialTheme.typography.titleLarge,
                                         color = MaterialTheme.colorScheme.onSurface,
                                         maxLines = 1,
-                                        modifier = Modifier.align(Alignment.CenterVertically)
+                                        modifier = Modifier.align(Alignment.CenterVertically),
                                     )
                                 }
                             }
-
                         },
-                        scrollBehavior = scrollBehavior
+                        scrollBehavior = scrollBehavior,
                     )
                 },
             ) { innerPadding ->
@@ -124,7 +122,7 @@ fun CatalogApp(modifier: Modifier = Modifier) {
                 LazyColumn(
                     contentPadding = innerPadding,
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     items(sampleCatalog) {
                         val onClick = {
@@ -169,11 +167,10 @@ fun CatalogApp(modifier: Modifier = Modifier) {
 @Serializable
 object HomeScreen
 
-
 @Composable
 fun AppBarPill() {
-    Row{
-    Spacer(Modifier.width(12.dp))
+    Row {
+        Spacer(Modifier.width(12.dp))
         Icon(
             painter = painterResource(R.drawable.spark_android),
             contentDescription = null,

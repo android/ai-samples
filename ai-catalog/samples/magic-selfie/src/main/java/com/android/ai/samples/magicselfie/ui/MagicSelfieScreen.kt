@@ -216,10 +216,10 @@ private fun MagicSelfieScreen(
                 val textFieldState = rememberTextFieldState()
                 val keyboardController = LocalSoftwareKeyboardController.current
 
-                if (uiState is MagicSelfieUiState.GeneratingBackground){
+                if (uiState is MagicSelfieUiState.GeneratingBackground) {
                     ContainedLoadingIndicator(
                         modifier = Modifier.size(60.dp)
-                            .align(Alignment.Center)
+                            .align(Alignment.Center),
                     )
                 }
 

@@ -47,7 +47,6 @@ class ImagenEditingViewModel @Inject constructor(private val imagenDataSource: I
                 _bitmapForMasking.value = bitmap
                 _showMaskEditor.value = true
                 _uiState.value = ImagenEditingUIState.ImageGenerated(bitmap, contentDescription = prompt)
-
             } catch (e: Exception) {
                 _uiState.value = ImagenEditingUIState.Error(e.message)
             }

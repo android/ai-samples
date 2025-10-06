@@ -111,7 +111,7 @@ fun GenAISummarizationContent(
                 .clip(RoundedCornerShape(40.dp))
                 .background(color = surfaceContainerHighestLight)
                 .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 32.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Column(
                 Modifier
@@ -138,7 +138,7 @@ fun GenAISummarizationContent(
                             ),
                             isStatusText = true,
                             modifier = Modifier.fillMaxWidth(),
-                            )
+                        )
 
                     is GenAISummarizationUiState.Error ->
                         DisplayedText(
@@ -156,7 +156,7 @@ fun GenAISummarizationContent(
                                 .fillMaxWidth()
                                 .widthIn(max = 646.dp)
                                 .weight(1f)
-                                .align(Alignment.CenterHorizontally)
+                                .align(Alignment.CenterHorizontally),
                         ) {
                             TextField(
                                 placeholder = { Text(stringResource(R.string.genai_summarization_text_input_label)) },
@@ -194,7 +194,8 @@ fun GenAISummarizationContent(
                     }
 
                     is GenAISummarizationUiState.Generating ->
-                        DisplayedText(state.generatedOutput,
+                        DisplayedText(
+                            state.generatedOutput,
                             modifier = Modifier.fillMaxWidth(),
                         )
 

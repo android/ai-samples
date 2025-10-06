@@ -26,12 +26,12 @@ import com.google.firebase.ai.type.HarmCategory
 import com.google.firebase.ai.type.SafetySetting
 import com.google.firebase.ai.type.content
 import com.google.firebase.ai.type.generationConfig
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 sealed interface GeminiMessageState {
     data object WaitingForMessage : GeminiMessageState

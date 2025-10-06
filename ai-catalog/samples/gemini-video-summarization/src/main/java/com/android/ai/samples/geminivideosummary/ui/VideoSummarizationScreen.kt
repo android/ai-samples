@@ -151,7 +151,7 @@ private fun VideoSummarizationScreen(
                 sampleName = stringResource(R.string.video_summarization_title),
                 sampleDescription = stringResource(R.string.video_summarization_description),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-video-summarization",
-                onBackClick = { backDispatcher?.onBackPressed() }
+                onBackClick = { backDispatcher?.onBackPressed() },
             )
         },
     ) { innerPadding ->
