@@ -29,7 +29,7 @@
     <string name="editing_placeholder_prompt_entry">An image of dog working as a chef</string>
     <string name="editing_error_message_unknown">An unknown error occurred.</string>
     <string name="editing_title_image_generation_title">Imagen Editing</string>
-    <string name="editing_title_image_generation_subtitle">Generate images with Imagen, Google image generation model.</string>
+    <string name="editing_title_image_generation_subtitle">Generate images with Imagen, Google\'s image generation model.</string>
     <string name="editing_image_to_mask">Image to be masked</string>
     <string name="editing_generated_image">The generated image</string>
     <string name="editing_generated_mask">The generated mask</string>

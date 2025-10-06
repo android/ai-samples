@@ -74,11 +74,6 @@ class ImagenEditingViewModel @Inject constructor(private val imagenDataSource: I
         }
     }
 
-    private fun onStartMasking(bitmap: Bitmap) {
-        _bitmapForMasking.value = bitmap
-        _showMaskEditor.value = true
-    }
-
     fun onImageMaskReady(originalBitmap: Bitmap, maskBitmap: Bitmap) {
         val originalContentDescription = (_uiState.value as? ImagenEditingUIState.ImageGenerated)?.contentDescription ?: "Edited image"
         _uiState.value = ImagenEditingUIState.ImageMasked(
