@@ -18,14 +18,17 @@ package com.android.ai.samples.imagenediting.data
 import android.graphics.Bitmap
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
+import com.google.firebase.ai.type.Dimensions
 import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.ImagenAspectRatio
 import com.google.firebase.ai.type.ImagenEditMode
 import com.google.firebase.ai.type.ImagenEditingConfig
 import com.google.firebase.ai.type.ImagenGenerationConfig
 import com.google.firebase.ai.type.ImagenImageFormat
+import com.google.firebase.ai.type.ImagenMaskReference
 import com.google.firebase.ai.type.ImagenRawImage
 import com.google.firebase.ai.type.ImagenRawMask
+import com.google.firebase.ai.type.ImagenStyleReference
 import com.google.firebase.ai.type.PublicPreviewAPI
 import com.google.firebase.ai.type.toImagenInlineImage
 import javax.inject.Inject
@@ -118,6 +121,31 @@ class ImagenEditingDataSource @Inject constructor() {
                 editSteps = editSteps,
             ),
         )
+        return imageResponse.images.first().asBitmap()
+    }
+
+    /**
+     * Outpaints an image to the target dimensions using the Firebase Imagen API.
+     * This function extends the original image by generating content around it
+     * based on the provided prompt and target dimensions.
+     *
+     * @param sourceImage The original bitmap image to be outpainted.
+     * @param targetDimensions The desired dimensions of the outpainted image.
+     * @param prompt An optional text prompt to guide the outpainting process.
+     * @return The outpainted bitmap image.
+     */
+    @OptIn(PublicPreviewAPI::class)
+    suspend fun outpaintImage(
+        sourceImage: Bitmap,
+        targetDimensions: Dimensions,
+        prompt: String = "",
+    ): Bitmap {
+        val imageResponse = editingModel.outpaintImage(
+            image = sourceImage.toImagenInlineImage(),
+            newDimensions = targetDimensions,
+            prompt = prompt,
+        )
+
         return imageResponse.images.first().asBitmap()
     }
 }

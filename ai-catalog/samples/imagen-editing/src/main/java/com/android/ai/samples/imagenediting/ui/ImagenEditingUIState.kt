@@ -16,12 +16,14 @@
 package com.android.ai.samples.imagenediting.ui
 
 import android.graphics.Bitmap
+import com.google.firebase.ai.type.Dimensions
 
 sealed interface ImagenEditingUIState {
     data object Initial : ImagenEditingUIState
     data object Loading : ImagenEditingUIState
     data class ImageGenerated(
         val bitmap: Bitmap,
+        val dimensions: Dimensions,
         val contentDescription: String,
     ) : ImagenEditingUIState
 
