@@ -16,7 +16,6 @@
   -->
 
 <resources>
-    <string name="editing_see_code">See Code</string>
     <string name="editing_generate_button">Generate</string>
     <string name="editing_generating_label">Generating…</string>
     <string name="editing_prompt_label">Prompt</string>
@@ -29,9 +28,16 @@
     <string name="editing_placeholder_prompt">Generate an image, then tap to draw a mask.</string>
     <string name="editing_placeholder_prompt_entry">An image of dog working as a chef</string>
     <string name="editing_error_message_unknown">An unknown error occurred.</string>
-    <string name="editing_title_image_generation_screen">Imagen Editing</string>
+    <string name="editing_title_image_generation_title">Imagen Editing</string>
+    <string name="editing_title_image_generation_subtitle">Generate images with Imagen, Google\'s image generation model.</string>
     <string name="editing_image_to_mask">Image to be masked</string>
     <string name="editing_generated_image">The generated image</string>
     <string name="editing_generated_mask">The generated mask</string>
     <string name="editing_edit_mask_button">Draw a mask</string>
+    <string name="cancel_masking">Cancel masking</string>
+    <string name="undo_the_mask">Undo the mask</string>
+    <string name="save_the_mask">Save the mask</string>
+    <string name="describe_the_image_to_generate">describe the image to generate</string>
+    <string name="generate_an_image_to_edit">Generate an image to edit</string>
+    <string name="describe_the_image_to_in_paint">describe the image to in-paint</string>
 </resources>

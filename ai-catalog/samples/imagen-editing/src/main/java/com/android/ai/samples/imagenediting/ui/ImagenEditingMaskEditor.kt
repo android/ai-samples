@@ -19,16 +19,22 @@ import android.graphics.Bitmap
 import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -103,7 +109,7 @@ fun ImagenEditingMaskEditor(sourceBitmap: Bitmap, onMaskFinalized: (Bitmap) -> U
                     bitmap = sourceBitmap.asImageBitmap(),
                     contentDescription = stringResource(R.string.editing_image_to_mask),
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit,
+                    contentScale = ContentScale.Crop,
                 )
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val canvasWidth = size.width
@@ -130,36 +136,51 @@ fun ImagenEditingMaskEditor(sourceBitmap: Bitmap, onMaskFinalized: (Bitmap) -> U
                         }
                     }
                 }
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                Button(onClick = { if (paths.isNotEmpty()) paths.removeAt(paths.lastIndex) }, enabled = paths.isNotEmpty()) {
-                    Text("Undo")
-                }
-                Button(onClick = onCancel) {
-                    Text("Cancel")
-                }
-                Button(
-                    onClick = {
-                        val maskBitmap = createBitmap(sourceBitmap.width, sourceBitmap.height)
-                        val canvas = android.graphics.Canvas(maskBitmap)
-                        val paint = Paint().apply {
-                            color = android.graphics.Color.WHITE
-                            strokeWidth = 70f
-                            style = Paint.Style.STROKE
-                            strokeCap = Paint.Cap.ROUND
-                            strokeJoin = Paint.Join.ROUND
-                            isAntiAlias = true
-                        }
-                        paths.forEach { path -> canvas.drawPath(path.asAndroidPath(), paint) }
-                        onMaskFinalized(maskBitmap)
-                    },
+
+                Row(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .align(Alignment.BottomEnd)
+                        .background(color = MaterialTheme.colorScheme.surfaceContainer, shape = RoundedCornerShape(20.dp)),
                 ) {
-                    Text("Finalize Mask")
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = stringResource(R.string.cancel_masking),
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .clickable(true) {
+                                onCancel()
+                            },
+                    )
+                    Icon(
+                        Icons.AutoMirrored.Filled.Undo,
+                        contentDescription = stringResource(R.string.undo_the_mask),
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .clickable(true) {
+                                if (paths.isNotEmpty()) paths.removeAt(paths.lastIndex)
+                            },
+                    )
+                    Icon(
+                        Icons.Default.Check,
+                        contentDescription = stringResource(R.string.save_the_mask),
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .clickable(true) {
+                                val maskBitmap = createBitmap(sourceBitmap.width, sourceBitmap.height)
+                                val canvas = android.graphics.Canvas(maskBitmap)
+                                val paint = Paint().apply {
+                                    color = android.graphics.Color.WHITE
+                                    strokeWidth = 70f
+                                    style = Paint.Style.STROKE
+                                    strokeCap = Paint.Cap.ROUND
+                                    strokeJoin = Paint.Join.ROUND
+                                    isAntiAlias = true
+                                }
+                                paths.forEach { path -> canvas.drawPath(path.asAndroidPath(), paint) }
+                                onMaskFinalized(maskBitmap)
+                            },
+                    )
                 }
             }
         }
