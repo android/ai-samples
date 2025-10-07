@@ -232,7 +232,7 @@ private fun ImagenEditingScreenContent(
                                 bitmap = uiState.maskBitmap.asImageBitmap(),
                                 contentDescription = stringResource(R.string.editing_generated_mask),
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop,
+                                contentScale = ContentScale.Fit,
                                 colorFilter = ColorFilter.tint(Color.Red.copy(alpha = 0.5f)),
                             )
                         }
