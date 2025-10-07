@@ -134,15 +134,6 @@ val sampleCatalog = listOf(
         keyArt = R.drawable.img_keyart_video_summary,
     ),
     SampleCatalogItem(
-        title = R.string.gemini_video_metadata_creation_sample_title,
-        description = R.string.gemini_video_metadata_creation_sample_description,
-        route = "VideoMetadataCreationScreen",
-        sampleEntryScreen = { VideoMetadataCreationScreen() },
-        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE, SampleTags.MEDIA3),
-        needsFirebase = true,
-        keyArt = R.drawable.img_keyart_video_summary,
-    ),
-    SampleCatalogItem(
         title = R.string.gemini_live_todo_title,
         description = R.string.gemini_live_todo_description,
         route = "GeminiLiveTodoScreen",
