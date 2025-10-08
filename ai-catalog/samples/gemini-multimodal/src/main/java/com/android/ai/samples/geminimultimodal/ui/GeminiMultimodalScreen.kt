@@ -19,6 +19,8 @@ import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
+import android.provider.MediaStore
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -93,7 +95,7 @@ fun GeminiMultimodalScreen(viewModel: GeminiMultimodalViewModel = hiltViewModel(
         }
     }
 
-    val windowSizeClass = calculateWindowSizeClass(activity = LocalContext.current as Activity)
+    val windowSizeClass = calculateWindowSizeClass(activity = LocalActivity.current as Activity)
     val isExpandedScreen = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded
 
     GeminiMultimodalScreen(
@@ -256,7 +258,8 @@ private fun PromptInput(
                 enabled = uiState !is GeminiMultimodalUiState.Loading && imageUri != null,
                 onClick = {
                     if (imageUri != null) {
-                        val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, imageUri))
+                        val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
+//                        val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, imageUri))
                         onGenerateClick(bitmap, textFieldState.text.toString())
                     }
                     keyboardController?.hide()
