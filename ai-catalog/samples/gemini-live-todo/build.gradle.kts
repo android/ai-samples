@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.ui.tooling.preview)
     ksp(libs.hilt.compiler)
     implementation(project(":ui-component"))
+    implementation(project(":common"))
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.activity.compose)
     implementation(libs.kotlinx.serialization.json)

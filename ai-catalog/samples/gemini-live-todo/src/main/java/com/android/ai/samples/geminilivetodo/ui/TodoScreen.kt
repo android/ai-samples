@@ -62,6 +62,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.ai.common.Model
 import com.android.ai.samples.geminilivetodo.R
 import com.android.ai.samples.geminilivetodo.data.Todo
 import com.android.ai.uicomponent.GenerateButton
@@ -89,7 +90,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.gemini_live_title),
-                sampleDescription = stringResource(R.string.gemini_live_subtitle),
+                sampleDescription = stringResource(R.string.gemini_live_subtitle, Model.GeminiFlashLive),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-live-todo",
                 topAppBarState = topAppBarState,
                 scrollBehavior = scrollBehavior,

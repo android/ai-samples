@@ -24,6 +24,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.ai.common.Model
 import com.android.ai.samples.geminilivetodo.data.TodoRepository
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
@@ -159,7 +160,7 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
             )
 
             val generativeModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).liveModel(
-                "gemini-2.0-flash-live-preview-04-09",
+                Model.GeminiFlashLive.id,
                 generationConfig = liveGenerationConfig,
                 systemInstruction = systemInstruction,
                 tools = listOf(
