@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.ui.tooling.preview)
     implementation(project(":ui-component"))
+    implementation(project(":common"))
     debugImplementation(libs.ui.tooling)
     ksp(libs.hilt.compiler)
 

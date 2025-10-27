@@ -16,6 +16,7 @@
 package com.android.ai.samples.imagenediting.data
 
 import android.graphics.Bitmap
+import com.android.ai.common.Model
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
@@ -45,8 +46,6 @@ import javax.inject.Singleton
 @Singleton
 class ImagenEditingDataSource @Inject constructor() {
     private companion object {
-        const val IMAGEN_MODEL_NAME = "imagen-4.0-ultra-generate-001"
-        const val IMAGEN_EDITING_MODEL_NAME = "imagen-3.0-capability-001"
         const val DEFAULT_EDIT_STEPS = 50
         const val DEFAULT_STYLE_STRENGTH = 1
     }
@@ -54,7 +53,7 @@ class ImagenEditingDataSource @Inject constructor() {
     @OptIn(PublicPreviewAPI::class)
     private val imagenModel =
         Firebase.ai(backend = GenerativeBackend.vertexAI()).imagenModel(
-            IMAGEN_MODEL_NAME,
+            Model.Imagen.id,
             generationConfig = ImagenGenerationConfig(
                 numberOfImages = 1,
                 aspectRatio = ImagenAspectRatio.SQUARE_1x1,
@@ -65,7 +64,7 @@ class ImagenEditingDataSource @Inject constructor() {
     @OptIn(PublicPreviewAPI::class)
     private val editingModel =
         Firebase.ai(backend = GenerativeBackend.vertexAI()).imagenModel(
-            IMAGEN_EDITING_MODEL_NAME,
+            Model.ImagenEditing.id,
             generationConfig = ImagenGenerationConfig(
                 numberOfImages = 1,
                 aspectRatio = ImagenAspectRatio.SQUARE_1x1,

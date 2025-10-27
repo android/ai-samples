@@ -62,6 +62,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.ai.common.Model
 import com.android.ai.samples.imagenediting.R
 import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
@@ -106,7 +107,10 @@ private fun ImagenEditingScreenContent(
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.editing_title_image_generation_title),
-                sampleDescription = stringResource(R.string.editing_title_image_generation_subtitle),
+                sampleDescription = stringResource(
+                    R.string.editing_title_image_generation_subtitle,
+                    Model.Imagen.name, Model.ImagenEditing.name
+                ),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/imagen-editing",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )
