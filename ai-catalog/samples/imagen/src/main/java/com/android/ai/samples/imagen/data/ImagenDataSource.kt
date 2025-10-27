@@ -16,6 +16,7 @@
 package com.android.ai.samples.imagen.data
 
 import android.graphics.Bitmap
+import com.android.ai.common.Model
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
@@ -30,7 +31,7 @@ import javax.inject.Singleton
 class ImagenDataSource @Inject constructor() {
     @OptIn(PublicPreviewAPI::class)
     private val imagenModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).imagenModel(
-        modelName = "imagen-4.0-generate-preview-06-06",
+        modelName = Model.Imagen.id,
         generationConfig = ImagenGenerationConfig(
             numberOfImages = 1,
             aspectRatio = ImagenAspectRatio.SQUARE_1x1,

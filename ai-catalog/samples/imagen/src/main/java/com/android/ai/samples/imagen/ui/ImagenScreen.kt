@@ -57,6 +57,7 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.ai.common.Model
 import com.android.ai.samples.imagen.R
 import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.GenerateButton
@@ -88,7 +89,7 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.title_image_generation_screen),
-                sampleDescription = stringResource(R.string.subtitle_image_generation_screen),
+                sampleDescription = stringResource(R.string.subtitle_image_generation_screen, Model.Imagen.name),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/imagen",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )

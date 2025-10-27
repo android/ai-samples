@@ -76,6 +76,7 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     implementation(project(":ui-component"))
+    implementation(project(":common"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
