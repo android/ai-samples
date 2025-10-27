@@ -109,7 +109,7 @@ private fun ImagenEditingScreenContent(
                 sampleName = stringResource(R.string.editing_title_image_generation_title),
                 sampleDescription = stringResource(
                     R.string.editing_title_image_generation_subtitle,
-                    Model.Imagen.name, Model.ImagenEditing.name
+                    Model.Imagen.name, Model.ImagenEditing.name,
                 ),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/imagen-editing",
                 onBackClick = { backDispatcher?.onBackPressed() },
