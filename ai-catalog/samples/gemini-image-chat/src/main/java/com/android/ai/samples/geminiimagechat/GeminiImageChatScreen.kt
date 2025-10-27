@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.android.ai.common.Model
 import com.android.ai.samples.util.loadBitmapWithCorrectOrientation
 import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.ChatMessage
@@ -142,7 +143,7 @@ private fun GeminiImageChatScreen(
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.gemini_image_chat_title),
-                sampleDescription = stringResource(R.string.gemini_image_chat_description),
+                sampleDescription = stringResource(R.string.gemini_image_chat_description, Model.GeminiFlashImage.name),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-image-chat",
                 onBackClick = { backDispatcher?.onBackPressed() },
                 topAppBarState = topAppBarState,

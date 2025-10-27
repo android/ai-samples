@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.ui.tooling.preview)
 
     implementation(project(":ui-component"))
+    implementation(project(":common"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
