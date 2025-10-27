@@ -18,6 +18,7 @@ package com.android.ai.samples.magicselfie.data
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import com.android.ai.common.Model
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
@@ -37,7 +38,7 @@ import kotlin.math.roundToInt
 class MagicSelfieRepository @Inject constructor() {
     @OptIn(PublicPreviewAPI::class)
     private val imagenModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).imagenModel(
-        modelName = "imagen-4.0-generate-preview-06-06",
+        modelName = Model.Imagen.id,
         generationConfig = ImagenGenerationConfig(
             numberOfImages = 1,
             aspectRatio = ImagenAspectRatio.PORTRAIT_3x4,

@@ -69,6 +69,7 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.android.ai.common.Model
 import com.android.ai.samples.magicselfie.R
 import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.GenerateButton
@@ -156,7 +157,7 @@ private fun MagicSelfieScreen(
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.magic_selfie_title),
-                sampleDescription = stringResource(R.string.magic_selfie_subtitle),
+                sampleDescription = stringResource(R.string.magic_selfie_subtitle, Model.Imagen.name),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/magic-selfie",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )
