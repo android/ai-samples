@@ -150,7 +150,7 @@ private fun VideoSummarizationScreen(
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.video_summarization_title),
-                sampleDescription = stringResource(R.string.video_summarization_description, Model.GeminiFlash.name),
+                sampleDescription = stringResource(R.string.video_summarization_description, Model.GeminiFlash.displayName),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-video-summarization",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )

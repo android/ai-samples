@@ -16,6 +16,7 @@
 package com.android.ai.samples.geminimultimodal.data
 
 import android.graphics.Bitmap
+import com.android.ai.common.Model
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
@@ -31,7 +32,7 @@ import javax.inject.Singleton
 class GeminiDataSource @Inject constructor() {
     private val generativeModel by lazy {
         Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
-            "gemini-2.5-flash",
+            Model.GeminiFlash.id,
             generationConfig = generationConfig {
                 temperature = 0.9f
                 topK = 32

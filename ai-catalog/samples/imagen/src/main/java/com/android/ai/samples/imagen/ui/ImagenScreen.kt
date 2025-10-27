@@ -89,7 +89,7 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.title_image_generation_screen),
-                sampleDescription = stringResource(R.string.subtitle_image_generation_screen, Model.Imagen.name),
+                sampleDescription = stringResource(R.string.subtitle_image_generation_screen, Model.Imagen.displayName),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/imagen",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )

@@ -62,6 +62,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.ai.common.Model
 import com.android.ai.samples.geminimultimodal.R
 import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.GenerateButton
@@ -126,7 +127,7 @@ private fun GeminiMultimodalScreen(
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.geminimultimodal_title),
-                sampleDescription = stringResource(R.string.geminimultimodal_subtitle),
+                sampleDescription = stringResource(R.string.geminimultimodal_subtitle, Model.GeminiFlash),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-multimodal",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )
