@@ -53,6 +53,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":common"))
     implementation(project(":ui-component"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

@@ -17,6 +17,7 @@ package com.android.ai.samples.geminivideometadatacreation
 
 import android.net.Uri
 import androidx.compose.runtime.Composable
+import com.android.ai.common.Model
 import com.android.ai.samples.geminivideometadatacreation.ui.DescriptionUi
 import com.android.ai.samples.geminivideometadatacreation.ui.ErrorUi
 import com.google.firebase.Firebase
@@ -42,7 +43,7 @@ import com.google.firebase.ai.type.content
  */
 suspend fun generateDescription(videoUri: Uri): @Composable () -> Unit {
     val response = Firebase.ai(backend = GenerativeBackend.vertexAI())
-        .generativeModel(modelName = "gemini-2.5-flash")
+        .generativeModel(modelName = Model.GeminiFlash.id)
         .generateContent(
             content {
                 fileData(videoUri.toString(), "video/mp4")

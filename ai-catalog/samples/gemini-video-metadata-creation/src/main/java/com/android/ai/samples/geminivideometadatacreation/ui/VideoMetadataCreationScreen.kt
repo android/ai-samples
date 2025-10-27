@@ -52,6 +52,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.Player
+import com.android.ai.common.Model
 import com.android.ai.samples.geminivideometadatacreation.R
 import com.android.ai.samples.geminivideometadatacreation.util.sampleVideoList
 import com.android.ai.samples.geminivideometadatacreation.viewmodel.MetadataCreationState
@@ -113,7 +114,7 @@ private fun VideoMetadataCreationScreen(
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.video_metadata_creation_title),
-                sampleDescription = stringResource(R.string.video_metadata_creation_title),
+                sampleDescription = stringResource(R.string.video_metadata_creation_description, Model.GeminiFlash.name),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-video-metadata-creation",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )

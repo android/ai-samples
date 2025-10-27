@@ -17,6 +17,7 @@ package com.android.ai.samples.geminivideometadatacreation
 
 import android.net.Uri
 import androidx.compose.runtime.Composable
+import com.android.ai.common.Model
 import com.android.ai.samples.geminivideometadatacreation.ui.ErrorUi
 import com.android.ai.samples.geminivideometadatacreation.ui.LinksUi
 import com.google.firebase.Firebase
@@ -45,7 +46,7 @@ private val linksSchema = Schema.array(items = Schema.string("Link"))
  */
 private val linksModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
     .generativeModel(
-        modelName = "gemini-2.5-flash",
+        modelName = Model.GeminiFlash.id,
         // Tell Firebase AI the exact format of the response.
         generationConfig {
             responseMimeType = "application/json"
