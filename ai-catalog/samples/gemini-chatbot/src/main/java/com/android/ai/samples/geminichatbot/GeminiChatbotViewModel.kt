@@ -17,6 +17,7 @@ package com.android.ai.samples.geminichatbot
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.ai.common.Model
 import com.android.ai.uicomponent.ChatMessage
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
@@ -50,7 +51,7 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
 
     private val generativeModel by lazy {
         Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
-            "gemini-2.5-flash",
+            Model.GeminiFlash.id,
             generationConfig = generationConfig {
                 temperature = 0.9f
                 topK = 32

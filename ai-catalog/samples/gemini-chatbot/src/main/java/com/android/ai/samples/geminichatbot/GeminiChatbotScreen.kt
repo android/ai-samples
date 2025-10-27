@@ -49,6 +49,7 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.ai.common.Model
 import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.ChatMessage
 import com.android.ai.uicomponent.GenerateButton
@@ -86,7 +87,7 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.geminichatbot_title),
-                sampleDescription = stringResource(R.string.geminichatbot_description),
+                sampleDescription = stringResource(R.string.geminichatbot_description, Model.GeminiFlash.name),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-chatbot",
                 modifier = Modifier.background(MaterialTheme.colorScheme.surface),
                 onBackClick = { backDispatcher?.onBackPressed() },
