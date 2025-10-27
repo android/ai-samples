@@ -15,7 +15,10 @@
  */
 package com.android.ai.common
 
-enum class Model(val id: String, val displayName: String) {
+enum class Model(
+    val id: String,
+    val displayName: String,
+) {
     GeminiFlash("gemini-2.5-flash", "Gemini 2.5 Flash"),
     GeminiFlashImage("gemini-2.5-flash-image", "Gemini 2.5 Flash Image"),
     GeminiFlashLive("gemini-2.0-flash-live-preview-04-09", "Gemini 2.0 Flash Live"),
