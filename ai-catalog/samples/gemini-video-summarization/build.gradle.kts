@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.androidx.media3.ui)
 
     implementation(project(":ui-component"))
+    implementation(project(":common"))
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

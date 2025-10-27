@@ -52,6 +52,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
+import com.android.ai.common.Model
 import com.android.ai.samples.geminivideosummary.util.VideoItem
 import com.android.ai.samples.geminivideosummary.util.sampleVideoList
 import com.android.ai.samples.geminivideosummary.viewmodel.SummarizationState
@@ -149,7 +150,7 @@ private fun VideoSummarizationScreen(
         topBar = {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.video_summarization_title),
-                sampleDescription = stringResource(R.string.video_summarization_description),
+                sampleDescription = stringResource(R.string.video_summarization_description, Model.GeminiFlash.name),
                 sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-video-summarization",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )

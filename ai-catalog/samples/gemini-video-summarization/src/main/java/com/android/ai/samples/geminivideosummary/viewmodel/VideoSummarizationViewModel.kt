@@ -18,6 +18,7 @@ package com.android.ai.samples.geminivideosummary.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.ai.common.Model
 import com.android.ai.samples.geminivideosummary.util.VideoItem
 import com.android.ai.samples.geminivideosummary.util.sampleVideoList
 import com.google.firebase.Firebase
@@ -75,7 +76,7 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
             try {
                 val generativeModel =
                     Firebase.ai(backend = GenerativeBackend.vertexAI())
-                        .generativeModel("gemini-2.5-flash")
+                        .generativeModel(Model.GeminiFlash.id)
 
                 val requestContent = content {
                     fileData(videoSource.toString(), "video/mp4")
