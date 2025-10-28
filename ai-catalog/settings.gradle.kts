@@ -38,16 +38,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "AI Sample Catalog"
 include(":app")
-include(":samples:gemini-multimodal")
-include(":samples:gemini-chatbot")
-include(":samples:genai-summarization")
-include(":samples:genai-writing-assistance")
-include(":samples:genai-image-description")
-include(":samples:imagen")
 include(":samples:imagen-editing")
-include(":samples:magic-selfie")
-include(":samples:gemini-video-summarization")
-include(":samples:gemini-live-todo")
-include(":samples:gemini-video-metadata-creation")
-include(":samples:gemini-image-chat")
 include(":ui-component")

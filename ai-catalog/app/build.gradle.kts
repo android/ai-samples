@@ -81,18 +81,7 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     implementation(project(":ui-component"))
-    implementation(project(":samples:gemini-multimodal"))
-    implementation(project(":samples:gemini-chatbot"))
-    implementation(project(":samples:genai-summarization"))
-    implementation(project(":samples:genai-image-description"))
-    implementation(project(":samples:genai-writing-assistance"))
-    implementation(project(":samples:imagen"))
     implementation(project(":samples:imagen-editing"))
-    implementation(project(":samples:magic-selfie"))
-    implementation(project(":samples:gemini-video-summarization"))
-    implementation(project(":samples:gemini-live-todo"))
-    implementation(project(":samples:gemini-video-metadata-creation"))
-    implementation(project(":samples:gemini-image-chat"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

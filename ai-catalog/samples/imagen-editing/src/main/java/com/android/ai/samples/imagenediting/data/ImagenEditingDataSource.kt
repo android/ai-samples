@@ -18,6 +18,7 @@ package com.android.ai.samples.imagenediting.data
 import android.graphics.Bitmap
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
+import com.google.firebase.ai.type.Dimensions
 import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.ImagenAspectRatio
 import com.google.firebase.ai.type.ImagenEditMode
@@ -106,18 +107,24 @@ class ImagenEditingDataSource @Inject constructor() {
      * @return A [Bitmap] representing the inpainted image.
      */
     @OptIn(PublicPreviewAPI::class)
-    suspend fun inpaintImageWithMask(sourceImage: Bitmap, maskImage: Bitmap, prompt: String, editSteps: Int = DEFAULT_EDIT_STEPS): Bitmap {
-        val imageResponse = editingModel.editImage(
-            referenceImages = listOf(
-                ImagenRawImage(sourceImage.toImagenInlineImage()),
-                ImagenRawMask(maskImage.toImagenInlineImage()),
-            ),
-            prompt = prompt,
-            config = ImagenEditingConfig(
-                editMode = ImagenEditMode.INPAINT_INSERTION,
-                editSteps = editSteps,
-            ),
-        )
-        return imageResponse.images.first().asBitmap()
+    suspend fun inpaintImage(sourceImage: Bitmap, maskImage: Bitmap, prompt: String, editSteps: Int = DEFAULT_EDIT_STEPS): Bitmap {
+        // TODO #1 - Implement data source for inpainting;
+        return sourceImage;
+    }
+
+    /**
+     * Outpaints an image to the target dimensions using the Firebase Imagen API.
+     * This function extends the original image by generating content around it
+     * based on the provided prompt and target dimensions.
+     *
+     * @param sourceImage The original bitmap image to be outpainted.
+     * @param targetDimensions The desired dimensions of the outpainted image.
+     * @param prompt An optional text prompt to guide the outpainting process.
+     * @return The outpainted bitmap image.
+     */
+    @OptIn(PublicPreviewAPI::class)
+    suspend fun outpaintImage(sourceImage: Bitmap, targetDimensions: Dimensions, prompt: String): Bitmap {
+        // TODO #Bonus - Implement data source for inpainting;
+        return sourceImage;
     }
 }

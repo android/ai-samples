@@ -57,7 +57,7 @@ class ImagenEditingViewModel @Inject constructor(private val imagenDataSource: I
         _uiState.value = ImagenEditingUIState.Loading
         viewModelScope.launch {
             try {
-                val inpaintedBitmap = imagenDataSource.inpaintImageWithMask(
+                val inpaintedBitmap = imagenDataSource.inpaintImage(
                     sourceImage = sourceImage,
                     maskImage = maskImage,
                     prompt = prompt,
