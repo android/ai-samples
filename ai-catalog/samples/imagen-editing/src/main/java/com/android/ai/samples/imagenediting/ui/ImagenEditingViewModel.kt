@@ -20,6 +20,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.imagenediting.data.ImagenEditingDataSource
+import com.google.firebase.ai.type.Dimensions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -69,6 +70,25 @@ class ImagenEditingViewModel @Inject constructor(private val imagenDataSource: I
                 )
             } catch (e: Exception) {
                 _uiState.value = ImagenEditingUIState.Error(e.localizedMessage ?: "An unknown error occurred during inpainting")
+            }
+        }
+    }
+
+    fun outPaintImage(sourceImage: Bitmap, targetDimensions: Dimensions?, prompt: String) {
+        _uiState.value = ImagenEditingUIState.Loading
+        viewModelScope.launch {
+            try {
+                val outpaintedImage = imagenDataSource.outpaintImage(
+                    sourceImage = sourceImage,
+                    targetDimensions = targetDimensions ?: Dimensions(sourceImage.width * 2, sourceImage.height * 2),
+                    prompt = prompt,
+                )
+                _uiState.value = ImagenEditingUIState.ImageGenerated(
+                    bitmap = outpaintedImage,
+                    contentDescription = "Outpainted image based on prompt: $prompt",
+                )
+            } catch (e: Exception) {
+                _uiState.value = ImagenEditingUIState.Error(e.localizedMessage ?: "An unknown error occurred during outpainting")
             }
         }
     }

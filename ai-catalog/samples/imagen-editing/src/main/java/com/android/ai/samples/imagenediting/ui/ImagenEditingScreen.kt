@@ -66,6 +66,7 @@ import com.android.ai.samples.imagenediting.R
 import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.TextInput
+import com.google.firebase.ai.type.Dimensions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,6 +81,7 @@ fun ImagenEditingScreen(viewModel: ImagenEditingViewModel = hiltViewModel()) {
         bitmapForMasking = bitmapForMasking,
         onGenerateClick = viewModel::generateImage,
         onInpaintClick = { source, mask, prompt -> viewModel.inpaintImage(source, mask, prompt) },
+        onOutpaintClick = { source, targetDimensions, prompt -> viewModel.outPaintImage(source, targetDimensions, prompt) },
         onImageMaskReady = { source, mask -> viewModel.onImageMaskReady(source, mask) },
         onCancelMasking = viewModel::onCancelMasking,
         modifier = Modifier.fillMaxSize(),
@@ -94,6 +96,7 @@ private fun ImagenEditingScreenContent(
     bitmapForMasking: Bitmap?,
     onGenerateClick: (String) -> Unit,
     onInpaintClick: (source: Bitmap, mask: Bitmap, prompt: String) -> Unit,
+    onOutpaintClick: (source: Bitmap, targetDimensions: Dimensions, prompt: String) -> Unit,
     onImageMaskReady: (source: Bitmap, mask: Bitmap) -> Unit,
     onCancelMasking: () -> Unit,
     modifier: Modifier = Modifier,
@@ -132,6 +135,26 @@ private fun ImagenEditingScreenContent(
                 .fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
+            val keyboardController = LocalSoftwareKeyboardController.current
+            if (uiState is ImagenEditingUIState.ImageGenerated) {
+                val textFieldState = rememberTextFieldState()
+                val originalWidth = uiState.bitmap.width
+                val originalHeight = uiState.bitmap.height
+
+                //  Don't exceed 4500x4500
+                val targetWidth = (originalWidth * 2).coerceAtMost(4500)
+                val targetHeight = (originalHeight * 2).coerceAtMost(4500)
+                val targetDimensions = Dimensions(targetWidth, targetHeight)
+
+                TextField(
+                    textFieldState,
+                    ImageEditMode.OUTPAINT,
+                    isGenerating,
+                    onGenerateClick = { prompt -> onOutpaintClick(uiState.bitmap, targetDimensions, prompt) },
+                    keyboardController,
+                    placeholder = stringResource(R.string.describe_how_to_expand_image),
+                )
+            }
             Box(
                 Modifier
                     .padding(16.dp)
@@ -147,7 +170,6 @@ private fun ImagenEditingScreenContent(
                     .background(ShaderBrush(imageShader)),
                 contentAlignment = Alignment.Center,
             ) {
-                val keyboardController = LocalSoftwareKeyboardController.current
 
                 when (uiState) {
                     is ImagenEditingUIState.Initial -> {
@@ -163,6 +185,7 @@ private fun ImagenEditingScreenContent(
 
                         TextField(
                             textFieldState,
+                            ImageEditMode.GENERATE,
                             isGenerating,
                             onGenerateClick,
                             keyboardController,
@@ -207,11 +230,12 @@ private fun ImagenEditingScreenContent(
                             Image(
                                 bitmap = uiState.bitmap.asImageBitmap(),
                                 contentDescription = uiState.contentDescription,
-                                contentScale = ContentScale.Crop,
+                                contentScale = ContentScale.Fit,
                                 modifier = Modifier.fillMaxSize(),
                             )
                             TextField(
                                 textFieldState,
+                                ImageEditMode.GENERATE,
                                 isGenerating,
                                 onGenerateClick,
                                 keyboardController,
@@ -240,6 +264,7 @@ private fun ImagenEditingScreenContent(
 
                         TextField(
                             textFieldState = textFieldState,
+                            imageEditMode = ImageEditMode.INPAINT,
                             isGenerating = isGenerating,
                             onGenerateClick = { prompt -> onInpaintClick(uiState.originalBitmap, uiState.maskBitmap, prompt) },
                             keyboardController,
@@ -257,6 +282,7 @@ private fun ImagenEditingScreenContent(
 @Composable
 private fun BoxScope.TextField(
     textFieldState: TextFieldState,
+    imageEditMode: ImageEditMode,
     isGenerating: Boolean,
     onGenerateClick: (String) -> Unit,
     keyboardController: SoftwareKeyboardController?,
@@ -268,7 +294,11 @@ private fun BoxScope.TextField(
         primaryButton = {
             GenerateButton(
                 text = "",
-                icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
+                icon = when (imageEditMode) {
+                    ImageEditMode.GENERATE -> painterResource(com.android.ai.uicomponent.R.drawable.ic_ai_send)
+                    ImageEditMode.INPAINT -> painterResource(com.android.ai.uicomponent.R.drawable.ic_ai_img)
+                    ImageEditMode.OUTPAINT -> painterResource(com.android.ai.uicomponent.R.drawable.ic_ai_bg)
+                },
                 modifier = Modifier
                     .width(72.dp)
                     .height(55.dp)
@@ -286,3 +316,10 @@ private fun BoxScope.TextField(
             .align(Alignment.BottomCenter),
     )
 }
+
+enum class ImageEditMode {
+    INPAINT,
+    OUTPAINT,
+    GENERATE,
+}
+

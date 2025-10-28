@@ -109,7 +109,7 @@ fun ImagenEditingMaskEditor(sourceBitmap: Bitmap, onMaskFinalized: (Bitmap) -> U
                     bitmap = sourceBitmap.asImageBitmap(),
                     contentDescription = stringResource(R.string.editing_image_to_mask),
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
+                    contentScale = ContentScale.Fit,
                 )
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val canvasWidth = size.width

@@ -23,7 +23,7 @@ sealed interface ImagenEditingUIState {
     data object Loading : ImagenEditingUIState
     data class ImageGenerated(
         val bitmap: Bitmap,
-        val dimensions: Dimensions,
+        val dimensions: Dimensions = Dimensions(bitmap.width, bitmap.height),
         val contentDescription: String,
     ) : ImagenEditingUIState
 
