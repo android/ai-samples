@@ -28,26 +28,33 @@ The app will open with the samples list screen that allows you to navigate throu
 available samples.
 
 ## Samples
-Browse the samples inside the `/samples` folder:
+Here is the list of samples you can find in the `/samples` folder:
 
 | Samples | |
-|:-----|---------|
-|  **Gemini Image Chat**:<br><br> a sample using the new [Gemini 2.5 Flash Image model](https://developers.googleblog.com/en/introducing-gemini-2-5-flash-image/) (a.k.a. "NanoBanana") enabling image generation and iterations via chat interactions<br><br><br><br> **[> Browse code](samples/gemini-image-chat)**<br><br> | <img src="samples/gemini-image-chat/android_nano_banana.png" width="150" alt="Gemini Image Chat sample"> |
+|:---|-----------|
+| <img src="samples/gemini-image-chat/android_nano_banana.png" width="150" alt="Gemini Image Chat sample"> | ✨🖼️🍌 **Gemini Image Chat**:<br>A chatbot app using the new [Gemini 2.5 Flash Image model](https://developers.googleblog.com/en/introducing-gemini-2-5-flash-image/) (a.k.a. "NanoBanana") enabling image generation and iterations via conversation with the Gemini model. Ask the model to generate an image and ask for tweaks in the chat.<br><br><br><br> **[> Browse code](samples/gemini-image-chat)**<br><br> |
 |  |  |
-
-
-- **gemini-image-chat**: a sample using the new [Gemini 2.5 Flash Image model](https://developers.googleblog.com/en/introducing-gemini-2-5-flash-image/) (a.k.a. "NanoBanana") enabling image generation and iterations via chat interactions
-- **gemini-chatbot**: a simple chatbot using Gemini Flash
-- **gemini-multimodal**: a single screen application leveraging text+image to text generation with Gemini Flash
-- **genai-summarization**: a text summarization sample using Gemini Nano
-- **genai-image-description**: an image description sample using Gemini Nano
-- **genai-writing-assistance**: a proofreading and rewriting sample using Gemini Nano
-- **imagen**: an image generation sample using Imagen
-- **magic-selfie**: an sample using ML Kit subject segmentation and Imagen for image generation
-- **gemini-video-summarization**: a video summarization sample using Gemini Flash
-- **gemini-video-metadata-creation**: a sample using Gemini Flash to generate a video description, hashtags, chapters, etc...
-- **gemini-live-todo**: a todo list app using Gemini Live
-- More to come...
+|  <img src="samples/gemini-image-chat/android_nano_banana.png" width="150" alt="Gemini Image Chat sample"> | ✨🗣️ **Gemini Chatbot**:<br>A chatbot app using the Gemini Flash model. You can tweak the [system instructions](https://firebase.google.com/docs/ai-logic/system-instructions) in the model configuration to change the tone or the persona of the model.<br><br><br><br> **[> Browse code](samples/gemini-chatbot)**<br><br> |
+|  |  |
+|  <img src="samples/gemini-image-chat/android_nano_banana.png" width="150" alt="Gemini Image Chat sample"> | ✨📸 **Gemini Multimodal**:<br>A sample leveraging the [multimodal capabilities]([url](https://developer.android.com/ai/gemini/developer-api#generate-text-from-media) of the Gemini Flash model (in this case text and image-to-text) to let you prompt the model with an image.<br><br><br><br> **[> Browse code](samples/gemini-multimodal)**<br><br> |
+|  |  |
+|  <img src="samples/gemini-image-chat/android_nano_banana.png" width="150" alt="Gemini Image Chat sample"> | ✨📱📰 **On-device Summarization**: <br>A sample letting you summarizing text on-device using Gemini Nano via the [GenAI Summarization API](https://developers.google.com/ml-kit/genai/summarization/android).<br><br><br><br> **[> Browse code](samples/genai-summarization)**<br><br> |
+|  |  |
+|  <img src="samples/gemini-image-chat/android_nano_banana.png" width="150" alt="Gemini Image Chat sample"> | ✨📱🔍 **On-device Image Description**: <br>A sample letting you generate image descriptions using Gemini Nano via the [GenAI Image Description API](https://developers.google.com/ml-kit/genai/image-description/android).<br><br><br><br> **[> Browse code](samples/genai-image-description)**<br><br> | 
+|  |  |
+|  <img src="samples/gemini-image-chat/android_nano_banana.png" width="150" alt="Gemini Image Chat sample"> | ✨📱🖋️ **On-device Writing Assistance**: <br>A sample letting you proofread and rewrite text using Gemini Nano via the [GenAI Rewriting API](https://developers.google.com/ml-kit/genai/rewriting/android).<br><br><br><br> **[> Browse code](samples/genai-writing-assistance)**<br><br> |
+|  |  |
+|  <img src="samples/gemini-image-chat/android_nano_banana.png" width="150" alt="Gemini Image Chat sample"> | 🖼️ **Image Generation with Imagen**: <br>A sample using [Imagen to generate images](https://developer.android.com/ai/imagen#generate-image) of landscapes, objects and people in various artistic style.<br><br><br><br> **[> Browse code](samples/imagen)**<br><br> |
+|  |  |
+|  <img src="samples/gemini-image-chat/android_nano_banana.png" width="150" alt="Gemini Image Chat sample"> | 🖼️📸 **Magic Selfie**: <br>A sample using [ML Kit subject Segmentation SDK](https://developers.google.com/ml-kit/vision/subject-segmentation/android) to remove the background behind a preson, and [Imagen](https://developer.android.com/ai/imagen#generate-image) to generate new background.<br><br><br><br> **[> Browse code](samples/magic-selfie)**<br><br> |
+|  |  |
+|  <img src="samples/gemini-image-chat/android_nano_banana.png" width="150" alt="Gemini Image Chat sample"> | ✨🎥 **Gemini Video Summarization**: <br>A sample using Gemini Flash to [summarize videos](https://firebase.google.com/docs/ai-logic/analyze-video?api=dev) leveraging the [large file support](https://firebase.google.com/docs/ai-logic/solutions/cloud-storage).<br><br><br><br> **[> Browse code](samples/gemini-video-summarization)**<br><br> |
+|  |  |
+|  <img src="samples/gemini-image-chat/android_nano_banana.png" width="150" alt="Gemini Image Chat sample"> | ✨🎥 **Gemini Video Metadata Creation**: <br>A sample using Gemini Flash to generate thumbnails, descriptions, hashtags, account tags, chapters and links from a video. This sample leverages the ability to provide a [Youtube video link](https://firebase.google.com/docs/ai-logic/input-file-requirements?api=dev#provide-file-using-url) to the model context for inference.<br><br><br><br> **[> Browse code](samples/gemini-video-metadata-creation)**<br><br> |
+|  |  |
+|  <img src="samples/gemini-image-chat/android_nano_banana.png" width="150" alt="Gemini Image Chat sample"> | ✨🗣️ **Gemini Live Todo App**: <br>A Todo List app using the [Gemini Live API](https://developer.android.com/ai/gemini/live) to let the user interact with Gemini Live via voice to update the todo list.<br><br><br><br> **[> Browse code](samples/gemini-live-todo)**<br><br> |
+|  |  |
+|  <img src="samples/gemini-image-chat/android_nano_banana.png" width="150" alt="Gemini Image Chat sample"> | 🖼️🖌️ **Imagen Editing**: <br>A sample using Imagen to [generate images](https://developer.android.com/ai/imagen#generate-image) and [editing images](https://developer.android.com/ai/imagen#editing) using the mask based editing capabilities of the model.<br><br><br><br> **[> Browse code](samples/imagen-editing)**<br><br> |
 
 ## Reporting issues
 
