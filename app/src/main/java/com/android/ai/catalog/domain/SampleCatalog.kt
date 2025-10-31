@@ -44,7 +44,19 @@ val sampleCatalog = listOf(
         route = "GeminiImageChatScreen",
         sampleEntryScreen = { GeminiImageChatScreen() },
         tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
+        keyArt = R.drawable.img_keyart_chatbot,
         needsFirebase = true,
+        isFeatured = true,
+    ),
+    SampleCatalogItem(
+        title = R.string.imagen_editing_sample_list_title,
+        description = R.string.imagen_editing_sample_list_description,
+        route = "ImagenMaskEditing",
+        sampleEntryScreen = { ImagenEditingScreen() },
+        tags = listOf(SampleTags.IMAGEN, SampleTags.FIREBASE),
+        needsFirebase = true,
+        keyArt = R.drawable.img_keyart_imagen,
+        isFeatured = true,
     ),
     SampleCatalogItem(
         title = R.string.gemini_multimodal_sample_list_title,
@@ -53,7 +65,7 @@ val sampleCatalog = listOf(
         sampleEntryScreen = { GeminiMultimodalScreen() },
         tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
-        isFeatured = true,
+        isFeatured = false,
         keyArt = R.drawable.img_keyart_multimodal,
     ),
     SampleCatalogItem(
@@ -99,15 +111,6 @@ val sampleCatalog = listOf(
         keyArt = R.drawable.img_keyart_imagen,
     ),
     SampleCatalogItem(
-        title = R.string.imagen_editing_sample_list_title,
-        description = R.string.imagen_editing_sample_list_description,
-        route = "ImagenMaskEditing",
-        sampleEntryScreen = { ImagenEditingScreen() },
-        tags = listOf(SampleTags.IMAGEN, SampleTags.FIREBASE),
-        needsFirebase = true,
-        keyArt = R.drawable.img_keyart_imagen,
-    ),
-    SampleCatalogItem(
         title = R.string.magic_selfie_sample_list_title,
         description = R.string.magic_selfie_sample_list_description,
         route = "MagicSelfieScreen",
@@ -122,6 +125,7 @@ val sampleCatalog = listOf(
         route = "VideoSummarizationScreen",
         sampleEntryScreen = { VideoSummarizationScreen() },
         tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE, SampleTags.MEDIA3),
+        keyArt = R.drawable.img_keyart_video_summary,
         needsFirebase = true,
     ),
     SampleCatalogItem(
