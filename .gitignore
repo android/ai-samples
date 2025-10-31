@@ -1,4 +1,8 @@
-local.properties
-.DS_Store
-build
+/build
+/.gradle
 /.idea
+/.kotlin
+app/google-services.json
+build
+/local.properties
+.DS_Store

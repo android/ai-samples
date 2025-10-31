@@ -21,11 +21,6 @@ jobs:
       contents: write # Needed for git-auto-commit-action
     strategy:
       fail-fast: false
-      matrix:
-        project-dir: [ai-catalog, gemini-nano]
-    defaults:
-      run:
-        working-directory: ${{ matrix.project-dir }}
 
     steps:
       - name: Checkout code
@@ -47,11 +42,9 @@ jobs:
         run: chmod +x gradlew
 
       - name: Apply Spotless
-        if: matrix.project-dir != 'gemini-nano'
         run: ./gradlew spotlessApply
 
       - name: Commit Spotless changes
-        if: matrix.project-dir != 'gemini-nano'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 🤖 Apply Spotless formatting
@@ -70,21 +63,21 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: APKs-${{ matrix.project-dir }}
+          name: APKs
           path: '**/build/outputs/apk/debug/*.apk'
 
       - name: Upload JVM local test results (XML)
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: local-test-results-${{ matrix.project-dir }}
+          name: local-test-results
           path: '**/build/test-results/test*UnitTest/TEST-*.xml'
 
       - name: Upload lint reports (HTML)
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: lint-reports-html-${{ matrix.project-dir }}
+          name: lint-reports-html
           path: '**/build/reports/lint-results-debug.html'
 
   androidTest:
@@ -94,7 +87,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project-dir: [ai-catalog, gemini-nano]
         api-level: [26]
 
     steps:
@@ -126,7 +118,6 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Grant execute permission for gradlew
-        working-directory: ${{ matrix.project-dir }}
         run: chmod +x gradlew
 
       - name: Build projects and run instrumentation tests
@@ -137,7 +128,6 @@ jobs:
           disable-animations: true
           disk-size: 6000M
           heap-size: 600M
-          working-directory: ${{ matrix.project-dir }}
           script: ./gradlew connectedDebugAndroidTest
 
 
@@ -145,5 +135,5 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports-${{ matrix.project-dir }}-${{ matrix.api-level }}
+          name: test-reports-${{ matrix.api-level }}
           path: '**/build/reports/androidTests'
