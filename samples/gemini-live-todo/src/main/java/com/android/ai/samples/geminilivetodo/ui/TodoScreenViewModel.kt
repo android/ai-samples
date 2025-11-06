@@ -50,6 +50,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 
@@ -74,11 +75,11 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
         todoRepository.addTodo(taskDescription)
     }
 
-    fun removeTodo(todoId: Long) {
+    fun removeTodo(todoId: Int) {
         todoRepository.removeTodo(todoId)
     }
 
-    fun toggleTodoStatus(todoId: Long) {
+    fun toggleTodoStatus(todoId: Int) {
         todoRepository.toggleTodoStatus(todoId)
     }
 
@@ -194,28 +195,51 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
             }
             "addTodo" -> {
                 val taskDescription = functionCall.args["taskDescription"]!!.jsonPrimitive.content
-                todoRepository.addTodo(taskDescription)
-                val response = JsonObject(
-                    mapOf(
-                        "success" to JsonPrimitive(true),
-                        "message" to JsonPrimitive("Task $taskDescription added to the todo list"),
-                    ),
-                )
-                FunctionResponsePart(functionCall.name, response)
+                val id = todoRepository.addTodo(taskDescription)
+
+                if (id!=null) {
+                    val response = JsonObject(
+                        mapOf(
+                            "success" to JsonPrimitive(true),
+                            "message" to JsonPrimitive("Task $taskDescription added to the todo list (id: $id)"),
+                        ),
+                    )
+                    FunctionResponsePart(functionCall.name, response)
+                } else {
+                    val response = JsonObject(
+                        mapOf(
+                            "success" to JsonPrimitive(false),
+                            "message" to JsonPrimitive("Task $taskDescription wasn't properly added to the list"),
+                        ),
+                    )
+                    FunctionResponsePart(functionCall.name, response)
+                }
+
             }
             "removeTodo" -> {
-                val taskId = functionCall.args["todoId"]!!.jsonPrimitive.long
-                todoRepository.removeTodo(taskId)
-                val response = JsonObject(
-                    mapOf(
-                        "success" to JsonPrimitive(true),
-                        "message" to JsonPrimitive("Task was removed from the todo list"),
-                    ),
-                )
-                FunctionResponsePart(functionCall.name, response)
+                try {
+                    val taskId = functionCall.args["todoId"]!!.jsonPrimitive.int
+                    todoRepository.removeTodo(taskId)
+                    val response = JsonObject(
+                        mapOf(
+                            "success" to JsonPrimitive(true),
+                            "message" to JsonPrimitive("Task was removed from the todo list"),
+                        ),
+                    )
+                    FunctionResponsePart(functionCall.name, response)
+                } catch (e: Exception) {
+                    val response = JsonObject(
+                        mapOf(
+                            "success" to JsonPrimitive(false),
+                            "message" to JsonPrimitive("Something went wrong: ${e.message}"),
+                        ),
+                    )
+                    FunctionResponsePart(functionCall.name, response)
+                }
+
             }
             "toggleTodoStatus" -> {
-                val taskId = functionCall.args["todoId"]!!.jsonPrimitive.long
+                val taskId = functionCall.args["todoId"]!!.jsonPrimitive.int
                 todoRepository.toggleTodoStatus(taskId)
                 val response = JsonObject(
                     mapOf(

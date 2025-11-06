@@ -41,22 +41,24 @@ class TodoRepository @Inject constructor() {
 
     fun getTodoList(): List<Todo> = _todos.value
 
-    fun addTodo(taskDescription: String) {
+    fun addTodo(taskDescription: String) : Int? {
         if (taskDescription.isNotBlank()) {
             val newTodo = Todo(task = taskDescription)
             _todos.update { currentList ->
                 currentList + newTodo
             }
+            return newTodo.id
         }
+        return null
     }
 
-    fun removeTodo(todoId: Long) {
+    fun removeTodo(todoId: Int) {
         _todos.update { currentList ->
             currentList.filterNot { it.id == todoId }
         }
     }
 
-    fun toggleTodoStatus(todoId: Long) {
+    fun toggleTodoStatus(todoId: Int) {
         _todos.update { currentList ->
             currentList.map { todo ->
                 if (todo.id == todoId) {
