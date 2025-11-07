@@ -114,7 +114,7 @@ private fun VideoMetadataCreationScreen(
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.video_metadata_creation_title),
                 sampleDescription = stringResource(R.string.video_metadata_creation_title),
-                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-video-metadata-creation",
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/samples/gemini-video-metadata-creation",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )
         },

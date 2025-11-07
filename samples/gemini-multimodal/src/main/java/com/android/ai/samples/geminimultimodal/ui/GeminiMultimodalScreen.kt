@@ -127,7 +127,7 @@ private fun GeminiMultimodalScreen(
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.geminimultimodal_title),
                 sampleDescription = stringResource(R.string.geminimultimodal_subtitle),
-                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-multimodal",
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/samples/gemini-multimodal",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )
         },

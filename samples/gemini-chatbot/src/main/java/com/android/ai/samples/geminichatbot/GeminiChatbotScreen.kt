@@ -87,7 +87,7 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.geminichatbot_title),
                 sampleDescription = stringResource(R.string.geminichatbot_description),
-                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-chatbot",
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/samples/gemini-chatbot",
                 modifier = Modifier.background(MaterialTheme.colorScheme.surface),
                 onBackClick = { backDispatcher?.onBackPressed() },
                 topAppBarState = topAppBarState,

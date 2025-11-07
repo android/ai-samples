@@ -157,7 +157,7 @@ private fun MagicSelfieScreen(
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.magic_selfie_title),
                 sampleDescription = stringResource(R.string.magic_selfie_subtitle),
-                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/magic-selfie",
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/samples/magic-selfie",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )
         },

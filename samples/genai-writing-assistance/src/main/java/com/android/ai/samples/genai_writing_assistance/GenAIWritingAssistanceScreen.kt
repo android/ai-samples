@@ -138,7 +138,7 @@ fun GenAIWritingAssistanceContent(
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.genai_writing_assistance_title_bar),
                 sampleDescription = stringResource(R.string.genai_writing_assistance_description),
-                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-writing-assistance",
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/samples/genai-writing-assistance",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )
         },

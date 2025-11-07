@@ -143,7 +143,7 @@ private fun GeminiImageChatScreen(
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.gemini_image_chat_title),
                 sampleDescription = stringResource(R.string.gemini_image_chat_description),
-                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-image-chat",
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/samples/gemini-image-chat",
                 onBackClick = { backDispatcher?.onBackPressed() },
                 topAppBarState = topAppBarState,
                 scrollBehavior = scrollBehavior,

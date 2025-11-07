@@ -150,7 +150,7 @@ private fun VideoSummarizationScreen(
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.video_summarization_title),
                 sampleDescription = stringResource(R.string.video_summarization_description),
-                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-video-summarization",
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/samples/gemini-video-summarization",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )
         },

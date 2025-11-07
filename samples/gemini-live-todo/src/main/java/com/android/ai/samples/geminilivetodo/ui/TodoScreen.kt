@@ -90,7 +90,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.gemini_live_title),
                 sampleDescription = stringResource(R.string.gemini_live_subtitle),
-                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-live-todo",
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/samples/gemini-live-todo",
                 topAppBarState = topAppBarState,
                 scrollBehavior = scrollBehavior,
                 onBackClick = { backDispatcher?.onBackPressed() },

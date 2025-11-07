@@ -107,7 +107,7 @@ private fun ImagenEditingScreenContent(
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.editing_title_image_generation_title),
                 sampleDescription = stringResource(R.string.editing_title_image_generation_subtitle),
-                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/imagen-editing",
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/samples/imagen-editing",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )
         },

@@ -99,7 +99,7 @@ fun GenAISummarizationContent(
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.genai_summarization_title_bar),
                 sampleDescription = stringResource(R.string.genai_summarization_description),
-                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-summarization",
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/samples/genai-summarization",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )
         },

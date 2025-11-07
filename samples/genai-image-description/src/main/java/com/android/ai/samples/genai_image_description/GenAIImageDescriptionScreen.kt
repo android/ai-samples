@@ -109,7 +109,7 @@ private fun GenAIImageDescriptionScreen(
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.genai_image_description_title),
                 sampleDescription = stringResource(R.string.genai_image_description_subtitle),
-                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/genai-image-description",
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/samples/genai-image-description",
                 onBackClick = { backDispatcher?.onBackPressed() },
             )
         },
