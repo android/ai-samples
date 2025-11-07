@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="genai_image_prompt_title">Image Prompt</string>
+    <string name="genai_image_prompt_subtitle">Ask questions about an image using Gemini Nano</string>
+    <string name="genai_image_prompt_run_inference">Generate with Prompt</string>
+    <string name="genai_image_prompt_add_image">Add Image</string>
+    <string name="genai_image_prompt_input_label">Enter your prompt here</string>
+
+    <string name="genai_image_prompt_no_image_selected">No image selected. Please select an image.</string>
+    <string name="genai_image_prompt_no_text_input">Please enter a prompt.</string>
+    <string name="genai_image_prompt_not_available">Gemini Nano is not available on this device.</string>
+    <string name="genai_image_prompt_model_not_ready">Model not available or downloaded. Please wait.</string>
+    <string name="image_prompt_downloading">Downloading Gemini Nano: %1$d / %2$d bytes</string>
+    <string name="image_prompt_download_failed">Failed to download Gemini Nano. Please check your network connection.</string>
+    <string name="image_prompt_generation_failed">Failed to generate response. Please try again.</string>
+</resources>

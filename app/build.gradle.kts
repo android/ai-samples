@@ -85,6 +85,7 @@ dependencies {
     implementation(project(":samples:gemini-chatbot"))
     implementation(project(":samples:genai-summarization"))
     implementation(project(":samples:genai-image-description"))
+    implementation(project(":samples:genai-image-prompt"))
     implementation(project(":samples:genai-writing-assistance"))
     implementation(project(":samples:imagen"))
     implementation(project(":samples:imagen-editing"))
