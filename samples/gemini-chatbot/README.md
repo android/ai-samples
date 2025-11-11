@@ -31,4 +31,4 @@ fun sendMessage(message: String) {
 }
 ```
 
-Read more about [getting started with Gemini](https://developer.android.com/ai/gemini/get-started) in the Android Documentation.
+Read more about the [Gemini API](https://developer.android.com/ai/gemini) in the Android Documentation.

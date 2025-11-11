@@ -70,6 +70,7 @@ sealed class ScreenState {
 }
 
 ```
+* **Strongly recommended:** When a view model or the business logic is modified in the code of a sample, verify that these changes are properly reflected in the README.md of this sample.
 * **Recommended:** Do not use `AndroidViewModel`. Use the `ViewModel` class. Avoid using the `Application` class in ViewModels; move the dependency to the UI or data layer.
 * **Recommended:** Don't use `LiveData`, use state flow instead.
 * **Recommended:** Expose a UI state. Use a single `uiState` property (a `StateFlow`) for data exposure. Multiple properties can be used for unrelated data. Use `stateIn` with `WhileSubscribed(5000)` for data streams.  For simpler cases, use a `MutableStateFlow` exposed as an immutable `StateFlow`.  Consider using a data class or sealed class for the `UiState`.
