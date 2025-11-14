@@ -161,6 +161,8 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
 
             val generativeModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).liveModel(
                 "gemini-2.0-flash-live-preview-04-09",
+//                "gemini-live-2.5-flash-preview", // Or try with a newer model
+//                "gemini-2.5-flash-native-audio-preview-09-2025", // Or try with native audio
                 generationConfig = liveGenerationConfig,
                 systemInstruction = systemInstruction,
                 tools = listOf(
@@ -191,7 +193,7 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                         "message" to JsonPrimitive("List of tasks in the todo list: $todoList"),
                     ),
                 )
-                FunctionResponsePart(functionCall.name, response)
+                FunctionResponsePart(functionCall.name, response, functionCall.id)
             }
             "addTodo" -> {
                 val taskDescription = functionCall.args["taskDescription"]!!.jsonPrimitive.content
@@ -204,7 +206,7 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                             "message" to JsonPrimitive("Task $taskDescription added to the todo list (id: $id)"),
                         ),
                     )
-                    FunctionResponsePart(functionCall.name, response)
+                    FunctionResponsePart(functionCall.name, response, functionCall.id)
                 } else {
                     val response = JsonObject(
                         mapOf(
@@ -212,7 +214,7 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                             "message" to JsonPrimitive("Task $taskDescription wasn't properly added to the list"),
                         ),
                     )
-                    FunctionResponsePart(functionCall.name, response)
+                    FunctionResponsePart(functionCall.name, response, functionCall.id)
                 }
 
             }
@@ -226,7 +228,7 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                             "message" to JsonPrimitive("Task was removed from the todo list"),
                         ),
                     )
-                    FunctionResponsePart(functionCall.name, response)
+                    FunctionResponsePart(functionCall.name, response, functionCall.id)
                 } catch (e: Exception) {
                     val response = JsonObject(
                         mapOf(
@@ -234,7 +236,7 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                             "message" to JsonPrimitive("Something went wrong: ${e.message}"),
                         ),
                     )
-                    FunctionResponsePart(functionCall.name, response)
+                    FunctionResponsePart(functionCall.name, response, functionCall.id)
                 }
 
             }
@@ -247,13 +249,13 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                         "message" to JsonPrimitive("Task was toggled in the todo list"),
                     ),
                 )
-                FunctionResponsePart(functionCall.name, response)
+                FunctionResponsePart(functionCall.name, response, functionCall.id)
             }
             else -> {
                 val response = JsonObject(
                     mapOf("error" to JsonPrimitive("Unknown function: ${functionCall.name}")),
                 )
-                FunctionResponsePart(functionCall.name, response)
+                FunctionResponsePart(functionCall.name, response, functionCall.id)
             }
         }
     }
