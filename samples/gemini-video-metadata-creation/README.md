@@ -4,7 +4,7 @@ This sample is part of the [AI Sample Catalog](../../). To build and run this sa
 
 ## Description
 
-This sample demonstrates how to generate various types of video metadata (description, hashtags, chapters, account tags, links, and thumbnails) using the `Gemini 2.5 Flash` model. Users can select a video, and the generative model will analyze its content to provide relevant metadata, showcasing how to enrich video content with AI-powered insights.
+This sample demonstrates how to generate various types of video metadata (description, hashtags, chapters, account tags, links, and thumbnails) using Gemini Flash. Users can select a video, and the generative model will analyze its content to provide relevant metadata, showcasing how to enrich video content with AI-powered insights.
 
 <div style="text-align: center;">
 <img width="320" alt="Gemini Video Metadata Creation in action" src="gemini_video_metadata.png" />
@@ -12,7 +12,7 @@ This sample demonstrates how to generate various types of video metadata (descri
 
 ## How it works
 
-The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with the `gemini-2.5-flash` model. The core logic involves several functions (e.g., [`generateDescription`](./src/main/java/com/android/ai/samples/geminivideometadatacreation/GenerateDescription.kt), `generateHashtags`, `generateChapters`, `generateAccountTags`, `generateLinks`, `generateThumbnails`) that send video content to the Gemini API for analysis. The model processes the video and returns structured metadata based on the specific prompt.
+The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with Gemini Flash. The core logic involves several functions (e.g., [`generateDescription`](./src/main/java/com/android/ai/samples/geminivideometadatacreation/GenerateDescription.kt), `generateHashtags`, `generateChapters`, `generateAccountTags`, `generateLinks`, `generateThumbnails`) that send video content to the Gemini API for analysis. The model processes the video and returns structured metadata based on the specific prompt.
 
 Here is a key snippet of code that generates a video description:
 

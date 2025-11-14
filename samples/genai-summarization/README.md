@@ -1,10 +1,10 @@
-# Summarization with Nano Sample
+# Summarization with On-Device Gemini Nano Sample
 
 This sample is part of the [AI Sample Catalog](../../). To build and run this sample, you should clone the entire repository.
 
 ## Description
 
-This sample demonstrates how to summarize articles and conversations on-device using the GenAI API powered by Gemini Nano. Users can input text, and the model will generate a concise summary, showcasing the power of on-device text processing with AI.
+This sample demonstrates how to summarize articles and conversations on-device using the GenAI API powered by Gemini Nano. Users can input text, and the model will generate a summary in 1-3 bullet points, showcasing the power of on-device text processing with AI.
 
 <div style="text-align: center;">
 <img width="320" alt="Summarization with Nano in action" src="nano_summarization.png" />
@@ -35,4 +35,4 @@ private suspend fun generateSummarization(summarizer: Summarizer, textToSummariz
 }
 ```
 
-Read more about [Gemini Nano](https://developer.android.com/ai/gemini-nano/ml-kit-genai) in the Android Documentation.
+Read more about [GenAI Summarization API](https://developers.google.com/ml-kit/genai/summarization/android) in the documentation.

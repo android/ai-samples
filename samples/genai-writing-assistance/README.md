@@ -1,4 +1,4 @@
-# Writing Assistance with Nano Sample
+# Writing Assistance with On-Device Gemini Nano Sample
 
 This sample is part of the [AI Sample Catalog](../../). To build and run this sample, you should clone the entire repository.
 
@@ -28,4 +28,4 @@ private suspend fun runProofreadingInference(textToProofread: String) {
 }
 ```
 
-Read more about [Gemini Nano](https://developer.android.com/ai/gemini-nano/ml-kit-genai) in the Android Documentation.
+Read more about the [GenAI Proofreading](https://developers.google.com/ml-kit/genai/proofreading/android) and [GenAI Rewriting](https://developers.google.com/ml-kit/genai/rewriting/android) documentation.

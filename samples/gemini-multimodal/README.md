@@ -4,7 +4,7 @@ This sample is part of the [AI Sample Catalog](../../). To build and run this sa
 
 ## Description
 
-This sample demonstrates a multimodal (image and text) prompt, using the `Gemini 2.5 Flash` model. Users can select an image and provide a text prompt, and the generative model will respond based on both inputs. This showcases how to build a simple, yet powerful, multimodal AI with the Gemini API.
+This sample demonstrates a multimodal (image and text) prompt, using the Gemini Flash model. Users can select an image and provide a text prompt, and the generative model will respond based on both inputs. This showcases how to build a simple, yet powerful, multimodal AI with the Gemini API.
 
 <div style="text-align: center;">
 <img width="320" alt="Gemini Multimodal in action" src="gemini_multimodal.png" />
@@ -12,7 +12,7 @@ This sample demonstrates a multimodal (image and text) prompt, using the `Gemini
 
 ## How it works
 
-The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with the `gemini-2.5-flash` model. The core logic is in the [`GeminiDataSource.kt`](./src/main/java/com/android/ai/samples/geminimultimodal/data/GeminiDataSource.kt) file. A `generativeModel` is initialized, and then a `chat` session is started from it. When a user provides an image and a text prompt, they are combined into a multimodal prompt and sent to the model, which then generates a text response.
+The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with Gemini Flash. The core logic is in the [`GeminiDataSource.kt`](./src/main/java/com/android/ai/samples/geminimultimodal/data/GeminiDataSource.kt) file. A `generativeModel` is initialized, and then a `chat` session is started from it. When a user provides an image and a text prompt, they are combined into a multimodal prompt and sent to the model, which then generates a text response.
 
 Here is the key snippet of code that initializes the generative model:
 

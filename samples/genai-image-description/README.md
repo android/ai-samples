@@ -1,10 +1,10 @@
-# Image Description with Nano Sample
+# Image Description with On-Device Gemini Nano Sample
 
 This sample is part of the [AI Sample Catalog](../../). To build and run this sample, you should clone the entire repository.
 
 ## Description
 
-This sample demonstrates how to generate short descriptions of images on-device using the GenAI API powered by Gemini Nano. Users can select an image, and the model will generate a descriptive text, showcasing the power of on-device multimodal AI.
+This sample demonstrates how to generate short descriptions of images on-device using the ML Kit GenAI API powered by Gemini Nano. Users can select an image, and the model will generate a short descriptive text, showcasing the power of on-device multimodal AI.
 
 <div style="text-align: center;">
 <img width="320" alt="Image Description with Nano in action" src="nano_image_description.png" />
@@ -36,4 +36,4 @@ private suspend fun generateImageDescription(imageUri: Uri) {
 }
 ```
 
-Read more about [Gemini Nano](https://developer.android.com/ai/gemini-nano/ml-kit-genai) in the Android Documentation.
+Read more about [GenAI Image Description API](https://developers.google.com/ml-kit/genai/image-description/android) in the documentation.
