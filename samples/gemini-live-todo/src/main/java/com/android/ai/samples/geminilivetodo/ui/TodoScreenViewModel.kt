@@ -159,12 +159,9 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                 emptyMap(),
             )
 
+            // See https://firebase.google.com/docs/ai-logic/live-api for an overview of available models
             val generativeModel = Firebase.ai(backend = GenerativeBackend.googleAI()).liveModel(
-                "gemini-2.5-flash-native-audio-preview-09-2025", // available through googleAI()
-//                "gemini-live-2.5-flash-preview", // available through googleAI(), to be deprecated on Dec 9th 2025.
-//                "gemini-2.0-flash-live-001", // available through googleAI(), to be deprecated on Dec 9th 2025.
-//                "gemini-2.0-flash-live-preview-04-09", // available through vertexAI()
-//                "gemini-live-2.5-flash-preview-native-audio-09-2025", // available through vertexAI()
+                "gemini-2.5-flash-native-audio-preview-09-2025",
                 generationConfig = liveGenerationConfig,
                 systemInstruction = systemInstruction,
                 tools = listOf(
