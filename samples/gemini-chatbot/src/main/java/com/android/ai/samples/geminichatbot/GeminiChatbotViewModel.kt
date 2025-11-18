@@ -26,6 +26,7 @@ import com.google.firebase.ai.type.HarmCategory
 import com.google.firebase.ai.type.SafetySetting
 import com.google.firebase.ai.type.content
 import com.google.firebase.ai.type.generationConfig
+import com.google.firebase.ai.type.thinkingConfig
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,9 +51,12 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
 
     private val generativeModel by lazy {
         Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
-            "gemini-2.5-flash",
+            "gemini-3-pro-preview",
             generationConfig = generationConfig {
-                temperature = 0.9f
+                thinkingConfig = thinkingConfig {
+                    includeThoughts = true
+                }
+                temperature = 1.0f
                 topK = 32
                 topP = 1f
                 maxOutputTokens = 4096
