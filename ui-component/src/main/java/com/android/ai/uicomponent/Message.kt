@@ -17,7 +17,9 @@ package com.android.ai.uicomponent
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,21 +35,30 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.android.ai.theme.AISampleCatalogTheme
 
 data class ChatMessage(
     val text: String,
     val timestamp: Long,
     val isIncoming: Boolean = false,
+    val thoughtSummary: String? = null,
     val image: Bitmap? = null,
 )
 
@@ -117,6 +128,27 @@ fun MessageBubble(message: ChatMessage, modifier: Modifier = Modifier) {
                     },
                 ) {
                     Column {
+                        message.thoughtSummary?.let { summary ->
+                            var isExpanded by remember { mutableStateOf(false) }
+                            if (isExpanded) {
+                                Text(
+                                    text = summary,
+                                    modifier = Modifier
+                                        .padding(top = 8.dp, start = 16.dp, end = 16.dp),
+                                    fontSize = 12.sp
+                                )
+                            }
+                            Text(
+                                text = if (isExpanded) stringResource(R.string.hide_thought_summary) else stringResource(
+                                    R.string.show_thought_summary
+                                ),
+                                modifier = Modifier
+                                    .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+                                    .clickable { isExpanded = !isExpanded },
+                                fontSize = 12.sp,
+                                textDecoration = TextDecoration.Underline
+                            )
+                        }
                         MarkdownText(
                             text = message.text,
                             modifier = Modifier.padding(16.dp),
@@ -146,6 +178,7 @@ private fun MessageBubbleIncomingPreview() {
             message = ChatMessage(
                 text = "Hi there!",
                 timestamp = 124,
+                thoughtSummary = "This is our first interaction. Let's warmly greet this human.",
                 isIncoming = true,
             ),
         )
@@ -173,14 +206,15 @@ private fun MessageListPreview() {
         MessageList(
             messages = listOf(
                 ChatMessage(
-                    text = "Hi there!",
-                    timestamp = 124,
-                    isIncoming = true,
-                ),
-                ChatMessage(
                     text = "I’m super sleepy today, what coffee drink has the most caffeine, but not too much. Also something hot.",
                     timestamp = 123,
                     isIncoming = false,
+                ),
+                ChatMessage(
+                    text = "Hi there!",
+                    thoughtSummary = "This is our first interaction. Let's warmly greet this human.",
+                    timestamp = 124,
+                    isIncoming = true,
                 ),
             ),
         )

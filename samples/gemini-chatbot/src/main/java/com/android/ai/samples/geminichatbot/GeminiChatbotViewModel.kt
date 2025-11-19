@@ -93,6 +93,7 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
                 val newMessage = response.text?.let {
                     ChatMessage(
                         text = it.trim(),
+                        thoughtSummary = response.thoughtSummary,
                         timestamp = System.currentTimeMillis(),
                         isIncoming = true,
                     )

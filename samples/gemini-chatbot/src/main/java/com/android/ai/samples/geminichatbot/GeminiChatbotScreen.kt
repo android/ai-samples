@@ -170,14 +170,15 @@ private fun GeminiChatbotScreenPreview() {
             uiState = GeminiChatbotUiState(
                 messages = listOf(
                     ChatMessage(
-                        "Hi there!",
-                        timestamp = 124,
-                        isIncoming = true,
-                    ),
-                    ChatMessage(
                         "I’m super sleepy today, what coffee drink has the most caffeine, but not too much. Also something hot.",
                         timestamp = 123,
                         isIncoming = false,
+                    ),
+                    ChatMessage(
+                        "Hi there!",
+                        thoughtSummary = "This is our first interaction. Let's warmly greet this human.",
+                        timestamp = 124,
+                        isIncoming = true,
                     ),
                 ),
             ),
