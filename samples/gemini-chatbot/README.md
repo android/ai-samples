@@ -18,7 +18,7 @@ Here is the key snippet of code that calls the generative model:
 
 ```kotlin
 private val generativeModel by lazy {
-    Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel("gemini-2.5-flash")
+    Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel("gemini-3-pro-image-preview")
 }
 private val chat = generativeModel.startChat()
 
