@@ -23,10 +23,10 @@
     <string name="gemini_video_summarization_sample_list_description">"Generate a summary of a video (from a cloud URL or Youtube) with Gemini API powered by Firebase"</string>
     <string name="gemini_video_metadata_creation_sample_list_title">Video Metadata Creation with Gemini and Firebase</string>
     <string name="gemini_video_metadata_creation_sample_list_description">"Generate metadata of a video (from a cloud URL or Youtube) with Gemini API powered by Firebase"</string>
-    <string name="gemini_live_todo_list_title">Gemini Live Todo</string>
-    <string name="gemini_live_todo_list_description">"Simple Todo app using the Gemini Live API to interact with the items in the list"</string>
-    <string name="gemini_image_chat_list_title">Chat with Nano Banana</string>
-    <string name="gemini_image_chat_list_description">Conversational Image generation with Gemini 2.5 Flash Image</string>
+    <string name="gemini_live_todo_list_title">Gemini Live API to-do</string>
+    <string name="gemini_live_todo_list_description">"Simple to-do app using the Gemini Live API to interact with the items in the list"</string>
+    <string name="gemini_image_chat_list_title">Chat with Nano Banana Pro</string>
+    <string name="gemini_image_chat_list_description">Conversational Image generation with Gemini 3 Pro Image</string>
     <string name="firebase_required">Firebase Required</string>
     <string name="firebase_required_description">This feature requires Firebase to be initialized.</string>
     <string name="close">Close</string>

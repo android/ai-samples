@@ -4,10 +4,10 @@ This sample is part of the [AI Sample Catalog](../../). To build and run this sa
 
 ## Description
 
-This sample demonstrates how to use the Gemini Live API for real-time, voice-based interactions in a simple ToDo application. Users can add, remove, and update tasks by speaking to the app, showcasing a hands-free, conversational user experience powered by the Gemini API.
+This sample demonstrates how to use the Gemini Live API for real-time, voice-based interactions in a simple to-do application. Users can add, remove, and update tasks by speaking to the app, showcasing a hands-free, conversational user experience powered by the Gemini API.
 
 <div style="text-align: center;">
-<img width="320" alt="Gemini Live Todo in action" src="gemini_live_todo.png" />
+<img width="320" alt="Gemini Live API to-do in action" src="gemini_live_todo.png" />
 </div>
 
 ## How it works
