@@ -250,7 +250,7 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
             )
 
             val generativeModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).liveModel(
-                "gemini-2.0-flash-live-preview-04-09",
+                "gemini-live-2.5-flash-preview-native-audio-09-2025 ",
                 generationConfig = liveGenerationConfig,
                 systemInstruction = systemInstruction,
                 tools = listOf(
