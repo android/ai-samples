@@ -18,7 +18,7 @@ Here is the key snippet of code that initializes the model and connects to a liv
 
 ```kotlin
 val generativeModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).liveModel(
-    "gemini-2.0-flash-live-preview-04-09",
+    "gemini-2.5-flash-native-audio-preview-12-2025",
     generationConfig = liveGenerationConfig,
     systemInstruction = systemInstruction,
     tools = listOf(
