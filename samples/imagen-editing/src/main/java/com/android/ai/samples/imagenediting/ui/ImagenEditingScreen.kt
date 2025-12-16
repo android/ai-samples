@@ -271,7 +271,7 @@ private fun BoxScope.TextField(
                 icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
                 modifier = Modifier
                     .width(72.dp)
-                    .height(55.dp)
+                    .fillMaxHeight()
                     .padding(4.dp),
                 enabled = !isGenerating,
                 onClick = {

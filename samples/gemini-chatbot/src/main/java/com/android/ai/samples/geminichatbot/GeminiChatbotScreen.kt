@@ -18,6 +18,7 @@ package com.android.ai.samples.geminichatbot
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -142,7 +143,7 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
                         icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_send),
                         modifier = Modifier
                             .width(72.dp)
-                            .height(55.dp)
+                            .fillMaxHeight()
                             .padding(4.dp),
                         enabled = uiState.geminiMessageState !is GeminiMessageState.Generating,
                         onClick = {

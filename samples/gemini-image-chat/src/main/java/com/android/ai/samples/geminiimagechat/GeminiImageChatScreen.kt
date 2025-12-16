@@ -22,6 +22,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -198,7 +199,7 @@ private fun GeminiImageChatScreen(
                         icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_send),
                         modifier = Modifier
                             .width(72.dp)
-                            .height(55.dp)
+                            .fillMaxHeight()
                             .padding(4.dp),
                         enabled = uiState.geminiMessageState !is GeminiMessageState.Generating,
                         onClick = {
@@ -225,7 +226,7 @@ private fun GeminiImageChatScreen(
                             icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
                             modifier = Modifier
                                 .width(48.dp)
-                                .height(55.dp)
+                                .fillMaxHeight()
                                 .padding(4.dp),
                             onClick = onImagePickerClick,
                         )

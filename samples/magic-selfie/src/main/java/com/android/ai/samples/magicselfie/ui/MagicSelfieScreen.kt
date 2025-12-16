@@ -29,6 +29,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -237,6 +238,9 @@ private fun MagicSelfieScreen(
                             enabled = textFieldState.text.isNotEmpty() &&
                                 (uiState !is MagicSelfieUiState.RemovingBackground) &&
                                 (uiState !is MagicSelfieUiState.GeneratingBackground),
+                            modifier = Modifier.fillMaxHeight()
+                                .padding(4.dp)
+                                .clip(RoundedCornerShape(2.dp))
                         ) {
                             onGenerateClick(selfieBitmap, textFieldState.text.toString())
                             keyboardController?.hide()
@@ -249,6 +253,9 @@ private fun MagicSelfieScreen(
                             enabled = (uiState !is MagicSelfieUiState.RemovingBackground) &&
                                 (uiState !is MagicSelfieUiState.GeneratingBackground),
                             onClick = onTakePictureClick,
+                            modifier = Modifier.fillMaxHeight()
+                                .padding(4.dp)
+                                .clip(RoundedCornerShape(2.dp))
                         )
                     },
                 )

@@ -17,7 +17,9 @@ package com.android.ai.uicomponent
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -55,6 +57,7 @@ fun TextInput(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
+            .height(IntrinsicSize.Min)
             .border(
                 1.dp,
                 MaterialTheme.colorScheme.outline,
@@ -101,7 +104,7 @@ fun TextInput(
 fun TextInputPreview() {
     AISampleCatalogTheme {
         TextInput(
-            state = TextFieldState("Message hint"),
+            state = TextFieldState("A very long message that runs over several lines"),
             placeholder = "Placeholder",
             primaryButton = {
                 GenerateButton(
@@ -109,6 +112,7 @@ fun TextInputPreview() {
                     icon = painterResource(id = R.drawable.ic_ai_send),
                     modifier = Modifier
                         .width(72.dp)
+                        .fillMaxHeight()
                         .padding(4.dp),
                     onClick = {},
                 )
@@ -118,7 +122,8 @@ fun TextInputPreview() {
                     icon = painterResource(id = R.drawable.ic_add),
                     modifier = Modifier
                         .width(45.dp)
-                        .height(56.dp),
+                        .fillMaxHeight()
+                        .padding(4.dp),
                     onClick = {},
                 )
             },
