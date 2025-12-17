@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -270,6 +271,7 @@ private fun SummarizationSection(
             }
             GenerateButton(
                 modifier = Modifier
+                    .height(56.dp)
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),

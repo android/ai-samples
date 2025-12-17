@@ -155,7 +155,6 @@ fun GenerateButton(
 ) {
     Button(
         modifier = modifier
-            .height(56.dp)
             .border(
                 if (enabled) {
                     BorderStroke(0.dp, Color.Transparent)
@@ -226,7 +225,7 @@ fun SecondaryButton(
     onClick: () -> Unit,
 ) {
     OutlinedButton(
-        modifier = modifier.height(48.dp),
+        modifier = modifier,
         colors = colors,
         enabled = enabled,
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outline),

@@ -194,7 +194,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                         icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_add),
                         modifier = Modifier
                             .width(48.dp)
-                            .height(55.dp)
+                            .fillMaxHeight()
                             .padding(4.dp),
                     ) {
                         viewModel.addTodo(textFieldState.text.toString())
