@@ -271,7 +271,7 @@ private fun SummarizationSection(
             }
             GenerateButton(
                 modifier = Modifier
-                    .height(56.dp)
+                    .height(96.dp)
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),
