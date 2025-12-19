@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import com.android.ai.catalog.R
 import com.android.ai.samples.geminichatbot.GeminiChatbotScreen
 import com.android.ai.samples.geminiimagechat.GeminiImageChatScreen
+import com.android.ai.samples.geminiliveagent.ui.AgentScreen
 import com.android.ai.samples.geminilivetodo.ui.TodoScreen
 import com.android.ai.samples.geminimultimodal.ui.GeminiMultimodalScreen
 import com.android.ai.samples.geminivideometadatacreation.ui.VideoMetadataCreationScreen
@@ -38,6 +39,16 @@ import com.android.ai.theme.extendedColorScheme
 
 @RequiresPermission(Manifest.permission.RECORD_AUDIO)
 val sampleCatalog = listOf(
+    SampleCatalogItem(
+        title = R.string.gemini_live_agent_title,
+        description = R.string.gemini_live_agent_description,
+        route = "GeminiLiveAgentScreen",
+        sampleEntryScreen = { AgentScreen() },
+        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
+        keyArt = R.drawable.img_keyart_chatbot,
+        needsFirebase = true,
+        isFeatured = true,
+    ),
     SampleCatalogItem(
         title = R.string.gemini_image_chat_list_title,
         description = R.string.gemini_image_chat_list_description,

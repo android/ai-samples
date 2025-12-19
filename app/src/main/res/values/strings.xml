@@ -25,8 +25,12 @@
     <string name="gemini_video_metadata_creation_sample_list_description">"Generate metadata of a video (from a cloud URL or Youtube) with Gemini API powered by Firebase"</string>
     <string name="gemini_live_todo_list_title">Gemini Live API Todo</string>
     <string name="gemini_live_todo_list_description">"Simple Todo app using the Gemini Live API to interact with the items in the list"</string>
+    <string name="gemini_live_agent_title">Gemini Live Agent</string>
+    <string name="gemini_live_agent_description">"Lorem ipsum"</string>
     <string name="gemini_image_chat_list_title">Chat with Nano Banana</string>
     <string name="gemini_image_chat_list_description">Conversational Image generation with Gemini 2.5 Flash Image</string>
+    <string name="gemini_live_agent_list_title">Interact with a voice agent</string>
+    <string name="gemini_live_agent_list_description">Various sample agents using the Gemini Live API, with UI rendering and tool calls</string>
     <string name="firebase_required">Firebase Required</string>
     <string name="firebase_required_description">This feature requires Firebase to be initialized.</string>
     <string name="close">Close</string>
