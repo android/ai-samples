@@ -4,6 +4,7 @@ coilCompose = "3.1.0"
 firebaseBom = "34.5.0"
 lifecycleRuntimeCompose = "2.9.1"
 mlkitGenAi = "1.0.0-beta1"
+mlkitGenAiPrompt = "1.0.0-alpha1"
 kotlin = "2.1.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -47,6 +48,7 @@ genai-image-description = { module = "com.google.mlkit:genai-image-description",
 genai-proofreading = { module = "com.google.mlkit:genai-proofreading", version.ref = "mlkitGenAi" }
 genai-rewrite = { module = "com.google.mlkit:genai-rewriting", version.ref = "mlkitGenAi" }
 genai-summarization = { module = "com.google.mlkit:genai-summarization", version.ref = "mlkitGenAi" }
+genai-prompt = { module = "com.google.mlkit:genai-prompt", version.ref = "mlkitGenAiPrompt" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="genai_prompt_title">Photo Quality Check</string>
+    <string name="genai_prompt_subtitle">Use GenAI to check photo quality</string>
+    <string name="genai_prompt_select_photo">Select Photo</string>
+    <string name="genai_prompt_check_quality">Check Quality</string>
+    <string name="genai_prompt_result_good">Photo looks great!</string>
+    <string name="genai_prompt_result_bad">Try a different photo</string>
+    <string name="genai_prompt_downloading">Downloading model... %1$s / %2$s</string>
+    <string name="genai_prompt_error_generic">Something went wrong.</string>
+</resources>

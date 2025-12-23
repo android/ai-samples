@@ -30,6 +30,7 @@ import com.android.ai.samples.geminivideometadatacreation.ui.VideoMetadataCreati
 import com.android.ai.samples.geminivideosummary.ui.VideoSummarizationScreen
 import com.android.ai.samples.genai_image_description.GenAIImageDescriptionScreen
 import com.android.ai.samples.genai_summarization.GenAISummarizationScreen
+import com.android.ai.samples.genaiprompt.PhotoQualityScreen
 import com.android.ai.samples.genai_writing_assistance.GenAIWritingAssistanceScreen
 import com.android.ai.samples.imagen.ui.ImagenScreen
 import com.android.ai.samples.imagenediting.ui.ImagenEditingScreen
@@ -90,6 +91,14 @@ val sampleCatalog = listOf(
         description = R.string.genai_image_description_sample_list_description,
         route = "GenAIImageDescriptionScreen",
         sampleEntryScreen = { GenAIImageDescriptionScreen() },
+        tags = listOf(SampleTags.GEMINI_NANO, SampleTags.ML_KIT),
+        keyArt = R.drawable.img_keyart_img_desc,
+    ),
+    SampleCatalogItem(
+        title = R.string.genai_prompt_sample_list_title,
+        description = R.string.genai_prompt_sample_list_description,
+        route = "PhotoQualityScreen",
+        sampleEntryScreen = { PhotoQualityScreen() },
         tags = listOf(SampleTags.GEMINI_NANO, SampleTags.ML_KIT),
         keyArt = R.drawable.img_keyart_img_desc,
     ),
