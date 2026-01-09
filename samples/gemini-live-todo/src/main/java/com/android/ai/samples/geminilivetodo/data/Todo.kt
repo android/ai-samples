@@ -17,7 +17,6 @@ package com.android.ai.samples.geminilivetodo.data
 
 import kotlin.random.Random
 
-
 data class Todo(
     val id: Int = Random.nextInt(),
     val task: String,
