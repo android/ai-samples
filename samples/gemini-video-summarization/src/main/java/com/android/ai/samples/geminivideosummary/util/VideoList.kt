@@ -30,11 +30,11 @@ data class VideoItem(
 val sampleVideoList = listOf(
     VideoItem(
         R.string.video_title_big_buck_bunny,
-        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4".toUri(),
+        "https://storage.googleapis.com/androiddevelopers/samples_assets/gtv-videos-bucket/sample/BigBuckBunny.mp4".toUri(),
     ),
     VideoItem(
         R.string.video_title_android_spotlight_shorts,
-        "https://storage.googleapis.com/exoplayer-test-media-0/shorts_android_developers/shorts_10.mp4".toUri(),
+        "https://storage.googleapis.com/androiddevelopers/samples_assets/exoplayer-test-media-0/shorts_android_developers/shorts_10.mp4".toUri(),
     ),
     VideoItem(
         R.string.video_title_youtube_google_tv,
@@ -42,14 +42,14 @@ val sampleVideoList = listOf(
     ),
     VideoItem(
         R.string.video_title_tears_of_steel,
-        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4".toUri(),
+        "https://storage.googleapis.com/androiddevelopers/samples_assets/gtv-videos-bucket/sample/TearsOfSteel.mp4".toUri(),
     ),
     VideoItem(
         R.string.video_title_for_bigger_blazes,
-        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4".toUri(),
+        "https://storage.googleapis.com/androiddevelopers/samples_assets/gtv-videos-bucket/sample/ForBiggerBlazes.mp4".toUri(),
     ),
     VideoItem(
         R.string.video_title_for_bigger_escape,
-        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4".toUri(),
+        "https://storage.googleapis.com/androiddevelopers/samples_assets/gtv-videos-bucket/sample/ForBiggerEscapes.mp4".toUri(),
     ),
 )
