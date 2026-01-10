@@ -23,7 +23,9 @@ import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.HarmBlockThreshold
 import com.google.firebase.ai.type.HarmCategory
+import com.google.firebase.ai.type.PublicPreviewAPI
 import com.google.firebase.ai.type.SafetySetting
+import com.google.firebase.ai.type.Tool
 import com.google.firebase.ai.type.content
 import com.google.firebase.ai.type.generationConfig
 import javax.inject.Inject
@@ -48,9 +50,16 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
     private val _uiState = MutableStateFlow(GeminiChatbotUiState())
     val uiState: StateFlow<GeminiChatbotUiState> = _uiState.asStateFlow()
 
+    val url1 = "https://developer.android.com/ai/gemini"
+    val url2 = "https://developer.android.com/ai/gemini/developer-api"
+    val url3 = "https://developer.android.com/ai/gemini/live"
+    val url4 = "https://developer.android.com/ai/vertex-ai-firebase"
+    val urlContextPrompt = "\nDon't hallucinate, use the webpages documentation to answer: \n$url1 \n$url2 \n$url3 \n$url4"
+
+    @OptIn(PublicPreviewAPI::class)
     private val generativeModel by lazy {
         Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
-            "gemini-2.5-flash",
+            "gemini-3-flash-preview",
             generationConfig = generationConfig {
                 temperature = 0.9f
                 topK = 32
@@ -66,6 +75,7 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
             systemInstruction = content {
                 text("""You are a friendly assistant. Keep your response short.""")
             },
+            tools = listOf(Tool.urlContext())
         )
     }
 
@@ -85,7 +95,7 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
                     )
                 }
 
-                val response = chat.sendMessage(message)
+                val response = chat.sendMessage(message + urlContextPrompt)
                 val newMessage = response.text?.let {
                     ChatMessage(
                         text = it.trim(),
