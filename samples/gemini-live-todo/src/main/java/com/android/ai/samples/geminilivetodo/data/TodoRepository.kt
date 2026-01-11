@@ -41,7 +41,7 @@ class TodoRepository @Inject constructor() {
 
     fun getTodoList(): List<Todo> = _todos.value
 
-    fun addTodo(taskDescription: String): Int? {
+    fun addTodo(taskDescription: String) : Int? {
         if (taskDescription.isNotBlank()) {
             val newTodo = Todo(task = taskDescription)
             _todos.update { currentList ->
