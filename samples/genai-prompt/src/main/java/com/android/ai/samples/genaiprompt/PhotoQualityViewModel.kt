@@ -126,7 +126,21 @@ class PhotoQualityViewModel @Inject constructor(val context: Application) : Andr
             val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
             
             // Prompt: "Does this photo show exactly one person with a clear view of their face? Answer strictly YES or NO."
-            val prompt = "Does this photo show exactly one person with a clear view of their face? Answer strictly YES or NO."
+            val prompt = "You are an expert in rating photos for a dating website, helping male members pick the photo which will be most attractive to female members. The task is to rate the provided photo across the criteria provided. The only output you will provide is a response conforming the JSON example below. Each object in the response will have a KEY, which is provided at the start of the category description, and a VALUE, which will be from 0-10. Score 0 for a low score in the criteria, score 10 for a high score.\n" +
+                    "\n" +
+                    "Example JSON:\n" +
+                    "[{‘trophy’: 10}, {‘scruffy’: 5}]\n" +
+                    "\n" +
+                    "Categories:\n" +
+                    "- [KEY:trophy] Is the person appearing without a fish they’ve caught, or some other trophy? (0 = trophy, 10 = no trophy)\n" +
+                    "- [KEY:scruffy] Does the main person in the photo look well polished, i.e. no scruffy clothes, hair etc? (0 = unpolished, 10 = polished)\n" +
+                    "- [KEY:shirt] Is the person wearing a shirt of any kind (t-shirts etc. are ok)? (0 = shirtless, 10 = in shirt)\n" +
+                    "- [KEY:lighting] Is the lighting good enough to easily make out the features of the person's face? (0 = lighting bad, 10 = lighting good)\n" +
+                    "- [KEY:multiple_people] Does the photo include only one person? (0 = multiple people, 10 = one person)\n" +
+                    "- [KEY:environment] Is the person in an attractive, uncluttered environment? (0 = bad environment, 10 = good environment)\n" +
+                    "- [KEY:gym] Is the person in an environment other than a gym? (0 = in a gym, 10 = not in a gym)\n" +
+                    "- [KEY:pet] Is a person the main focus of the photo, as opposed to a pet? (0 = pet is focus, 10 = person is focus)\n" +
+                    "- [KEY:expression] Does the person have an inviting / warm expression, e.g. are they smiling? (0 = bad expression, 10 = good expression)\n"
             
             val response = generativeModel.generateContent(
                 generateContentRequest(ImagePart(bitmap), TextPart(prompt)) {}
