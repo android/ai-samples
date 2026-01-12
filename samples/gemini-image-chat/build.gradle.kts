@@ -23,7 +23,7 @@ plugins {
 
 android {
     namespace = "com.android.ai.samples.geminiimagechat"
-    compileSdk = 35
+    compileSdk = 36
 
     buildFeatures {
         compose = true

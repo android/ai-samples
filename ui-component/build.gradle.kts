@@ -21,7 +21,7 @@ plugins {
 
 android {
     namespace = "com.android.ai.uicomponent"
-    compileSdk = 35
+    compileSdk = 36
 
     buildFeatures {
         compose = true

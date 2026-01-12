@@ -22,7 +22,7 @@ plugins {
 
 android {
     namespace = "com.android.ai.samples.imagen"
-    compileSdk = 35
+    compileSdk = 36
 
     buildFeatures {
         compose = true

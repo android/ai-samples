@@ -23,7 +23,7 @@ plugins {
 
 android {
     namespace = "com.android.ai.samples.geminichatbot"
-    compileSdk = 35
+    compileSdk = 36
 
     buildFeatures {
         compose = true
