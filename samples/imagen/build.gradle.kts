@@ -49,24 +49,21 @@ android {
 }
 
 dependencies {
-
-    implementation(libs.androidx.core.ktx)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.junit)
+    debugImplementation(libs.ui.tooling)
     implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.material3)
-    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.material.icons.extended)
-    implementation(platform(libs.firebase.bom))
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.ai)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
-    implementation(libs.androidx.runtime.livedata)
     implementation(libs.ui.tooling.preview)
-    debugImplementation(libs.ui.tooling)
-    ksp(libs.hilt.compiler)
-
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(platform(libs.firebase.bom))
     implementation(project(":ui-component"))
-
+    ksp(libs.hilt.compiler)
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
 }

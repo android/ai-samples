@@ -43,18 +43,18 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.material.icons.extended)
+    debugImplementation(libs.ui.tooling)
     implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.ui.google.fonts)
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.material3)
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui.compose)
+    implementation(libs.androidx.ui.google.fonts)
     implementation(libs.coil.compose)
-    implementation(libs.richtext.material3)
     implementation(libs.richtext.commonmark)
+    implementation(libs.richtext.material3)
     implementation(libs.ui.tooling.preview)
-    debugImplementation(libs.ui.tooling)
+    implementation(platform(libs.androidx.compose.bom))
 }

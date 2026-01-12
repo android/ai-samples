@@ -52,7 +52,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.long
 
 @OptIn(PublicPreviewAPI::class)
 @HiltViewModel
@@ -198,7 +197,7 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                 val taskDescription = functionCall.args["taskDescription"]!!.jsonPrimitive.content
                 val id = todoRepository.addTodo(taskDescription)
 
-                if (id!=null) {
+                if (id != null) {
                     val response = JsonObject(
                         mapOf(
                             "success" to JsonPrimitive(true),
@@ -215,7 +214,6 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                     )
                     FunctionResponsePart(functionCall.name, response, functionCall.id)
                 }
-
             }
             "removeTodo" -> {
                 try {
@@ -237,7 +235,6 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                     )
                     FunctionResponsePart(functionCall.name, response, functionCall.id)
                 }
-
             }
             "toggleTodoStatus" -> {
                 val taskId = functionCall.args["todoId"]!!.jsonPrimitive.int
