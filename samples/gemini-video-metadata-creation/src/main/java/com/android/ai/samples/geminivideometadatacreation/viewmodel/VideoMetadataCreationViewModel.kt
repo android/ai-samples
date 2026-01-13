@@ -144,8 +144,8 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
 }
 
 enum class MetadataType(
-    @DrawableRes val iconRes: Int,
-    @StringRes val titleRes: Int,
+    @param:DrawableRes val iconRes: Int,
+    @param:StringRes val titleRes: Int,
 ) {
     THUMBNAILS(com.android.ai.uicomponent.R.drawable.ic_ai_img, R.string.thumbnails),
     DESCRIPTION(com.android.ai.uicomponent.R.drawable.ic_ai_summary, R.string.description),

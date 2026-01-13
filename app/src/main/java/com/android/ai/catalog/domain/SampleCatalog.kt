@@ -151,14 +151,14 @@ val sampleCatalog = listOf(
 )
 
 data class SampleCatalogItem(
-    @StringRes val title: Int,
-    @StringRes val description: Int,
+    @param:StringRes val title: Int,
+    @param:StringRes val description: Int,
     val route: String,
     val sampleEntryScreen: @Composable () -> Unit,
     val tags: List<SampleTags> = emptyList(),
     val needsFirebase: Boolean = false,
     val isFeatured: Boolean = false,
-    @DrawableRes val keyArt: Int? = null,
+    @param:DrawableRes val keyArt: Int? = null,
 )
 
 enum class SampleTags(

@@ -220,7 +220,7 @@ fun VideoPickerDropdown(
         val iconBg = MaterialTheme.colorScheme.surfaceContainerHighest
         Icon(
             imageVector = Icons.Filled.ArrowDropDown,
-            contentDescription = context.getString(R.string.select_video_dropdown),
+            contentDescription = stringResource(R.string.select_video_dropdown),
             tint = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.drawBehind {
                 drawCircle(iconBg)

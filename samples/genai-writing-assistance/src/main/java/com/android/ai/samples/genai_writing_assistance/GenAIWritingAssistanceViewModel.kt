@@ -50,7 +50,7 @@ sealed class GenAIWritingAssistanceUiState {
 
     data object Generating : GenAIWritingAssistanceUiState()
     data class Success(val generatedOutput: String) : GenAIWritingAssistanceUiState()
-    data class Error(@StringRes val errorMessageStringRes: Int) : GenAIWritingAssistanceUiState()
+    data class Error(@param:StringRes val errorMessageStringRes: Int) : GenAIWritingAssistanceUiState()
 }
 
 class GenAIWritingAssistanceViewModel @Inject constructor(context: Application) : AndroidViewModel(context) {

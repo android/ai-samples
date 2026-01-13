@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -41,8 +44,8 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.15"
     }
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        compilerOptions { jvmTarget.set(JvmTarget.JVM_17) }
     }
 }
 
