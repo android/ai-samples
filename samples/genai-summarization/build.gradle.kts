@@ -24,7 +24,7 @@ plugins {
 }
 
 android {
-    namespace = "com.android.ai.samples.geminimultimodal"
+    namespace = "com.android.ai.samples.summarization"
     compileSdk = 36
 
     buildFeatures {

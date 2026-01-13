@@ -56,9 +56,8 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
-import com.android.ai.samples.geminimultimodal.R
+import com.android.ai.samples.imagedescription.R
 import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.theme.extendedColorScheme
 import com.android.ai.uicomponent.GenerateButton
