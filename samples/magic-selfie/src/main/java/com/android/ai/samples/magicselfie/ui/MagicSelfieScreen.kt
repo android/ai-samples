@@ -20,6 +20,8 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
+import android.os.Build
 import android.provider.MediaStore
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -62,13 +64,14 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.android.ai.samples.magicselfie.R
 import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.uicomponent.GenerateButton
@@ -85,6 +88,7 @@ fun MagicSelfieScreen(viewModel: MagicSelfieViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val resources = LocalResources.current
     var selfieBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var tempSelfiePhotoFile by remember { mutableStateOf<File?>(null) }
 
@@ -101,7 +105,13 @@ fun MagicSelfieScreen(viewModel: MagicSelfieViewModel = hiltViewModel()) {
         if (result.resultCode == Activity.RESULT_OK) {
             tempSelfiePhotoFile?.let { file ->
                 val uri = FileProvider.getUriForFile(context, context.packageName + ".provider", file)
-                val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                val bitmap = if (Build.VERSION.SDK_INT < 28) {
+                    @Suppress("DEPRECATION")
+                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                } else {
+                    val source = ImageDecoder.createSource(context.contentResolver, uri)
+                    ImageDecoder.decodeBitmap(source)
+                }
                 selfieBitmap = rotateImageIfRequired(
                     file,
                     bitmap,
@@ -111,7 +121,7 @@ fun MagicSelfieScreen(viewModel: MagicSelfieViewModel = hiltViewModel()) {
     }
 
     if (uiState is MagicSelfieUiState.Error) {
-        val errorMessage = (uiState as MagicSelfieUiState.Error).message ?: context.getString(R.string.unknown_error)
+        val errorMessage = (uiState as MagicSelfieUiState.Error).message ?: resources.getString(R.string.unknown_error)
         LaunchedEffect(uiState) {
             snackbarHostState.showSnackbar(errorMessage)
             viewModel.resetError()

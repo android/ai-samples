@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -96,9 +97,9 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
         modifier = Modifier.fillMaxWidth(),
     ) { innerPadding ->
 
-        val context = LocalContext.current
+        val resources = LocalResources.current
         val imageBitmap = remember {
-            val bitmap = BitmapFactory.decodeResource(context.resources, com.android.ai.uicomponent.R.drawable.img_fill)
+            val bitmap = BitmapFactory.decodeResource(resources, com.android.ai.uicomponent.R.drawable.img_fill)
             bitmap.asImageBitmap()
         }
 
