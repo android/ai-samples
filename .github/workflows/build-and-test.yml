@@ -48,7 +48,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 🤖 Apply Spotless formatting
-          file_pattern: '**/*.kt **/*.kts **/*.java **/*.xml'
+          file_pattern: '**/*.kt **/*.kts **/*.xml'
 
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-configuration-cache

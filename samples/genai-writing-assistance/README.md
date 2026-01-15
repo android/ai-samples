@@ -12,9 +12,9 @@ This sample demonstrates how to proofread and rewrite short content on-device us
 
 ## How it works
 
-The application uses the ML Kit GenAI Proofreading and Rewriting APIs to interact with the on-device Gemini Nano model. The core logic is in the [`GenAIWritingAssistanceViewModel.kt`](https://github.com/android/ai-samples/blob/main/samples/genai-writing-assistance/src/main/java/com/android/ai/samples/genai_writing_assistance/GenAIWritingAssistanceViewModel.kt) file. `Proofreader` and `Rewriter` clients are initialized. When a user provides text, it's passed to either the `runProofreadingInference` or `runRewritingInference` method, which then returns the polished text.
+The application uses the ML Kit GenAI Proofreading and Rewriting APIs to interact with the on-device Gemini Nano model. The core logic is in the [`GenAIWritingAssistanceViewModel.kt`](https://github.com/android/ai-samples/blob/main/samples/genai-writing-assistance/src/main/kotlincom/android/ai/samples/genai_writing_assistance/GenAIWritingAssistanceViewModel.kt) file. `Proofreader` and `Rewriter` clients are initialized. When a user provides text, it's passed to either the `runProofreadingInference` or `runRewritingInference` method, which then returns the polished text.
 
-Here is the key snippet of code that runs the proofreading inference from [`GenAIWritingAssistanceViewModel.kt`](.src/main/java/com/android/ai/samples/genai_writing_assistance/GenAIWritingAssistanceViewModel.kt):
+Here is the key snippet of code that runs the proofreading inference from [`GenAIWritingAssistanceViewModel.kt`](.src/main/kotlincom/android/ai/samples/genai_writing_assistance/GenAIWritingAssistanceViewModel.kt):
 
 ```kotlin
 private suspend fun runProofreadingInference(textToProofread: String) {

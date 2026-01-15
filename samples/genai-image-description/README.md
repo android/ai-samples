@@ -12,7 +12,7 @@ This sample demonstrates how to generate short descriptions of images on-device 
 
 ## How it works
 
-The application uses the ML Kit GenAI Image Description API to interact with the on-device Gemini Nano model. The core logic is in the [`GenAIImageDescriptionViewModel.kt`](https://github.com/android/ai-samples/blob/main/samples/genai-image-description/src/main/java/com/android/ai/samples/genai_image_description/GenAIImageDescriptionViewModel.kt) file. An `ImageDescriber` client is initialized. When a user provides an image, it's converted to a bitmap and sent to the `runInference` method, which streams back the generated description.
+The application uses the ML Kit GenAI Image Description API to interact with the on-device Gemini Nano model. The core logic is in the [`GenAIImageDescriptionViewModel.kt`](https://github.com/android/ai-samples/blob/main/samples/genai-image-description/src/main/kotlincom/android/ai/samples/genai_image_description/GenAIImageDescriptionViewModel.kt) file. An `ImageDescriber` client is initialized. When a user provides an image, it's converted to a bitmap and sent to the `runInference` method, which streams back the generated description.
 
 Here is the key snippet of code that calls the generative model:
 

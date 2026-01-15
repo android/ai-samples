@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -22,8 +24,8 @@ plugins {
 }
 
 android {
-    namespace = "com.android.ai.samples.geminimultimodal"
-    compileSdk = 35
+    namespace = "com.android.ai.samples.imagedescription"
+    compileSdk = 36
 
     buildFeatures {
         compose = true
@@ -33,18 +35,8 @@ android {
         minSdk = 26
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
-        }
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -52,29 +44,28 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.15"
     }
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        compilerOptions { jvmTarget.set(JvmTarget.JVM_17) }
     }
 }
 
 dependencies {
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.material3)
+    debugImplementation(libs.ui.tooling)
     implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.runtime.livedata)
+    implementation(libs.coil.compose)
+    implementation(libs.genai.image.description)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
-    implementation(libs.androidx.runtime.livedata)
-    implementation(libs.genai.image.description)
-    implementation(libs.coil.compose)
     implementation(libs.kotlinx.coroutines.guava)
-    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.ui.tooling.preview)
-    debugImplementation(libs.ui.tooling)
-    ksp(libs.hilt.compiler)
+    implementation(platform(libs.androidx.compose.bom))
     implementation(project(":ui-component"))
+    ksp(libs.hilt.compiler)
 }

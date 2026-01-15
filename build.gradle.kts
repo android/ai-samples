@@ -25,6 +25,7 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.spotless) apply false
+    alias(libs.plugins.android.test) apply false
 }
 
 subprojects {
@@ -42,6 +43,11 @@ subprojects {
             ktlint()
             // Look for the first line that doesn't have a block comment (assumed to be the license)
             licenseHeaderFile(rootProject.file("spotless/copyright.kt"), "(^(?![\\/ ]\\*).*$)")
+        }
+        format("toml") {
+            target("gradle/libs.versions.toml")
+            prettier(mapOf("prettier" to "3.2.5", "prettier-plugin-toml" to "2.0.1"))
+                .config(mapOf("plugins" to listOf("prettier-plugin-toml")))
         }
     }
 }
