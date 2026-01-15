@@ -12,7 +12,7 @@ This sample demonstrates how to generate a text summary of a video using Gemini 
 
 ## How it works
 
-The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with Gemini Flash. The core logic is in the [`VideoSummarizationViewModel.kt`](./src/main/java/com/android/ai/samples/geminivideosummary/viewmodel/VideoSummarizationViewModel.kt) file. A `generativeModel` is initialized. When a user requests a summary, the video content and a text prompt are sent to the model, which then generates a text summary.
+The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with Gemini Flash. The core logic is in the [`VideoSummarizationViewModel.kt`](./src/main/kotlincom/android/ai/samples/geminivideosummary/viewmodel/VideoSummarizationViewModel.kt) file. A `generativeModel` is initialized. When a user requests a summary, the video content and a text prompt are sent to the model, which then generates a text summary.
 
 Here is the key snippet of code that calls the generative model:
 

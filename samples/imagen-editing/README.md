@@ -12,9 +12,9 @@ This sample demonstrates how to edit images using the Imagen editing model. User
 
 ## How it works
 
-The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with Imagen. The core logic is in the [`ImagenEditingDataSource.kt`](https://github.com/android/ai-samples/blob/main/samples/imagen-editing/src/main/java/com/android/ai/samples/imagenediting/data/ImagenEditingDataSource.kt) file. It first generates a base image using the generation model. Then, for editing, it takes the source image, a user-drawn mask, and a text prompt, and sends them to the editing model's `editImage` method to perform inpainting.
+The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with Imagen. The core logic is in the [`ImagenEditingDataSource.kt`](https://github.com/android/ai-samples/blob/main/samples/imagen-editing/src/main/kotlincom/android/ai/samples/imagenediting/data/ImagenEditingDataSource.kt) file. It first generates a base image using the generation model. Then, for editing, it takes the source image, a user-drawn mask, and a text prompt, and sends them to the editing model's `editImage` method to perform inpainting.
 
-Here is the key snippet of code that performs inpainting from [`ImagenEditingDataSource.kt`](./src/main/java/com/android/ai/samples/imagenediting/data/ImagenEditingDataSource.kt):
+Here is the key snippet of code that performs inpainting from [`ImagenEditingDataSource.kt`](./src/main/kotlincom/android/ai/samples/imagenediting/data/ImagenEditingDataSource.kt):
 
 ```kotlin
 @OptIn(PublicPreviewAPI::class)

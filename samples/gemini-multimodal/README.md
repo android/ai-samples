@@ -12,7 +12,7 @@ This sample demonstrates a multimodal (image and text) prompt, using the Gemini 
 
 ## How it works
 
-The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with Gemini Flash. The core logic is in the [`GeminiDataSource.kt`](./src/main/java/com/android/ai/samples/geminimultimodal/data/GeminiDataSource.kt) file. A `generativeModel` is initialized, and then a `chat` session is started from it. When a user provides an image and a text prompt, they are combined into a multimodal prompt and sent to the model, which then generates a text response.
+The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with Gemini Flash. The core logic is in the [`GeminiDataSource.kt`](./src/main/kotlincom/android/ai/samples/geminimultimodal/data/GeminiDataSource.kt) file. A `generativeModel` is initialized, and then a `chat` session is started from it. When a user provides an image and a text prompt, they are combined into a multimodal prompt and sent to the model, which then generates a text response.
 
 Here is the key snippet of code that initializes the generative model:
 
@@ -36,7 +36,7 @@ private val generativeModel by lazy {
 }
 ```
 
-Here is the key snippet of code that calls the [`generateText`](./src/main/java/com/android/ai/samples/geminimultimodal/data/GeminiDataSource.kt) function:
+Here is the key snippet of code that calls the [`generateText`](./src/main/kotlincom/android/ai/samples/geminimultimodal/data/GeminiDataSource.kt) function:
 
 ```kotlin
 suspend fun generateText(bitmap: Bitmap, prompt: String): String {

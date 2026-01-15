@@ -12,9 +12,9 @@ This sample demonstrates how to generate images from text prompts using the Imag
 
 ## How it works
 
-The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with Imagen. The core logic is in the [`ImagenDataSource.kt`](./src/main/java/com/android/ai/samples/imagen/data/ImagenDataSource.kt) file. An `imagenModel` is initialized with specific generation configurations (e.g., number of images, aspect ratio, image format). When a user provides a text prompt, it's passed to the `generateImages` method, which returns the generated image as a bitmap.
+The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with Imagen. The core logic is in the [`ImagenDataSource.kt`](./src/main/kotlincom/android/ai/samples/imagen/data/ImagenDataSource.kt) file. An `imagenModel` is initialized with specific generation configurations (e.g., number of images, aspect ratio, image format). When a user provides a text prompt, it's passed to the `generateImages` method, which returns the generated image as a bitmap.
 
-Here is the key snippet of code that calls the generative model from [`ImagenDataSource.kt`](./src/main/java/com/android/ai/samples/imagen/data/ImagenDataSource.kt):
+Here is the key snippet of code that calls the generative model from [`ImagenDataSource.kt`](./src/main/kotlincom/android/ai/samples/imagen/data/ImagenDataSource.kt):
 
 ```kotlin
 @OptIn(PublicPreviewAPI::class)

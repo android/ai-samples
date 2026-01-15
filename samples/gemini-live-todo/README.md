@@ -12,7 +12,7 @@ This sample demonstrates how to use the Gemini Live API for real-time, voice-bas
 
 ## How it works
 
-The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with Gemini Flash. The core logic is in the [`TodoScreenViewModel.kt`](./src/main/java/com/android/ai/samples/geminilivetodo/ui/TodoScreenViewModel.kt) file. A `liveModel` is initialized with a set of function declarations (`addTodo`, `removeTodo`, `toggleTodoStatus`, `getTodoList`) that allow the model to interact with the ToDo list. When the user starts a voice conversation, the model processes the spoken commands and executes the corresponding functions to manage the tasks.
+The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with Gemini Flash. The core logic is in the [`TodoScreenViewModel.kt`](./src/main/kotlincom/android/ai/samples/geminilivetodo/ui/TodoScreenViewModel.kt) file. A `liveModel` is initialized with a set of function declarations (`addTodo`, `removeTodo`, `toggleTodoStatus`, `getTodoList`) that allow the model to interact with the ToDo list. When the user starts a voice conversation, the model processes the spoken commands and executes the corresponding functions to manage the tasks.
 
 Here is the key snippet of code that initializes the model and connects to a live session:
 

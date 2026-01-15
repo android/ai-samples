@@ -12,7 +12,7 @@ This sample demonstrates how to generate various types of video metadata (descri
 
 ## How it works
 
-The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with Gemini Flash. The core logic involves several functions (e.g., [`generateDescription`](./src/main/java/com/android/ai/samples/geminivideometadatacreation/GenerateDescription.kt), `generateHashtags`, `generateChapters`, `generateAccountTags`, `generateLinks`, `generateThumbnails`) that send video content to the Gemini API for analysis. The model processes the video and returns structured metadata based on the specific prompt.
+The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) for Android to interact with Gemini Flash. The core logic involves several functions (e.g., [`generateDescription`](./src/main/kotlincom/android/ai/samples/geminivideometadatacreation/GenerateDescription.kt), `generateHashtags`, `generateChapters`, `generateAccountTags`, `generateLinks`, `generateThumbnails`) that send video content to the Gemini API for analysis. The model processes the video and returns structured metadata based on the specific prompt.
 
 Here is a key snippet of code that generates a video description:
 
