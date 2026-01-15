@@ -23,11 +23,23 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+/**
+ * Benchmark class to measure the startup timing of the application.
+ *
+ * This benchmark uses [MacrobenchmarkRule] to measure the time it takes for the application
+ * to start up in [StartupMode.COLD] mode.
+ */
 @RunWith(AndroidJUnit4::class)
 class StartupBenchmark {
     @get:Rule
     val benchmarkRule = MacrobenchmarkRule()
 
+    /**
+     * Measures the application startup time.
+     *
+     * It runs the benchmark for 5 iterations using [StartupTimingMetric].
+     * The application is started in [StartupMode.COLD] mode, ensuring a fresh start for each iteration.
+     */
     @Test
     fun startup() = benchmarkRule.measureRepeated(
         packageName = "com.android.ai.catalog",
