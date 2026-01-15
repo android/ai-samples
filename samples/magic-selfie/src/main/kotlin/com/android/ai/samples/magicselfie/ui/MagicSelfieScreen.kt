@@ -81,7 +81,6 @@ import com.android.ai.uicomponent.SecondaryButton
 import com.android.ai.uicomponent.TextInput
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun MagicSelfieScreen(viewModel: MagicSelfieViewModel = hiltViewModel()) {
@@ -269,7 +268,6 @@ private fun MagicSelfieScreen(
 
 @PreviewScreenSizes
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 private fun MagicSelfieScreenPreview() {
     AISampleCatalogTheme {
         MagicSelfieScreen(

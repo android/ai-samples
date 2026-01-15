@@ -56,7 +56,6 @@ import com.android.ai.uicomponent.MessageList
 import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.TextInput
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GeminiChatbotScreen(viewModel: GeminiChatbotViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -163,7 +162,6 @@ private fun GeminiChatbotScreen(uiState: GeminiChatbotUiState, onSendMessage: (S
 
 @PreviewScreenSizes
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 private fun GeminiChatbotScreenPreview() {
     AISampleCatalogTheme {
         GeminiChatbotScreen(

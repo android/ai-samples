@@ -68,7 +68,6 @@ import com.android.ai.uicomponent.VideoPlayer
  * This screen allows users to select a video, play it, and generate metadata of its content
  * using Firebase AI. It also provides text-to-speech functionality to read out
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VideoMetadataCreationScreen(viewModel: VideoMetadataCreationViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -213,7 +212,6 @@ private fun MetadataCreationSection(
 }
 
 @Preview
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VideoMetadataCreationScreenPreview() {
     VideoMetadataCreationScreen(

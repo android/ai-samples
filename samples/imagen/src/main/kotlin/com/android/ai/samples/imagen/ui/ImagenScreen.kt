@@ -64,7 +64,6 @@ import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.TextInput
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ImagenScreen(viewModel: ImagenViewModel = hiltViewModel()) {
     val uiState: ImagenUIState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -182,7 +181,6 @@ private fun ImagenScreen(uiState: ImagenUIState, onGenerateClick: (String) -> Un
 
 @PreviewScreenSizes
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 private fun ImagenScreenPreview() {
     AISampleCatalogTheme {
         ImagenScreen(

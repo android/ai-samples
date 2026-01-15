@@ -15,7 +15,6 @@
  */
 package com.android.ai.samples.geminivideometadatacreation.player
 
-import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -42,7 +41,7 @@ import com.android.ai.samples.geminivideometadatacreation.R
 /*
  * A Composable function that displays video using ExoPlayer within a PlayerView in Jetpack Compose.
  */
-@OptIn(UnstableApi::class) // New Media3 Compose artifact is currently experimental
+@UnstableApi
 @Composable
 fun VideoPlayer(player: Player?, modifier: Modifier = Modifier) {
 
@@ -72,7 +71,7 @@ fun VideoPlayer(player: Player?, modifier: Modifier = Modifier) {
     }
 }
 
-@OptIn(UnstableApi::class) // New Media3 Compose artifact is currently experimental
+@UnstableApi
 @Composable
 fun PlayPauseButton(player: Player?, modifier: Modifier = Modifier) {
     if (player == null) return

@@ -34,7 +34,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -72,7 +71,6 @@ import com.android.ai.uicomponent.SecondaryButton
 import com.android.ai.uicomponent.UndoButton
 import com.google.mlkit.genai.rewriting.RewriterOptions
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenAIWritingAssistanceScreen(viewModel: GenAIWritingAssistanceViewModel = hiltViewModel()) {
     var showRewriteOptionsDialog by rememberSaveable { mutableStateOf(false) }
@@ -319,7 +317,6 @@ fun RewriteOptionsDialog(onConfirm: (rewriteStyle: RewriteStyle) -> Unit, onDism
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun DisplayedText(textToDisplay: String, modifier: Modifier = Modifier, isStatusText: Boolean = false) {
     Text(

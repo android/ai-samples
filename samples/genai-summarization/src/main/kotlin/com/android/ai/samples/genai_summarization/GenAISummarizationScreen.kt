@@ -30,7 +30,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -61,7 +60,6 @@ import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.SecondaryButton
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenAISummarizationScreen(viewModel: GenAISummarizationViewModel = hiltViewModel()) {
     val sampleTextOptions = stringArrayResource(R.array.summarization_sample_text)
@@ -215,7 +213,6 @@ fun GenAISummarizationContent(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun DisplayedText(textToDisplay: String, modifier: Modifier = Modifier, isStatusText: Boolean = false) {
     Text(

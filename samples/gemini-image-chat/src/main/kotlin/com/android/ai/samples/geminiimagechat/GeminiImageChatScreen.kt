@@ -76,7 +76,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GeminiImageChatScreen(viewModel: GeminiImageChatViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -243,7 +242,6 @@ private fun GeminiImageChatScreen(
 
 @PreviewScreenSizes
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 private fun GeminiImageChatScreenPreview() {
     AISampleCatalogTheme {
         GeminiImageChatScreen(

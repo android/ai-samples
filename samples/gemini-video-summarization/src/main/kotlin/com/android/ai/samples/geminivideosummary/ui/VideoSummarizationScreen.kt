@@ -73,7 +73,7 @@ import com.google.com.android.ai.samples.geminivideosummary.R
  * This screen allows users to select a video, play it, and generate a summary of its content
  * using Firebase AI. It also provides text-to-speech functionality to read out
  */
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun VideoSummarizationScreen(viewModel: VideoSummarizationViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -192,7 +192,6 @@ private fun VideoSummarizationScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SummarizationSection(
     uiState: VideoSummarizationState,
@@ -284,7 +283,6 @@ private fun SummarizationSection(
 
 @PreviewScreenSizes
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 private fun VideoSummarizationScreenPreview() {
     AISampleCatalogTheme {
         VideoSummarizationScreen(

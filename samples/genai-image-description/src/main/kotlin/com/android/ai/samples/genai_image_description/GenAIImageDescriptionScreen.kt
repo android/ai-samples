@@ -65,7 +65,6 @@ import com.android.ai.uicomponent.PrimaryButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.UndoButton
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenAIImageDescriptionScreen(viewModel: GenAIImageDescriptionViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -232,7 +231,6 @@ private fun GenAIImageDescriptionScreen(
 
 @PreviewScreenSizes
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 private fun GenAIImageDescriptionScreenPreview() {
     AISampleCatalogTheme {
         GenAIImageDescriptionScreen(

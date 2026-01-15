@@ -256,8 +256,8 @@ private fun PromptInput(
                 enabled = uiState !is GeminiMultimodalUiState.Loading && imageUri != null,
                 onClick = {
                     if (imageUri != null) {
+                        @Suppress("DEPRECATION")
                         val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
-//                        val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, imageUri))
                         onGenerateClick(bitmap, textFieldState.text.toString())
                     }
                     keyboardController?.hide()
@@ -285,7 +285,6 @@ private fun PromptInput(
 
 @Preview(name = "Phone", device = PHONE)
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 private fun GeminiMultimodalScreenPreview() {
     AISampleCatalogTheme {
         GeminiMultimodalScreen(
@@ -301,7 +300,6 @@ private fun GeminiMultimodalScreenPreview() {
 
 @Preview(name = "Tablet", device = TABLET)
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
 private fun GeminiMultimodalScreenTabletPreview() {
     AISampleCatalogTheme {
         GeminiMultimodalScreen(

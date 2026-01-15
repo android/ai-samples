@@ -57,7 +57,6 @@ import androidx.compose.ui.unit.dp
 import com.android.ai.theme.AISampleCatalogTheme
 import com.android.ai.theme.Contrast
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PrimaryButton(
     modifier: Modifier = Modifier

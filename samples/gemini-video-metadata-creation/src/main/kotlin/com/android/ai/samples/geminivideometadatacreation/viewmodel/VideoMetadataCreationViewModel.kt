@@ -57,7 +57,6 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
     private val _uiState = MutableStateFlow(VideoMetadataCreationState())
     val uiState: StateFlow<VideoMetadataCreationState> = _uiState.asStateFlow()
 
-    @OptIn(UnstableApi::class)
     fun generateMetadata(metadataType: MetadataType) {
         val videoUri = _uiState.value.selectedVideoUri ?: return
         // Since we will start an async call, show a progressbar

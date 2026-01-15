@@ -96,7 +96,7 @@ fun SampleDetailTopAppBar(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(backgroundColor = 0XFF000000, showBackground = true)
 @Composable
 fun SampleDetailTopAppBarPreview() {
@@ -110,7 +110,7 @@ fun SampleDetailTopAppBarPreview() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 fun SampleDetailTopAppBarPreview_CollapseWhenContentIsScrolled() {
@@ -143,7 +143,7 @@ fun SampleDetailTopAppBarPreview_CollapseWhenContentIsScrolled() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 fun SampleDetailTopAppBarPreview_CollapseWhenToolbarIsScrolled() {

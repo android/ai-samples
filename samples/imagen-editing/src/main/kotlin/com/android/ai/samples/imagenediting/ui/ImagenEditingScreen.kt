@@ -67,7 +67,6 @@ import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.TextInput
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImagenEditingScreen(viewModel: ImagenEditingViewModel = hiltViewModel()) {
     val uiState: ImagenEditingUIState by viewModel.uiState.collectAsStateWithLifecycle()
