@@ -45,7 +45,7 @@ import javax.inject.Singleton
 @Singleton
 class ImagenEditingDataSource @Inject constructor() {
     private companion object {
-        const val IMAGEN_MODEL_NAME = "imagen-4.0-ultra-generate-001"
+        const val IMAGEN_MODEL_NAME = "imagen-4.0-generate-001"
         const val IMAGEN_EDITING_MODEL_NAME = "imagen-3.0-capability-001"
         const val DEFAULT_EDIT_STEPS = 50
         const val DEFAULT_STYLE_STRENGTH = 1

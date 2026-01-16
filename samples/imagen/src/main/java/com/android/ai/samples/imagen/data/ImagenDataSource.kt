@@ -30,7 +30,7 @@ import javax.inject.Singleton
 class ImagenDataSource @Inject constructor() {
     @OptIn(PublicPreviewAPI::class)
     private val imagenModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).imagenModel(
-        modelName = "imagen-4.0-generate-preview-06-06",
+        modelName = "imagen-4.0-generate-001",
         generationConfig = ImagenGenerationConfig(
             numberOfImages = 1,
             aspectRatio = ImagenAspectRatio.SQUARE_1x1,

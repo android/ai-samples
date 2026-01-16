@@ -4,7 +4,7 @@ This sample is part of the [AI Sample Catalog](../../). To build and run this sa
 
 ## Description
 
-This sample demonstrates how to create a "magic selfie" by replacing the background of a user's photo with a generated image. It uses the ML Kit Subject Segmentation API to isolate the user from their original background and the Imagen API to generate a new background from a text prompt.
+This sample demonstrates how to create a "magic selfie" by replacing the background of a user's photo with a generated image. It uses the ML Kit Subject Segmentation API to isolate the user from their original background and the Imagen model to generate a new background from a text prompt.
 
 <div style="text-align: center;">
 <img width="320" alt="Magic Selfie in action" src="magic_selfie.png" />

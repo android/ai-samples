@@ -37,7 +37,7 @@ import kotlin.math.roundToInt
 class MagicSelfieRepository @Inject constructor() {
     @OptIn(PublicPreviewAPI::class)
     private val imagenModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).imagenModel(
-        modelName = "imagen-4.0-generate-preview-06-06",
+        modelName = "imagen-4.0-generate-001",
         generationConfig = ImagenGenerationConfig(
             numberOfImages = 1,
             aspectRatio = ImagenAspectRatio.PORTRAIT_3x4,
