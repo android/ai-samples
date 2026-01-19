@@ -35,6 +35,7 @@ import com.android.ai.samples.imagen.ui.ImagenScreen
 import com.android.ai.samples.imagenediting.ui.ImagenEditingScreen
 import com.android.ai.samples.magicselfie.ui.MagicSelfieScreen
 import com.android.ai.theme.extendedColorScheme
+import com.thomasezan.gemini_live_xr.GeminiLiveXRScreen
 
 @RequiresPermission(Manifest.permission.RECORD_AUDIO)
 val sampleCatalog = listOf(
@@ -142,6 +143,15 @@ val sampleCatalog = listOf(
         description = R.string.gemini_live_todo_list_description,
         route = "GeminiLiveTodoScreen",
         sampleEntryScreen = { TodoScreen() },
+        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
+        needsFirebase = true,
+        keyArt = R.drawable.img_keyart_todo,
+    ),
+    SampleCatalogItem(
+        title = R.string.gemini_live_xr_title,
+        description = R.string.gemini_live_xr_description,
+        route = "GeminiLiveXRScreen",
+        sampleEntryScreen = { GeminiLiveXRScreen() },
         tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
         keyArt = R.drawable.img_keyart_todo,
