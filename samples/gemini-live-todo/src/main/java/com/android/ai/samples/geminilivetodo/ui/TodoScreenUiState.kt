@@ -25,6 +25,7 @@ sealed interface TodoScreenUiState {
     data class Success(
         val todoItems: List<Todo> = emptyList(),
         val isMicOn: Boolean = false,
+        val isCameraOn: Boolean = false,
         val liveSessionState: LiveSessionState,
     ) : TodoScreenUiState
 
@@ -36,4 +37,11 @@ sealed interface LiveSessionState {
     data object Ready : LiveSessionState
     data object Running : LiveSessionState
     data object Error : LiveSessionState
+}
+
+sealed interface CameraSessionState {
+    data object NotReady : CameraSessionState
+    data object Ready : CameraSessionState
+    data object Running : CameraSessionState
+    data object Error : CameraSessionState
 }

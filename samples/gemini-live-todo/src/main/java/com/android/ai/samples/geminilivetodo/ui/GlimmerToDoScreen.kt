@@ -55,6 +55,7 @@ private const val MaxItemsInList = 4
 private val IconSize = 30.dp
 private const val TAG = "GlimmerTodoScreen"
 private const val MIC_CONTROL_ID = 111
+private const val CAMERA_CONTROL_ID = 112
 
 @Composable
 fun GlimmerTodoScreen(
@@ -71,6 +72,9 @@ fun GlimmerTodoScreen(
         if (uiState is TodoScreenUiState.Success) {
             val isMicOn = (uiState as TodoScreenUiState.Success).isMicOn
             Log.i(TAG, "Glimmer UI MIC STATUS: ${if (isMicOn) "Running" else "Ready"}")
+
+            val isCameraOn = (uiState as TodoScreenUiState.Success).isCameraOn
+            Log.i(TAG, "Glimmer UI CAMERA STATUS: ${if (isCameraOn) "Running" else "Ready"}")
         }
     }
 
@@ -105,6 +109,7 @@ private fun GlimmerScreenContent(
             TodoListView(
                 todoItems = uiState.todoItems,
                 isMicOn = uiState.isMicOn,
+                isCameraOn = uiState.isCameraOn,
                 onToggleItem = onToggleItem,
                 onExit = onExit
             )
@@ -119,6 +124,7 @@ private fun GlimmerScreenContent(
 private fun TodoListView(
     todoItems: List<Todo>,
     isMicOn: Boolean,
+    isCameraOn: Boolean,
     onToggleItem: (Int) -> Unit,
     onExit: () -> Unit
 ) {
@@ -133,11 +139,17 @@ private fun TodoListView(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-
         item {
             GlimmerMicControlItem(
                 isMicOn = isMicOn,
                 onToggle = { onToggleItem(MIC_CONTROL_ID) }
+            )
+        }
+
+        item {
+            GlimmerCameraControlItem(
+                isCameraOn = isCameraOn,
+                onToggle = { onToggleItem(CAMERA_CONTROL_ID) },
             )
         }
 
@@ -162,6 +174,41 @@ private fun TodoListView(
                 Text(text = stringResource(R.string.exit_app))
             }
         }
+    }
+}
+
+@Composable
+private fun GlimmerCameraControlItem(
+    isCameraOn: Boolean,
+    onToggle: () -> Unit
+) {
+    val icon = if (isCameraOn) UiComponentR.drawable.ic_video else UiComponentR.drawable.ic_video_off
+
+    val displayTask =
+        if (isCameraOn) {
+          stringResource(R.string.camera_on_label)
+        } else {
+          stringResource(R.string.camera_off_label)
+        }
+
+    val contentDesc =
+        if (isCameraOn) {
+          stringResource(R.string.camera_on_label)
+        } else {
+          stringResource(R.string.camera_off_label)
+        }
+
+   ListItem(
+      onClick = onToggle,
+      leadingIcon = {
+          Image(
+              painter = painterResource(id = icon),
+              contentDescription = contentDesc,
+              modifier = Modifier.size(IconSize),
+          )
+        },
+    ) {
+       Text(text = displayTask)
     }
 }
 

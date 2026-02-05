@@ -15,6 +15,7 @@
  */
 package com.android.ai.samples.geminilivetodo.data
 
+import android.util.Log
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.collections.filterNot
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
+private const val CAMERA_STATUS_TODO_ID = -998
 private const val MIC_STATUS_TODO_ID = -999
 
 @Singleton
@@ -42,7 +44,13 @@ class TodoRepository @Inject constructor() {
                 statusText = "Mic Status",
                 isMicOn = false
             ),
-        ).filterNot { it.id == MIC_STATUS_TODO_ID },
+            CameraControl(
+                id = CAMERA_TODO_ID,
+                statusText = "Camera Status",
+                isCameraOn = false
+            ),
+        ).filterNot { it.id == MIC_STATUS_TODO_ID }
+            .filterNot { it.id == CAMERA_STATUS_TODO_ID },
     )
     val todos: Flow<List<GlassesListItem>> = _todos.asStateFlow()
 
@@ -74,10 +82,26 @@ class TodoRepository @Inject constructor() {
         }
     }
 
+    fun updateCameraStatus(cameraIsOn: Boolean) {
+        val newText = if (cameraIsOn) "Camera Status: On" else "Camera Status: Off"
+        _todos.update { currentList ->
+            currentList.map { item ->
+                if (item.id == CAMERA_TODO_ID && item is CameraControl) {
+                    item.copy(
+                        statusText = newText,
+                        isCameraOn = cameraIsOn
+                    )
+                } else {
+                    item
+                }
+            }
+        }
+    }
+
     fun removeTodo(todoId: Int) {
         _todos.update { currentList ->
 
-            if (todoId == MIC_TODO_ID) {
+            if (todoId == MIC_TODO_ID || todoId == CAMERA_TODO_ID) {
                 currentList
             } else {
 
@@ -93,6 +117,13 @@ class TodoRepository @Inject constructor() {
                     is MicControl -> {
                         if (item.id == todoId) {
                             item.copy(isMicOn = !item.isMicOn)
+                        } else {
+                            item
+                        }
+                    }
+                    is CameraControl -> {
+                        if (item.id == todoId) {
+                            item.copy(isCameraOn = !item.isCameraOn)
                         } else {
                             item
                         }

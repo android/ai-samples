@@ -30,7 +30,8 @@ class GlassesActivity : ComponentActivity() {
     private var isPermissionsGranted by mutableStateOf(false)
 
     private val requiredPermissions = listOf(
-        Manifest.permission.RECORD_AUDIO
+        Manifest.permission.RECORD_AUDIO,
+        Manifest.permission.CAMERA
     )
 
     @OptIn(ExperimentalProjectedApi::class)

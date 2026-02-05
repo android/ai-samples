@@ -18,6 +18,7 @@ package com.android.ai.samples.geminilivetodo.data
 import java.util.UUID.randomUUID
 
 const val MIC_TODO_ID = 111
+const val CAMERA_TODO_ID = 112
 
 sealed interface GlassesListItem {
     val id: Int
@@ -33,4 +34,10 @@ data class MicControl(
     override val id: Int = MIC_TODO_ID,
     val statusText: String,
     val isMicOn: Boolean,
+) : GlassesListItem
+
+data class CameraControl(
+    override val id: Int = CAMERA_TODO_ID,
+    val statusText: String,
+    val isCameraOn: Boolean,
 ) : GlassesListItem

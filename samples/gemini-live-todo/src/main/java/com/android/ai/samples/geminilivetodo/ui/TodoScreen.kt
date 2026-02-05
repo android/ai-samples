@@ -71,6 +71,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.xr.projected.ProjectedContext
 import androidx.xr.projected.experimental.ExperimentalProjectedApi
@@ -115,6 +116,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
 
     val activity = LocalActivity.current as Activity
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
 
     val isGlassesConnected = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
@@ -126,6 +128,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
 
     LaunchedEffect(Unit) {
         viewModel.initializeGeminiLive(activity)
+        viewModel.initializeCamera(context, lifecycleOwner)
     }
 
     val topAppBarState = rememberTopAppBarState()

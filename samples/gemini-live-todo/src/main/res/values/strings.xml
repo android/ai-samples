@@ -19,6 +19,8 @@
     <string name="gemini_live_subtitle">Simple ToDo app using the Gemini Live API to interact with the items in the list.</string>
     <string name="new_task_placeholder">New Task</string>
     <string name="add_button">Add</string>
+    <string name="camera_on_label">Turn off camera</string>
+    <string name="camera_off_label">Turn on camera</string>
     <string name="error_title">Error</string>
     <string name="error_message">The live session model could not be initialized.</string>
     <string name="dismiss_button">Dismiss</string>
