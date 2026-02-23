@@ -27,6 +27,8 @@
     <string name="gemini_live_todo_list_description">"Simple to-do app using the Gemini Live API to interact with the items in the list"</string>
     <string name="gemini_image_chat_list_title">Chat with Nano Banana Pro</string>
     <string name="gemini_image_chat_list_description">Conversational Image generation with Gemini 3 Pro Image</string>
+    <string name="gemini_hybrid_sample_list_title">Gemini Hybrid</string>
+    <string name="gemini_hybrid_sample_list_description">Inference with Firebase Hybrid SDK using either Gemini Nano on-device or Gemini Flash in the Cloud.</string>
     <string name="firebase_required">Firebase Required</string>
     <string name="firebase_required_description">This feature requires Firebase to be initialized.</string>
     <string name="close">Close</string>

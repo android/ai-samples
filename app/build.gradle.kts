@@ -93,6 +93,7 @@ dependencies {
     implementation(project(":samples:gemini-live-todo"))
     implementation(project(":samples:gemini-video-metadata-creation"))
     implementation(project(":samples:gemini-image-chat"))
+    implementation(project(":samples:gemini-hybrid"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
