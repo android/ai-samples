@@ -4,27 +4,18 @@ This sample is part of the [AI Sample Catalog](../../). To build and run this sa
 
 ## Description
 
-This sample demonstrates a hybrid approach to generative AI, utilizing both on-device (Gemini Nano via ML Kit) and cloud-based (Gemini via Firebase AI SDK) models. It showcases how to fallback to the cloud when on-device capabilities are unavailable or when more complex reasoning is required.
-
-## How it works
-
-The application first attempts to perform a task (e.g., summarization) using the on-device Gemini Nano model through the ML Kit GenAI API. If the model is not supported on the device or fails to download, it seamlessly falls back to the Gemini Flash model in the cloud using the Firebase AI SDK.
+This sample demonstrates how to use the Firebase Hybrid SDK, utilizing both on-device (Gemini Nano via [ML Kit Prompt API](https://developers.google.com/ml-kit/genai/prompt/android)) and cloud-based models via the [Firebase AI Logic SDK](https://firebase.google.com/docs/ai-logic).
 
 ### Key Snippets
 
-#### On-Device Inference (ML Kit)
 ```kotlin
-val summarizer = Summarization.getClient(options)
-val featureStatus = summarizer.checkFeatureStatus().await()
-if (featureStatus == FeatureStatus.READY) {
-    summarizer.runInference(request) { ... }.await()
-}
+val model = Firebase.ai(backend = GenerativeBackend.googleAI())
+                .generativeModel(
+                    "gemini-2.5-flash-lite",
+                    onDeviceConfig = OnDeviceConfig(mode = InferenceMode.PREFER_ON_DEVICE)
+                )
+
+val response = model.generateContent(prompt)
 ```
 
-#### Cloud Inference (Firebase AI)
-```kotlin
-val generativeModel = Firebase.ai.generativeModel("gemini-1.5-flash")
-val response = generativeModel.generateContent(prompt)
-```
-
-Read more about [Gemini on Android](https://developer.android.com/ai/gemini) in the official documentation.
+Read more about the [Firebase Hybrid SDK](https://firebase.google.com/docs/ai-logic/hybrid/android/get-started?api=dev) in the Firebase documentation.
