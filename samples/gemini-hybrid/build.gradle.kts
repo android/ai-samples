@@ -23,7 +23,7 @@ plugins {
 
 android {
     namespace = "com.android.ai.samples.geminihybrid"
-    compileSdk = 35
+    compileSdk = 36
 
     buildFeatures {
         compose = true
@@ -64,8 +64,6 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.runtime.livedata)
-    implementation(libs.genai.summarization)
-    implementation(libs.kotlinx.coroutines.guava)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.ai)
