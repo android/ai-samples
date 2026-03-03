@@ -35,7 +35,6 @@ import kotlinx.coroutines.launch
 
 sealed interface GeminiStatus {
     data object Initial : GeminiStatus
-    data object CheckingOnDeviceStatus : GeminiStatus
     data class Generating(
         val isCloud: Boolean,
         val partialOutput: String = "",

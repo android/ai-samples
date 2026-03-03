@@ -143,10 +143,6 @@ fun GeminiHybridScreen(viewModel: GeminiHybridViewModel = hiltViewModel()) {
                             )
                         }
 
-                        status is GeminiStatus.CheckingOnDeviceStatus -> {
-                            StatusText(stringResource(R.string.gemini_hybrid_status_checking))
-                        }
-
                         status is GeminiStatus.Generating && !status.isTranslation -> {
                             GeneratingUi(status)
                         }

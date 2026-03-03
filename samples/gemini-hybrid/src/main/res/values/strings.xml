@@ -9,12 +9,9 @@
     <string name="gemini_hybrid_lang_spanish">Spanish</string>
     <string name="gemini_hybrid_lang_french">French</string>
     <string name="gemini_hybrid_lang_german">German</string>
-    <string name="gemini_hybrid_status_checking">Checking on-device status…</string>
-    <string name="gemini_hybrid_status_downloading">Downloading on-device model: %1$d / %2$d</string>
     <string name="gemini_hybrid_status_generating_on_device">Generating on-device…</string>
     <string name="gemini_hybrid_status_generating_cloud">Generating in cloud…</string>
     <string name="gemini_hybrid_error_no_input">Please enter some text.</string>
-    <string name="gemini_hybrid_error_generic">Something went wrong.</string>
     <string name="gemini_hybrid_inference_cloud">Cloud</string>
     <string name="gemini_hybrid_inference_on_device">On-device</string>
     <string name="gemini_hybrid_generated_cloud">Generated in the cloud</string>
