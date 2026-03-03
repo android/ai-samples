@@ -188,7 +188,7 @@ fun InitialReviewUi(
     onGenerate: () -> Unit,
 ) {
     Text(
-        "Select topics for your review:",
+        stringResource(R.string.select_topics_for_your_review),
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
         style = MaterialTheme.typography.titleMedium,
     )

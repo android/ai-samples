@@ -11,9 +11,6 @@
     <string name="gemini_hybrid_lang_german">German</string>
     <string name="gemini_hybrid_status_generating_on_device">Generating on-device…</string>
     <string name="gemini_hybrid_status_generating_cloud">Generating in cloud…</string>
-    <string name="gemini_hybrid_error_no_input">Please enter some text.</string>
-    <string name="gemini_hybrid_inference_cloud">Cloud</string>
-    <string name="gemini_hybrid_inference_on_device">On-device</string>
     <string name="gemini_hybrid_generated_cloud">Generated in the cloud</string>
     <string name="gemini_hybrid_generated_on_device">Generated on device</string>
     <string name="gemini_hybrid_mode_prefer_on_device">PREFER ON-DEVICE</string>
