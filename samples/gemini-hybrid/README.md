@@ -1,6 +1,6 @@
 # Gemini Hybrid Sample
 
-This sample is part of the [AI Sample Catalog](../../). To build and run this sample, you should clone the entire repository.
+This sample is part of the [AI Sample Catalog](../../../). To build and run this sample, you should clone the entire repository.
 
 ## Description
 
