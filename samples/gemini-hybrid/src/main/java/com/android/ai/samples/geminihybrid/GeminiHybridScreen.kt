@@ -126,8 +126,9 @@ fun GeminiHybridScreen(viewModel: GeminiHybridViewModel = hiltViewModel()) {
                         modifier = Modifier.padding(8.dp),
                     )
 
-                    when (val status = uiState.status) {
-                        is GeminiStatus.Initial -> {
+                    val status = uiState.status
+                    when {
+                        status is GeminiStatus.Initial -> {
                             InitialReviewUi(
                                 tags = viewModel.tags,
                                 selectedTags = uiState.selectedTags,
@@ -142,30 +143,19 @@ fun GeminiHybridScreen(viewModel: GeminiHybridViewModel = hiltViewModel()) {
                             )
                         }
 
-                        is GeminiStatus.CheckingOnDeviceStatus -> {
+                        status is GeminiStatus.CheckingOnDeviceStatus -> {
                             StatusText(stringResource(R.string.gemini_hybrid_status_checking))
                         }
 
-                        is GeminiStatus.Generating -> {
-                            if (!status.isTranslation) {
-                                GeneratingUi(status)
-                            } else {
-                                SuccessReviewUi(
-                                    reviewText = uiState.reviewText,
-                                    reviewInferenceStatus = uiState.reviewInferenceStatus,
-                                    onReviewTextChanged = viewModel::updateReviewText,
-                                    languageKeys = viewModel.languageMap.keys.toList(),
-                                    languageMap = viewModel.languageMap,
-                                    selectedLanguage = uiState.selectedLanguage,
-                                    onLanguageSelected = viewModel::setSelectedLanguage,
-                                    onTranslate = { viewModel.translate(uiState.reviewText, uiState.selectedLanguage) },
-                                    onReset = viewModel::reset,
-                                    generationStatus = status,
-                                )
-                            }
+                        status is GeminiStatus.Generating && !status.isTranslation -> {
+                            GeneratingUi(status)
                         }
 
-                        is GeminiStatus.Success -> {
+                        status is GeminiStatus.Error -> {
+                            ErrorUi(status.message, onReset = viewModel::reset)
+                        }
+
+                        else -> {
                             SuccessReviewUi(
                                 reviewText = uiState.reviewText,
                                 reviewInferenceStatus = uiState.reviewInferenceStatus,
@@ -174,14 +164,15 @@ fun GeminiHybridScreen(viewModel: GeminiHybridViewModel = hiltViewModel()) {
                                 languageMap = viewModel.languageMap,
                                 selectedLanguage = uiState.selectedLanguage,
                                 onLanguageSelected = viewModel::setSelectedLanguage,
-                                onTranslate = { viewModel.translate(uiState.reviewText, uiState.selectedLanguage) },
+                                onTranslate = {
+                                    viewModel.translate(
+                                        uiState.reviewText,
+                                        uiState.selectedLanguage
+                                    )
+                                },
                                 onReset = viewModel::reset,
                                 generationStatus = status,
                             )
-                        }
-
-                        is GeminiStatus.Error -> {
-                            ErrorUi(status.message, onReset = viewModel::reset)
                         }
                     }
                 }

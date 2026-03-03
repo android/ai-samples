@@ -52,7 +52,7 @@ sealed interface GeminiStatus {
 }
 
 @OptIn(PublicPreviewAPI::class)
-data class UiState(
+data class GeminiHybridUiState(
     val selectedMode: InferenceMode = InferenceMode.ONLY_ON_DEVICE,
     val selectedTags: List<Int> = emptyList(),
     val reviewText: String = "",
@@ -64,8 +64,8 @@ data class UiState(
 @PublicPreviewAPI
 @HiltViewModel
 class GeminiHybridViewModel @Inject constructor() : ViewModel() {
-    private val _uiState = MutableStateFlow(UiState())
-    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(GeminiHybridUiState())
+    val uiState: StateFlow<GeminiHybridUiState> = _uiState.asStateFlow()
 
     val tags = listOf(
         R.string.location,
@@ -247,6 +247,6 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
     }
 
     fun reset() {
-        _uiState.value = UiState()
+        _uiState.value = GeminiHybridUiState()
     }
 }
