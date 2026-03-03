@@ -33,44 +33,39 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-sealed interface GeminiHybridUiState {
-    data object Initial : GeminiHybridUiState
-    data object CheckingOnDeviceStatus : GeminiHybridUiState
+sealed interface GeminiStatus {
+    data object Initial : GeminiStatus
+    data object CheckingOnDeviceStatus : GeminiStatus
     data class Generating(
         val isCloud: Boolean,
         val partialOutput: String = "",
         val isTranslation: Boolean = false
-    ) : GeminiHybridUiState
+    ) : GeminiStatus
 
     data class Success(
         val output: String,
         val isCloud: Boolean,
         val isTranslation: Boolean = false
-    ) : GeminiHybridUiState
+    ) : GeminiStatus
 
-    data class Error(val message: String) : GeminiHybridUiState
+    data class Error(val message: String) : GeminiStatus
 }
+
+@OptIn(PublicPreviewAPI::class)
+data class UiState(
+    val selectedMode: InferenceMode = InferenceMode.ONLY_ON_DEVICE,
+    val selectedTags: List<Int> = emptyList(),
+    val reviewText: String = "",
+    val reviewInferenceStatus: Int? = null,
+    val selectedLanguage: String = "Korean",
+    val status: GeminiStatus = GeminiStatus.Initial
+)
 
 @PublicPreviewAPI
 @HiltViewModel
 class GeminiHybridViewModel @Inject constructor() : ViewModel() {
-    private val _uiState = MutableStateFlow<GeminiHybridUiState>(GeminiHybridUiState.Initial)
-    val uiState: StateFlow<GeminiHybridUiState> = _uiState.asStateFlow()
-
-    private val _inferenceMode = MutableStateFlow(InferenceMode.ONLY_ON_DEVICE)
-    val inferenceMode: StateFlow<InferenceMode> = _inferenceMode.asStateFlow()
-
-    private val _selectedTags = MutableStateFlow<List<Int>>(emptyList())
-    val selectedTags: StateFlow<List<Int>> = _selectedTags.asStateFlow()
-
-    private val _reviewText = MutableStateFlow("")
-    val reviewText: StateFlow<String> = _reviewText.asStateFlow()
-
-    private val _reviewInferenceStatus = MutableStateFlow<Int?>(null)
-    val reviewInferenceStatus: StateFlow<Int?> = _reviewInferenceStatus.asStateFlow()
-
-    private val _selectedLanguage = MutableStateFlow("Korean")
-    val selectedLanguage: StateFlow<String> = _selectedLanguage.asStateFlow()
+    private val _uiState = MutableStateFlow(UiState())
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     val tags = listOf(
         R.string.location,
@@ -90,34 +85,43 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
     )
 
     fun setInferenceMode(mode: InferenceMode) {
-        _inferenceMode.value = mode
+        _uiState.update { it.copy(selectedMode = mode) }
     }
 
     fun toggleTag(tagResId: Int) {
-        _selectedTags.update { current ->
-            if (current.contains(tagResId)) current - tagResId else current + tagResId
+        _uiState.update { state ->
+            val newTags = if (state.selectedTags.contains(tagResId)) {
+                state.selectedTags - tagResId
+            } else {
+                state.selectedTags + tagResId
+            }
+            state.copy(selectedTags = newTags)
         }
     }
 
     fun updateReviewText(text: String) {
-        _reviewText.value = text
+        _uiState.update { it.copy(reviewText = text) }
     }
 
     fun setSelectedLanguage(language: String) {
-        _selectedLanguage.value = language
+        _uiState.update { it.copy(selectedLanguage = language) }
     }
 
     fun generateReview(tagStrings: List<String>) {
         if (tagStrings.isEmpty()) {
-            _uiState.value = GeminiHybridUiState.Error("Please select at least one tag")
+            _uiState.update { it.copy(status = GeminiStatus.Error("Please select at least one tag")) }
             return
         }
 
         viewModelScope.launch {
-            _uiState.value = GeminiHybridUiState.Generating(
-                isCloud = _inferenceMode.value == InferenceMode.ONLY_IN_CLOUD,
-                isTranslation = false
-            )
+            _uiState.update {
+                it.copy(
+                    status = GeminiStatus.Generating(
+                        isCloud = it.selectedMode == InferenceMode.ONLY_IN_CLOUD,
+                        isTranslation = false
+                    )
+                )
+            }
             try {
                 val prompt =
                     "Write a simple, short and generic hotel review positively covering the following themes: ${
@@ -127,57 +131,69 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
                 val model = Firebase.ai(backend = GenerativeBackend.googleAI())
                     .generativeModel(
                         "gemini-2.5-flash-lite",
-                        onDeviceConfig = OnDeviceConfig(mode = _inferenceMode.value)
+                        onDeviceConfig = OnDeviceConfig(mode = _uiState.value.selectedMode)
                     )
                 model.generateContentStream(prompt).collect { chunk ->
                     val isCloud = chunk.inferenceSource == InferenceSource.IN_CLOUD
                     _uiState.update { state ->
-                        if (state is GeminiHybridUiState.Generating) {
-                            state.copy(
+                        val currentStatus = state.status
+                        val newStatus = if (currentStatus is GeminiStatus.Generating) {
+                            currentStatus.copy(
                                 isCloud = isCloud,
-                                partialOutput = state.partialOutput + (chunk.text ?: "")
+                                partialOutput = currentStatus.partialOutput + (chunk.text ?: "")
                             )
                         } else {
-                            GeminiHybridUiState.Generating(
+                            GeminiStatus.Generating(
                                 isCloud = isCloud,
                                 partialOutput = chunk.text ?: "",
                                 isTranslation = false
                             )
                         }
+                        state.copy(status = newStatus)
                     }
                 }
 
-                val finalState = uiState.value
-                if (finalState is GeminiHybridUiState.Generating) {
-                    val output = finalState.partialOutput.trimEnd()
-                    _reviewText.value = output
-                    _reviewInferenceStatus.value = if (finalState.isCloud) {
+                val finalState = _uiState.value
+                val finalStatus = finalState.status
+                if (finalStatus is GeminiStatus.Generating) {
+                    val output = finalStatus.partialOutput.trimEnd()
+                    val inferenceStatusResId = if (finalStatus.isCloud) {
                         R.string.gemini_hybrid_generated_cloud
                     } else {
                         R.string.gemini_hybrid_generated_on_device
                     }
-                    _uiState.value =
-                        GeminiHybridUiState.Success(output, finalState.isCloud, isTranslation = false)
+                    _uiState.update {
+                        it.copy(
+                            reviewText = output,
+                            reviewInferenceStatus = inferenceStatusResId,
+                            status = GeminiStatus.Success(output, finalStatus.isCloud, isTranslation = false)
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("GeminiHybrid", "Inference failed", e)
-                _uiState.value =
-                    GeminiHybridUiState.Error(e.localizedMessage ?: "Unknown error occurred")
+                _uiState.update {
+                    it.copy(status = GeminiStatus.Error(e.localizedMessage ?: "Unknown error occurred"))
+                }
             }
         }
     }
 
     fun translate(text: String, language: String) {
         if (text.isBlank()) {
-            _uiState.value = GeminiHybridUiState.Error("Text to translate cannot be empty")
+            _uiState.update { it.copy(status = GeminiStatus.Error("Text to translate cannot be empty")) }
             return
         }
 
         viewModelScope.launch {
-            _uiState.value = GeminiHybridUiState.Generating(
-                isCloud = _inferenceMode.value == InferenceMode.ONLY_IN_CLOUD,
-                isTranslation = true
-            )
+            _uiState.update {
+                it.copy(
+                    status = GeminiStatus.Generating(
+                        isCloud = it.selectedMode == InferenceMode.ONLY_IN_CLOUD,
+                        isTranslation = true
+                    )
+                )
+            }
             try {
                 val prompt =
                     "Translate the following text to $language. Return ONLY the translated text, no explanations:\n\n$text"
@@ -185,47 +201,52 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
                 val model = Firebase.ai(backend = GenerativeBackend.googleAI())
                     .generativeModel(
                         "gemini-2.5-flash-lite",
-                        onDeviceConfig = OnDeviceConfig(mode = _inferenceMode.value)
+                        onDeviceConfig = OnDeviceConfig(mode = _uiState.value.selectedMode)
                     )
 
                 model.generateContentStream(prompt).collect { chunk ->
                     val isCloud = chunk.inferenceSource == InferenceSource.IN_CLOUD
                     _uiState.update { state ->
-                        if (state is GeminiHybridUiState.Generating) {
-                            state.copy(
+                        val currentStatus = state.status
+                        val newStatus = if (currentStatus is GeminiStatus.Generating) {
+                            currentStatus.copy(
                                 isCloud = isCloud,
-                                partialOutput = state.partialOutput + (chunk.text ?: "")
+                                partialOutput = currentStatus.partialOutput + (chunk.text ?: "")
                             )
                         } else {
-                            GeminiHybridUiState.Generating(
+                            GeminiStatus.Generating(
                                 isCloud = isCloud,
                                 partialOutput = chunk.text ?: "",
                                 isTranslation = true
                             )
                         }
+                        state.copy(status = newStatus)
                     }
                 }
 
-                val finalState = uiState.value
-                if (finalState is GeminiHybridUiState.Generating) {
-                    _uiState.value = GeminiHybridUiState.Success(
-                        finalState.partialOutput,
-                        finalState.isCloud,
-                        isTranslation = true
-                    )
+                val finalState = _uiState.value
+                val finalStatus = finalState.status
+                if (finalStatus is GeminiStatus.Generating) {
+                    _uiState.update {
+                        it.copy(
+                            status = GeminiStatus.Success(
+                                finalStatus.partialOutput,
+                                finalStatus.isCloud,
+                                isTranslation = true
+                            )
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("GeminiHybrid", "Inference failed", e)
-                _uiState.value =
-                    GeminiHybridUiState.Error(e.localizedMessage ?: "Unknown error occurred")
+                _uiState.update {
+                    it.copy(status = GeminiStatus.Error(e.localizedMessage ?: "Unknown error occurred"))
+                }
             }
         }
     }
 
     fun reset() {
-        _uiState.value = GeminiHybridUiState.Initial
-        _selectedTags.value = emptyList()
-        _reviewText.value = ""
-        _reviewInferenceStatus.value = null
+        _uiState.value = UiState()
     }
 }

@@ -44,6 +44,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedToggleButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SplitButtonDefaults
@@ -84,11 +85,6 @@ import com.google.firebase.ai.type.PublicPreviewAPI
 fun GeminiHybridScreen(viewModel: GeminiHybridViewModel = hiltViewModel()) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val selectedMode by viewModel.inferenceMode.collectAsStateWithLifecycle()
-    val selectedTags by viewModel.selectedTags.collectAsStateWithLifecycle()
-    val reviewText by viewModel.reviewText.collectAsStateWithLifecycle()
-    val reviewInferenceStatus by viewModel.reviewInferenceStatus.collectAsStateWithLifecycle()
-    val selectedLanguage by viewModel.selectedLanguage.collectAsStateWithLifecycle()
     
     val context = LocalContext.current
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
@@ -130,62 +126,62 @@ fun GeminiHybridScreen(viewModel: GeminiHybridViewModel = hiltViewModel()) {
                         modifier = Modifier.padding(8.dp),
                     )
 
-                    when (val state = uiState) {
-                        is GeminiHybridUiState.Initial -> {
+                    when (val status = uiState.status) {
+                        is GeminiStatus.Initial -> {
                             InitialReviewUi(
                                 tags = viewModel.tags,
-                                selectedTags = selectedTags,
+                                selectedTags = uiState.selectedTags,
                                 onTagToggle = viewModel::toggleTag,
-                                selectedMode = selectedMode,
+                                selectedMode = uiState.selectedMode,
                                 onModeSelected = viewModel::setInferenceMode,
                                 onGenerate = {
                                     val tagStrings =
-                                        selectedTags.map { ContextCompat.getString(context, it) }
+                                        uiState.selectedTags.map { ContextCompat.getString(context, it) }
                                     viewModel.generateReview(tagStrings)
                                 },
                             )
                         }
 
-                        is GeminiHybridUiState.CheckingOnDeviceStatus -> {
+                        is GeminiStatus.CheckingOnDeviceStatus -> {
                             StatusText(stringResource(R.string.gemini_hybrid_status_checking))
                         }
 
-                        is GeminiHybridUiState.Generating -> {
-                            if (!state.isTranslation) {
-                                GeneratingUi(state)
+                        is GeminiStatus.Generating -> {
+                            if (!status.isTranslation) {
+                                GeneratingUi(status)
                             } else {
                                 SuccessReviewUi(
-                                    reviewText = reviewText,
-                                    reviewInferenceStatus = reviewInferenceStatus,
+                                    reviewText = uiState.reviewText,
+                                    reviewInferenceStatus = uiState.reviewInferenceStatus,
                                     onReviewTextChanged = viewModel::updateReviewText,
                                     languageKeys = viewModel.languageMap.keys.toList(),
                                     languageMap = viewModel.languageMap,
-                                    selectedLanguage = selectedLanguage,
+                                    selectedLanguage = uiState.selectedLanguage,
                                     onLanguageSelected = viewModel::setSelectedLanguage,
-                                    onTranslate = { viewModel.translate(reviewText, selectedLanguage) },
+                                    onTranslate = { viewModel.translate(uiState.reviewText, uiState.selectedLanguage) },
                                     onReset = viewModel::reset,
-                                    translationState = state,
+                                    generationStatus = status,
                                 )
                             }
                         }
 
-                        is GeminiHybridUiState.Success -> {
+                        is GeminiStatus.Success -> {
                             SuccessReviewUi(
-                                reviewText = reviewText,
-                                reviewInferenceStatus = reviewInferenceStatus,
+                                reviewText = uiState.reviewText,
+                                reviewInferenceStatus = uiState.reviewInferenceStatus,
                                 onReviewTextChanged = viewModel::updateReviewText,
                                 languageKeys = viewModel.languageMap.keys.toList(),
                                 languageMap = viewModel.languageMap,
-                                selectedLanguage = selectedLanguage,
+                                selectedLanguage = uiState.selectedLanguage,
                                 onLanguageSelected = viewModel::setSelectedLanguage,
-                                onTranslate = { viewModel.translate(reviewText, selectedLanguage) },
+                                onTranslate = { viewModel.translate(uiState.reviewText, uiState.selectedLanguage) },
                                 onReset = viewModel::reset,
-                                translationState = state,
+                                generationStatus = status,
                             )
                         }
 
-                        is GeminiHybridUiState.Error -> {
-                            ErrorUi(state.message, onReset = viewModel::reset)
+                        is GeminiStatus.Error -> {
+                            ErrorUi(status.message, onReset = viewModel::reset)
                         }
                     }
                 }
@@ -205,7 +201,7 @@ fun InitialReviewUi(
     onGenerate: () -> Unit,
 ) {
     Text(
-        stringResource(R.string.select_topics_for_your_review),
+        "Select topics for your review:",
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
         style = MaterialTheme.typography.titleMedium,
     )
@@ -249,16 +245,16 @@ fun InitialReviewUi(
 }
 
 @Composable
-fun GeneratingUi(state: GeminiHybridUiState.Generating) {
-    val status = if (state.isCloud) {
+fun GeneratingUi(status: GeminiStatus.Generating) {
+    val statusText = if (status.isCloud) {
         stringResource(R.string.gemini_hybrid_status_generating_cloud)
     } else {
         stringResource(R.string.gemini_hybrid_status_generating_on_device)
     }
     Column(modifier = Modifier.fillMaxWidth()) {
-        StatusText(status)
-        if (state.partialOutput.isNotEmpty()) {
-            OutputText(state.partialOutput)
+        StatusText(statusText)
+        if (status.partialOutput.isNotEmpty()) {
+            OutputText(status.partialOutput)
         }
     }
 }
@@ -274,23 +270,15 @@ fun SuccessReviewUi(
     onLanguageSelected: (String) -> Unit,
     onTranslate: () -> Unit,
     onReset: () -> Unit,
-    translationState: GeminiHybridUiState,
+    generationStatus: GeminiStatus,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         reviewInferenceStatus?.let {
             StatusText(stringResource(it))
         }
-        TextField(
+        OutlinedTextField(
             value = reviewText,
             onValueChange = onReviewTextChanged,
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-            ),
             modifier = Modifier
                 .padding(4.dp)
                 .fillMaxWidth()
@@ -314,36 +302,36 @@ fun SuccessReviewUi(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 12.dp, start = 8.dp, end = 8.dp),
-            enabled = reviewText.isNotBlank() && translationState !is GeminiHybridUiState.Generating,
+            enabled = reviewText.isNotBlank() && generationStatus !is GeminiStatus.Generating,
             onClick = onTranslate,
         )
 
         Spacer(modifier = Modifier.height(20.dp))
-        when (translationState) {
-            is GeminiHybridUiState.Generating -> {
-                if (translationState.isTranslation) {
-                    val status = if (translationState.isCloud) {
+        when (generationStatus) {
+            is GeminiStatus.Generating -> {
+                if (generationStatus.isTranslation) {
+                    val statusText = if (generationStatus.isCloud) {
                         stringResource(R.string.gemini_hybrid_status_generating_cloud)
                     } else {
                         stringResource(R.string.gemini_hybrid_status_generating_on_device)
                     }
-                    StatusText(status)
-                    if (translationState.partialOutput.isNotEmpty()) {
-                        OutputText(translationState.partialOutput)
+                    StatusText(statusText)
+                    if (generationStatus.partialOutput.isNotEmpty()) {
+                        OutputText(generationStatus.partialOutput)
                     }
                 }
             }
 
-            is GeminiHybridUiState.Success -> {
-                if (translationState.isTranslation) {
-                    val inferenceStatus = if (translationState.isCloud) {
+            is GeminiStatus.Success -> {
+                if (generationStatus.isTranslation) {
+                    val inferenceStatus = if (generationStatus.isCloud) {
                         R.string.gemini_hybrid_generated_cloud
                     } else {
                         R.string.gemini_hybrid_generated_on_device
                     }
 
                     StatusText(stringResource(inferenceStatus))
-                    OutputText(translationState.output)
+                    OutputText(generationStatus.output)
                 }
             }
 
