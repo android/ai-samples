@@ -42,6 +42,16 @@ import com.google.firebase.ai.type.PublicPreviewAPI
 @RequiresPermission(Manifest.permission.RECORD_AUDIO)
 val sampleCatalog = listOf(
     SampleCatalogItem(
+        title = R.string.gemini_hybrid_sample_list_title,
+        description = R.string.gemini_hybrid_sample_list_description,
+        route = "GeminiHybridScreen",
+        sampleEntryScreen = { GeminiHybridScreen() },
+        tags = listOf(SampleTags.GEMINI_NANO, SampleTags.GEMINI_FLASH, SampleTags.ML_KIT, SampleTags.FIREBASE),
+        needsFirebase = true,
+        keyArt = R.drawable.img_keyart_text,
+        isFeatured = true,
+    ),
+    SampleCatalogItem(
         title = R.string.gemini_image_chat_list_title,
         description = R.string.gemini_image_chat_list_description,
         route = "GeminiImageChatScreen",
@@ -59,7 +69,6 @@ val sampleCatalog = listOf(
         tags = listOf(SampleTags.IMAGEN, SampleTags.FIREBASE),
         needsFirebase = true,
         keyArt = R.drawable.img_keyart_imagen,
-        isFeatured = true,
     ),
     SampleCatalogItem(
         title = R.string.gemini_multimodal_sample_list_title,
@@ -148,15 +157,6 @@ val sampleCatalog = listOf(
         tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
         keyArt = R.drawable.img_keyart_todo,
-    ),
-    SampleCatalogItem(
-        title = R.string.gemini_hybrid_sample_list_title,
-        description = R.string.gemini_hybrid_sample_list_description,
-        route = "GeminiHybridScreen",
-        sampleEntryScreen = { GeminiHybridScreen() },
-        tags = listOf(SampleTags.GEMINI_NANO, SampleTags.GEMINI_FLASH, SampleTags.ML_KIT, SampleTags.FIREBASE),
-        needsFirebase = true,
-        keyArt = R.drawable.img_keyart_chatbot,
     ),
 
     // To create a new sample entry, add a new SampleCatalogItem here.
