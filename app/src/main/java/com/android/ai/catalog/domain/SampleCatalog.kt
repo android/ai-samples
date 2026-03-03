@@ -22,6 +22,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import com.android.ai.catalog.R
+import com.android.ai.samples.agentauditor.AgentChatScreen
 import com.android.ai.samples.geminichatbot.GeminiChatbotScreen
 import com.android.ai.samples.geminiimagechat.GeminiImageChatScreen
 import com.android.ai.samples.geminilivetodo.ui.TodoScreen
@@ -146,6 +147,16 @@ val sampleCatalog = listOf(
         needsFirebase = true,
         keyArt = R.drawable.img_keyart_todo,
     ),
+    SampleCatalogItem(
+        title = R.string.agent_auditor_sample_title,
+        description = R.string.agent_auditor_sample_description,
+        route = "AgentAuditorScreen",
+        sampleEntryScreen = { AgentChatScreen() },
+        tags = listOf(SampleTags.AGENT),
+        needsFirebase = false,
+        keyArt = R.drawable.img_keyart_summary,
+        isFeatured = true,
+    ),
 
     // To create a new sample entry, add a new SampleCatalogItem here.
 )
@@ -171,4 +182,5 @@ enum class SampleTags(
     IMAGEN("Imagen", extendedColorScheme.imagen),
     MEDIA3("Media3", extendedColorScheme.media3),
     ML_KIT("ML Kit", extendedColorScheme.mLKit),
+    AGENT("Agent", extendedColorScheme.agent)
 }

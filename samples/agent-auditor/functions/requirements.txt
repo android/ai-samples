@@ -1,0 +1,5 @@
+--extra-index-url https://pypi.org/simple/
+firebase-functions>=0.1.0
+firebase-admin>=6.4.0
+google-genai>=0.1.2
+pydantic>=2.0.0

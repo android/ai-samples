@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="agent_auditor_sample_title">Agentic Expense Auditor</string>
+    <string name="agent_auditor_sample_description">An agent that leverages server-side knowledge and client-side device tools.</string>
+</resources>

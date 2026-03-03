@@ -14,6 +14,38 @@ some of Google's models.
 > **Requires Firebase setup** the samples relying on Google Cloud models (Gemini Pro, Gemini Flash, etc...) 
 > require setting up a Firebase project and connecting the app to Firebase (read more [here](https://firebase.google.com/docs/ai-logic/get-started?platform=android&api=dev#set-up-firebase)).   
 
+> **Requires Server setup** the **Agentic Expense Auditor** sample requires a python backend server.
+> 
+> **Option A: Run Locally (Emulator)**
+> Start the server on your machine so your Android Emulator can connect via `10.0.2.2`:
+> ```bash
+> cd samples/agent-auditor/backend
+> python3 -m venv venv
+> source venv/bin/activate
+> pip install -r requirements.txt
+> uvicorn agent_service:app --host 0.0.0.0 --port 8000 --reload
+> ```
+> 
+> **Option B: Deploy to Firebase Cloud Functions (Real Device)**
+> Deploy the python backend to Firebase Cloud Functions so your physical device can connect to it.
+> *Note: This requires your Firebase Project to be on the **Blaze (Pay-as-you-go) plan**.*
+> 
+> 1. Set up a Firebase project and connect your app by downloading the `google-services.json` file into your Android `/app` directory. Ensure your Android Package Name matches exactly: `com.android.ai.catalog`.
+> 2. Enable the [Firebase App Check API](https://console.cloud.google.com/apis/library/firebaseappcheck.googleapis.com) in the Google Cloud Console.
+> 3. Ensure you have the `firebase-tools` CLI installed (`npm install -g firebase-tools`).
+> 4. Initialize Firebase, configure the Gemini API Key as a secret, and deploy the functions:
+> ```bash
+> cd samples/agent-auditor
+> firebase init functions
+> # Select Python, select the 'functions' directory, and don't overwrite main.py
+> firebase functions:secrets:set GEMINI_API_KEY
+> firebase deploy --only functions
+> ```
+> 5. Once deployed, open (or create) `local.properties` in your Android project root and add the URL:
+> `AGENT_SERVER_URL="https://REGION-PROJECT_ID.cloudfunctions.net/chat"`
+>
+> 🔒 **Security Notice:** The Cloud Function is secured with **Firebase App Check**. It will reject raw HTTP requests (like cURL or Postman). If testing on an Android Emulator instead of a physical device, you must register a [Debug App Check Token](https://firebase.google.com/docs/app-check/android/debug-provider) in the Firebase app check console.
+
 > 🚧 **Work-in-Progress:** we are working on bringing more samples into the application.
 
 ## How to run

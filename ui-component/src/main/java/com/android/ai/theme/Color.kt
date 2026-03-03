@@ -239,5 +239,6 @@ val imagen = Color(0xFF2DAEB8)
 val firebase = Color(0xFFFFC400)
 val media3 = Color(0xFF80DA88)
 val mlKit = Color(0xFFC2E7FF)
+val agent = Color(0xFFECD47B)
 
 val startGradient = Color(0x99000000)

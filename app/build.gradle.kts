@@ -58,6 +58,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -78,6 +79,8 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.ai)
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
+    implementation("com.google.firebase:firebase-appcheck-debug")
     ksp(libs.hilt.compiler)
 
     implementation(project(":ui-component"))
@@ -93,6 +96,7 @@ dependencies {
     implementation(project(":samples:gemini-live-todo"))
     implementation(project(":samples:gemini-video-metadata-creation"))
     implementation(project(":samples:gemini-image-chat"))
+    implementation(project(":samples:agent-auditor"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
