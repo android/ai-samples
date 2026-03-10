@@ -127,7 +127,7 @@ val sampleCatalog = listOf(
         description = R.string.magic_selfie_sample_list_description,
         route = "MagicSelfieScreen",
         sampleEntryScreen = { MagicSelfieScreen() },
-        tags = listOf(SampleTags.IMAGEN, SampleTags.FIREBASE, SampleTags.ML_KIT),
+        tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
         keyArt = R.drawable.img_keyart_magic_selfie,
     ),

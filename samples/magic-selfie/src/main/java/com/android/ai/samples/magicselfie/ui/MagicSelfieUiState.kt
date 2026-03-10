@@ -19,7 +19,6 @@ import android.graphics.Bitmap
 
 sealed interface MagicSelfieUiState {
     data object Initial : MagicSelfieUiState
-    data object RemovingBackground : MagicSelfieUiState
     data object GeneratingBackground : MagicSelfieUiState
     data class Success(val bitmap: Bitmap) : MagicSelfieUiState
     data class Error(val message: String?) : MagicSelfieUiState

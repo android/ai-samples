@@ -34,11 +34,8 @@ class MagicSelfieViewModel @Inject constructor(private val magicSelfieRepository
     fun createMagicSelfie(bitmap: Bitmap, prompt: String) {
         viewModelScope.launch {
             try {
-                _uiState.value = MagicSelfieUiState.RemovingBackground
-                val foregroundBitmap = magicSelfieRepository.generateForegroundBitmap(bitmap)
                 _uiState.value = MagicSelfieUiState.GeneratingBackground
-                val backgroundBitmap = magicSelfieRepository.generateBackground(prompt)
-                val resultBitmap = magicSelfieRepository.combineBitmaps(foregroundBitmap, backgroundBitmap)
+                val resultBitmap = magicSelfieRepository.generateMagicSelfie(bitmap, prompt)
                 _uiState.value = MagicSelfieUiState.Success(resultBitmap)
             } catch (e: Exception) {
                 _uiState.value = MagicSelfieUiState.Error(e.message)

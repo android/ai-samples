@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="magic_selfie_title">Magic Selfie</string>
-    <string name="magic_selfie_subtitle">Change the background of you selfies with Imagen and the ML Kit Segmentation API</string>
+    <string name="magic_selfie_subtitle">Change the background of your selfies with the Gemini Flash model</string>
     <string name="add_image">Add image</string>
     <string name="unknown_error">Unknown error</string>
     <string name="prompt_placeholder">A very scenic view of the grand canyon</string>
