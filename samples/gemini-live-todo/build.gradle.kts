@@ -51,8 +51,8 @@ android {
 }
 
 dependencies {
-    implementation("androidx.xr.glimmer:glimmer:1.0.0-alpha05")
-    implementation("androidx.xr.projected:projected:1.0.0-alpha04")
+    implementation(libs.androidx.xr.glimmer)
+    implementation(libs.androidx.xr.projected)
     implementation("com.google.firebase:firebase-ai:17.5.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
