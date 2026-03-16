@@ -251,13 +251,12 @@ private fun PromptInput(
                 icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
                 modifier = Modifier
                     .width(72.dp)
-                    .height(55.dp)
+                    .fillMaxHeight()
                     .padding(4.dp),
                 enabled = uiState !is GeminiMultimodalUiState.Loading && imageUri != null,
                 onClick = {
                     if (imageUri != null) {
                         val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, imageUri)
-//                        val bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver, imageUri))
                         onGenerateClick(bitmap, textFieldState.text.toString())
                     }
                     keyboardController?.hide()
