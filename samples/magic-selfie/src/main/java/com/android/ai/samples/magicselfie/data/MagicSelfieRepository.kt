@@ -16,87 +16,35 @@
 package com.android.ai.samples.magicselfie.data
 
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Paint
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
-import com.google.firebase.ai.type.ImagenAspectRatio
-import com.google.firebase.ai.type.ImagenGenerationConfig
-import com.google.firebase.ai.type.ImagenImageFormat
-import com.google.firebase.ai.type.PublicPreviewAPI
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.segmentation.subject.SubjectSegmentation
-import com.google.mlkit.vision.segmentation.subject.SubjectSegmenterOptions
+import com.google.firebase.ai.type.ResponseModality
+import com.google.firebase.ai.type.asImageOrNull
+import com.google.firebase.ai.type.content
+import com.google.firebase.ai.type.generationConfig
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.suspendCoroutine
-import kotlin.math.roundToInt
 
 @Singleton
 class MagicSelfieRepository @Inject constructor() {
-    @OptIn(PublicPreviewAPI::class)
-    private val imagenModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).imagenModel(
-        modelName = "imagen-4.0-generate-preview-06-06",
-        generationConfig = ImagenGenerationConfig(
-            numberOfImages = 1,
-            aspectRatio = ImagenAspectRatio.PORTRAIT_3x4,
-            imageFormat = ImagenImageFormat.jpeg(compressionQuality = 75),
-        ),
+    private val generativeModel = Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
+        modelName = "gemini-3.1-flash-image-preview",
+        generationConfig = generationConfig {
+            responseModalities = listOf(ResponseModality.IMAGE)
+        },
+        systemInstruction = content {
+            text("In the provided image, replace the background with the one described in the prompt. Keep the person in the foreground exactly as they are.")
+        },
     )
 
-    private val subjectSegmenter = SubjectSegmentation.getClient(
-        SubjectSegmenterOptions.Builder()
-            .enableForegroundBitmap()
-            .build(),
-    )
-
-    suspend fun generateForegroundBitmap(bitmap: Bitmap): Bitmap {
-        val image = InputImage.fromBitmap(bitmap, 0)
-        return suspendCoroutine { continuation ->
-            subjectSegmenter.process(image)
-                .addOnSuccessListener {
-                    it.foregroundBitmap?.let { foregroundBitmap ->
-                        continuation.resumeWith(Result.success(foregroundBitmap))
-                    }
-                }
-                .addOnFailureListener {
-                    continuation.resumeWith(Result.failure(it))
-                }
+    suspend fun generateMagicSelfie(bitmap: Bitmap, prompt: String): Bitmap {
+        val content = content {
+            image(bitmap)
+            text(prompt)
         }
-    }
-
-    @OptIn(PublicPreviewAPI::class)
-    suspend fun generateBackground(prompt: String): Bitmap {
-        val imageResponse = imagenModel.generateImages(
-            prompt = prompt,
-        )
-        val image = imageResponse.images.first()
-        return image.asBitmap()
-    }
-
-    fun combineBitmaps(foreground: Bitmap, background: Bitmap): Bitmap {
-        val height = background.height
-        val width = background.width
-
-        val resultBitmap = Bitmap.createBitmap(width, height, background.config!!)
-        val canvas = Canvas(resultBitmap)
-        val paint = Paint()
-        canvas.drawBitmap(background, 0f, 0f, paint)
-
-        var foregroundHeight = foreground.height
-        var foregroundWidth = foreground.width
-        val ratio = foregroundWidth.toFloat() / foregroundHeight.toFloat()
-
-        foregroundHeight = height
-        foregroundWidth = (foregroundHeight * ratio).roundToInt()
-
-        val scaledForeground = Bitmap.createScaledBitmap(foreground, foregroundWidth, foregroundHeight, false)
-
-        val left = (width - scaledForeground.width) / 2f
-        val top = (height - scaledForeground.height.toFloat())
-        canvas.drawBitmap(scaledForeground, left, top, paint)
-
-        return resultBitmap
+        val response = generativeModel.generateContent(content)
+        val resultImage = response.candidates.firstOrNull()?.content?.parts?.firstNotNullOfOrNull { it.asImageOrNull() }
+        return resultImage ?: throw Exception("Failed to generate magic selfie")
     }
 }
