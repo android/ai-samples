@@ -69,13 +69,11 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.hilt.android)
     implementation(libs.ui.tooling.preview)
-    implementation(libs.core.ktx)
     ksp(libs.hilt.compiler)
     implementation(project(":ui-component"))
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.activity.compose)
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.androidx.runner)
 
 
     testImplementation(libs.junit)

@@ -28,9 +28,6 @@ class ProjectedContextTests {
     private val context: Context
         get() = ApplicationProvider.getApplicationContext()
 
-    private lateinit var projectedDeviceController: ProjectedDeviceController
-
-
     @Test
     fun app_initializesProjectedContext_whenDeviceIsConnected() {
         val projectedContext = ProjectedContext.createProjectedDeviceContext(context)
@@ -46,11 +43,12 @@ class ProjectedContextTests {
         }
     }
 
+
     @Test
     fun capabilities_includesVisualUiByDefault_returnsCapabilityVisualUi() {
         projectedTestRule.launchTestProjectedDeviceActivity { activity ->
-            runBlocking {
-                projectedDeviceController = ProjectedDeviceController.create(activity)
+            val projectedDeviceController = runBlocking {
+                ProjectedDeviceController.create(activity)
             }
 
             assertThat(projectedDeviceController.capabilities).contains(CAPABILITY_VISUAL_UI)
@@ -61,8 +59,9 @@ class ProjectedContextTests {
     fun capabilities_emptyCapabilities_doesNotReturnCapabilityVisualUi() {
         projectedTestRule.launchTestProjectedDeviceActivity { activity ->
             projectedTestRule.capabilities = setOf()
-            runBlocking {
-                projectedDeviceController = ProjectedDeviceController.create(activity)
+
+            val projectedDeviceController = runBlocking {
+                ProjectedDeviceController.create(activity)
             }
 
             assertThat(projectedDeviceController.capabilities).doesNotContain(CAPABILITY_VISUAL_UI)
