@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package androidx.xr.glimmer.samples
+package com.android.ai.samples.geminilivetodo.ui
 
 import android.app.Activity
 import android.util.Log
@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -45,8 +46,6 @@ import androidx.xr.glimmer.Text
 import androidx.xr.glimmer.list.VerticalList
 import com.android.ai.samples.geminilivetodo.R
 import com.android.ai.samples.geminilivetodo.data.Todo
-import com.android.ai.samples.geminilivetodo.ui.TodoScreenUiState
-import com.android.ai.samples.geminilivetodo.ui.TodoScreenViewModel
 import com.android.ai.uicomponent.R as UiComponentR
 import kotlin.math.min
 
@@ -223,5 +222,34 @@ private fun GlimmerTodoItem(
             text = task.task,
             textDecoration = if (task.isCompleted) TextDecoration.LineThrough else null
         )
+    }
+}
+
+@Preview(device = "id:ai_glasses_device")
+@Composable
+private fun GlimmerTodoScreenPreview() {
+    val mockTodoItems = listOf(
+        Todo(id = 1, task = "Buy groceries", isCompleted = false),
+        Todo(id = 2, task = "Finish the report", isCompleted = true),
+        Todo(id = 3, task = "Call mom", isCompleted = false)
+    )
+
+    GlimmerTheme {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+        ) {
+            GlimmerScreenContent(
+                uiState = TodoScreenUiState.Success(
+                    todoItems = mockTodoItems,
+                    isMicOn = true,
+                    liveSessionState = LiveSessionState.Running
+                ),
+                onToggleItem = { _ -> },
+                onExit = {}
+            )
+        }
     }
 }

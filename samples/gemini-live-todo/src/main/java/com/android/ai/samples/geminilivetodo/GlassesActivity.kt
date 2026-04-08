@@ -16,7 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.xr.glimmer.GlimmerTheme
-import androidx.xr.glimmer.samples.GlimmerTodoScreen
+import com.android.ai.samples.geminilivetodo.ui.GlimmerTodoScreen
 import androidx.xr.projected.experimental.ExperimentalProjectedApi
 import androidx.xr.projected.permissions.ProjectedPermissionsRequestParams
 import androidx.xr.projected.permissions.ProjectedPermissionsResultContract
