@@ -75,10 +75,10 @@ fun GlimmerTodoScreen(
 
     GlimmerTheme {
         Box(
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.BottomCenter,
             modifier = modifier
                 .fillMaxSize()
-                .background(Color.Black)
+                .background(GlimmerTheme.colors.background)
         ) {
 
             GlimmerScreenContent(
@@ -236,10 +236,10 @@ private fun GlimmerTodoScreenPreview() {
 
     GlimmerTheme {
         Box(
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.BottomCenter,
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black)
+                .background(GlimmerTheme.colors.background)
         ) {
             GlimmerScreenContent(
                 uiState = TodoScreenUiState.Success(
