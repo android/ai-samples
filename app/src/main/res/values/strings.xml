@@ -15,6 +15,8 @@
     <string name="open_sample_button">Open sample</string>
     <string name="imagen_sample_list_title">Image generation with Imagen</string>
     <string name="imagen_sample_list_description">Generate images with Imagen, Google image generation model</string>
+    <string name="nanobanana_sample_list_title">Image generation with Nanobanana</string>
+    <string name="nanobanana_sample_list_description">Generate images with Nanobanana, Google image generation model</string>
     <string name="imagen_editing_sample_list_title">Image Editing with Imagen</string>
     <string name="imagen_editing_sample_list_description">Generate images and edit only specific areas of a generated image with inpainting</string>
     <string name="magic_selfie_sample_list_title">Magic Selfie with Gemini</string>
