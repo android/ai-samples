@@ -22,6 +22,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.ai.InferenceMode
 import com.google.firebase.ai.InferenceSource
 import com.google.firebase.ai.OnDeviceConfig
+import com.google.firebase.ai.OnDeviceModelOption
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.PublicPreviewAPI
@@ -130,8 +131,11 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
                 val model = Firebase.ai(backend = GenerativeBackend.googleAI())
                     .generativeModel(
                         "gemini-2.5-flash-lite",
-                        onDeviceConfig = OnDeviceConfig(mode = _uiState.value.selectedMode)
+                        onDeviceConfig = OnDeviceConfig(
+                            mode = _uiState.value.selectedMode,
+                            modelOption = OnDeviceModelOption.STABLE)
                     )
+                model.onDeviceExtension?.checkStatus()
                 model.generateContentStream(prompt).collect { chunk ->
                     val isCloud = chunk.inferenceSource == InferenceSource.IN_CLOUD
                     _uiState.update { state ->

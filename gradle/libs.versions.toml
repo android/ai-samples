@@ -1,7 +1,7 @@
 [versions]
 agp = "8.8.2"
 coilCompose = "3.1.0"
-firebaseAiOndevice = "16.0.0-beta01"
+firebaseAiOndevice = "16.0.0-beta02"
 firebaseBom = "34.11.0"
 lifecycleRuntimeCompose = "2.9.1"
 mlkitGenAi = "1.0.0-beta1"
@@ -43,7 +43,7 @@ androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-ru
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 firebase-ai-ondevice = { module = "com.google.firebase:firebase-ai-ondevice", version.ref = "firebaseAiOndevice" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
-firebase-ai = { module = "com.google.firebase:firebase-ai"}
+firebase-ai = { module = "com.google.firebase:firebase-ai", version = "17.12.0"}
 firebase-common-ktx = { group = "com.google.firebase", name = "firebase-common-ktx", version.ref = "firebaseCommonKtx" }
 genai-image-description = { module = "com.google.mlkit:genai-image-description", version.ref = "mlkitGenAi" }
 genai-proofreading = { module = "com.google.mlkit:genai-proofreading", version.ref = "mlkitGenAi" }
