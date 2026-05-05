@@ -110,7 +110,7 @@ val sampleCatalog = listOf(
         sampleEntryScreen = { NanobananaScreen() },
         tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
-        keyArt = R.drawable.img_keyart_chatbot,
+        keyArt = R.drawable.img_keyart_imagen,
     ),
     SampleCatalogItem(
         title = R.string.magic_selfie_sample_list_title,
