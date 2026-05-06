@@ -25,7 +25,7 @@ plugins {
 
 android {
     namespace = "com.android.ai.catalog"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.android.ai.catalog"
