@@ -2,6 +2,8 @@
 
 This sample is part of the [AI Sample Catalog](../../). To build and run this sample, you should clone the entire repository.
 
+This sample was built with Android Studio Quail 1 Canary 3. Get the latest [Android Studio Canary](https://developer.android.com/studio/preview) to access the AI glasses emulator and its latest features.
+
 ## Description
 
 This sample demonstrates how to use the Gemini Live API for real-time, voice-based interactions in a simple ToDo application. Users can add, remove, and update tasks by speaking to the app, showcasing a hands-free, conversational user experience powered by the Gemini API.
