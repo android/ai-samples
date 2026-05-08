@@ -1,6 +1,7 @@
 [versions]
 agp = "9.2.0"
 coilCompose = "3.1.0"
+firebaseAiOndevice = "16.0.0-beta01"
 firebaseBom = "34.11.0"
 lifecycleRuntimeCompose = "2.9.1"
 mlkitGenAi = "1.0.0-beta1"
@@ -25,10 +26,10 @@ mlkitSegmentation = "16.0.0-beta1"
 runtimeLivedata = "1.7.6"
 media3 = "1.8.0"
 firebaseCommonKtx = "21.0.0"
-uiToolingPreviewAndroid = "1.11.0-rc01"
+uiToolingPreviewAndroid = "1.8.1"
 spotless = "7.0.4"
-uiToolingPreview = "1.11.0-rc01"
-uiTooling = "1.11.0-rc01"
+uiToolingPreview = "1.8.3"
+uiTooling = "1.8.3"
 lifecycleViewmodelAndroid = "2.8.7"
 material3 = "1.5.0-alpha01"
 uiTextGoogleFonts = "1.8.1"
@@ -38,13 +39,13 @@ richtext = "1.0.0-alpha02"
 glimmer = "1.0.0-alpha12"
 projected = "1.0.0-alpha07"
 
-
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
+firebase-ai-ondevice = { module = "com.google.firebase:firebase-ai-ondevice", version.ref = "firebaseAiOndevice" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
-firebase-ai = { group = "com.google.firebase", name = "firebase-ai" }
+firebase-ai = { module = "com.google.firebase:firebase-ai"}
 firebase-common-ktx = { group = "com.google.firebase", name = "firebase-common-ktx", version.ref = "firebaseCommonKtx" }
 genai-image-description = { module = "com.google.mlkit:genai-image-description", version.ref = "mlkitGenAi" }
 genai-proofreading = { module = "com.google.mlkit:genai-proofreading", version.ref = "mlkitGenAi" }
@@ -82,7 +83,6 @@ androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "medi
 androidx-media3-ui-compose = { module = "androidx.media3:media3-ui-compose", version.ref = "media3"}
 androidx-media3-transformer = { module = "androidx.media3:media3-transformer", version.ref = "media3" }
 androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "uiToolingPreviewAndroid" }
-mlkit-segmentation = { module = "com.google.android.gms:play-services-mlkit-subject-segmentation", version.ref = "mlkitSegmentation" }
 ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "uiToolingPreview" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
 androidx-lifecycle-viewmodel-android = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-android", version.ref = "lifecycleViewmodelAndroid" }

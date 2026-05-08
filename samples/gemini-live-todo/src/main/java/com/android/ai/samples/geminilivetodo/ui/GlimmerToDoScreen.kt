@@ -18,14 +18,15 @@ package com.android.ai.samples.geminilivetodo.ui
 
 import android.app.Activity
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.xr.glimmer.GlimmerTheme
 import androidx.xr.glimmer.ListItem
 import androidx.xr.glimmer.Text
+import androidx.xr.glimmer.TitleChip
 import androidx.xr.glimmer.list.VerticalList
 import com.android.ai.samples.geminilivetodo.R
 import com.android.ai.samples.geminilivetodo.data.Todo
@@ -51,9 +53,8 @@ import kotlin.math.min
 
 private val DefaultListItemHeight = 64.dp
 private const val MaxItemsInList = 4
-private val IconSize = 30.dp
+private val IconSize = 24.dp
 private const val TAG = "GlimmerTodoScreen"
-private const val MIC_CONTROL_ID = 111
 
 @Composable
 fun GlimmerTodoScreen(
@@ -75,7 +76,7 @@ fun GlimmerTodoScreen(
 
     GlimmerTheme {
         Box(
-            contentAlignment = Alignment.BottomCenter,
+            contentAlignment = Alignment.Center,
             modifier = modifier
                 .fillMaxSize()
                 .background(GlimmerTheme.colors.background)
@@ -83,7 +84,8 @@ fun GlimmerTodoScreen(
 
             GlimmerScreenContent(
                 uiState = uiState,
-                onToggleItem = viewModel::toggleTodoStatus,
+                viewModel = viewModel,
+                activity = activity,
                 onExit = { onExit() }
             )
         }
@@ -93,7 +95,8 @@ fun GlimmerTodoScreen(
 @Composable
 private fun GlimmerScreenContent(
     uiState: TodoScreenUiState,
-    onToggleItem: (Int) -> Unit,
+    viewModel: TodoScreenViewModel,
+    activity: Activity?,
     onExit: () -> Unit
 ) {
     when (uiState) {
@@ -104,7 +107,8 @@ private fun GlimmerScreenContent(
             TodoListView(
                 todoItems = uiState.todoItems,
                 isMicOn = uiState.isMicOn,
-                onToggleItem = onToggleItem,
+                viewModel = viewModel,
+                activity = activity,
                 onExit = onExit
             )
         }
@@ -118,16 +122,17 @@ private fun GlimmerScreenContent(
 private fun TodoListView(
     todoItems: List<Todo>,
     isMicOn: Boolean,
-    onToggleItem: (Int) -> Unit,
+    viewModel: TodoScreenViewModel,
+    activity: Activity?,
     onExit: () -> Unit
 ) {
-
-    val totalItems = todoItems.size + 2
+    val totalItems = todoItems.size + 2 // Mic + Exit
 
     val listHeight = (min(totalItems, MaxItemsInList) * DefaultListItemHeight.value +
             min(totalItems - 1, MaxItemsInList) * 12f)
 
     VerticalList(
+        title = { TitleChip { Text("To-Do List") } },
         modifier = Modifier.height(listHeight.dp),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -136,14 +141,14 @@ private fun TodoListView(
         item {
             GlimmerMicControlItem(
                 isMicOn = isMicOn,
-                onToggle = { onToggleItem(MIC_CONTROL_ID) }
+                onToggle = { activity?.let { viewModel.toggleLiveSession(it) } }
             )
         }
 
         items(todoItems.size, key = { index -> todoItems[index].id }) { index ->
             GlimmerTodoItem(
                 task = todoItems[index],
-                onToggle = onToggleItem
+                onToggle = { viewModel.toggleTodoStatus(it) }
             )
         }
 
@@ -151,10 +156,13 @@ private fun TodoListView(
             ListItem(
                 onClick = onExit,
                 leadingIcon = {
-                    Image(
+                    Icon(
                         painter = painterResource(id = UiComponentR.drawable.ic_close),
                         contentDescription = stringResource(R.string.exit_app),
-                        modifier = Modifier.size(IconSize)
+                        modifier = Modifier
+                            .size(IconSize)
+                            .offset(y = 12.dp),
+                        tint = Color.White
                     )
                 }
             ) {
@@ -187,10 +195,13 @@ private fun GlimmerMicControlItem(
     ListItem(
         onClick = onToggle,
         leadingIcon = {
-            Image(
+            Icon(
                 painter = painterResource(id = icon),
                 contentDescription = contentDesc,
-                modifier = Modifier.size(IconSize)
+                modifier = Modifier
+                    .size(IconSize)
+                    .offset(y = 12.dp),
+                tint = Color.White
             )
         }
     ) {
@@ -208,13 +219,16 @@ private fun GlimmerTodoItem(
     ListItem(
         onClick = { onToggle(task.id) },
         leadingIcon = {
-            Image(
+            Icon(
                 painter = painterResource(id = icon),
                 contentDescription = if (task.isCompleted)
                     stringResource(R.string.status_completed)
                 else
                     stringResource(R.string.status_pending),
-                modifier = Modifier.size(IconSize)
+                modifier = Modifier
+                    .size(IconSize)
+                    .offset(y = 12.dp),
+                tint = Color.White
             )
         }
     ) {
@@ -247,7 +261,8 @@ private fun GlimmerTodoScreenPreview() {
                     isMicOn = true,
                     liveSessionState = LiveSessionState.Running
                 ),
-                onToggleItem = { _ -> },
+                viewModel = TodoScreenViewModel(com.android.ai.samples.geminilivetodo.data.TodoRepository()),
+                activity = null,
                 onExit = {}
             )
         }

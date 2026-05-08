@@ -15,6 +15,7 @@
  */
 package com.android.ai.samples.geminilivetodo.data
 
+import android.util.Log
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.collections.filterNot
@@ -26,10 +27,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-private const val MIC_STATUS_TODO_ID = -999
 
 @Singleton
 class TodoRepository @Inject constructor() {
+    private val TAG = "TodoRepository"
 
     private val _todos = MutableStateFlow<List<GlassesListItem>>(
         listOf(
@@ -48,13 +49,15 @@ class TodoRepository @Inject constructor() {
 
     fun getTodoList(): List<GlassesListItem> = _todos.value
 
-    fun addTodo(taskDescription: String) {
+    fun addTodo(taskDescription: String): Int? {
         if (taskDescription.isNotBlank()) {
             val newTodo = Todo(task = taskDescription, isCompleted = false)
             _todos.update { currentList ->
                 listOf(newTodo) + currentList
             }
+            return newTodo.id
         }
+        return null
     }
 
 
@@ -87,6 +90,7 @@ class TodoRepository @Inject constructor() {
     }
 
     fun toggleTodoStatus(todoId: Int) {
+        Log.d(TAG, "Toggling task status for ID: $todoId")
         _todos.update { currentList ->
             currentList.map { item ->
                 when (item) {

@@ -14,9 +14,10 @@
   ~ limitations under the License.
   ~
   -->
+
 <resources>
-    <string name="gemini_live_title">Gemini Live API Todo</string>
-    <string name="gemini_live_subtitle">Simple ToDo app using the Gemini Live API to interact with the items in the list.</string>
+    <string name="gemini_live_title">Gemini Live API to-do</string>
+    <string name="gemini_live_subtitle">Simple to-do app using the Gemini Live API to interact with the items in the list.</string>
     <string name="new_task_placeholder">New Task</string>
     <string name="add_button">Add</string>
     <string name="error_title">Error</string>
@@ -33,7 +34,6 @@
     <string name="exit_app">Exit app</string>
     <string name="permission_rationale_mic_access">We need microphone access to continue to the main experience.</string>
     <string name="permissions_denied_mic_access">Permissions Denied. Please grant Audio access on the host phone to proceed.</string>
-
     <string name="loading_todo_list">Loading Todo List...</string>
     <string name="error_loading_list">Error loading list. Please try again.</string>
     <string name="status_completed">Completed</string>
