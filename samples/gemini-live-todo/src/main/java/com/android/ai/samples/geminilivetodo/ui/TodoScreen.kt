@@ -154,7 +154,6 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                 .imePadding()
                 .fillMaxSize(),
         ) {
-
             when (val state = uiState) {
                 is TodoScreenUiState.Initial -> {
                     Box(

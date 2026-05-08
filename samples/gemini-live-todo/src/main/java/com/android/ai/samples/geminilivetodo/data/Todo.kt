@@ -18,6 +18,7 @@ package com.android.ai.samples.geminilivetodo.data
 import java.util.UUID.randomUUID
 
 const val MIC_TODO_ID = 111
+const val MIC_STATUS_TODO_ID = -999
 
 sealed interface GlassesListItem {
     val id: Int

@@ -17,14 +17,15 @@
 package com.android.ai.samples.geminilivetodo.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.util.Log
-import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.ai.samples.geminilivetodo.data.MIC_STATUS_TODO_ID
 import com.android.ai.samples.geminilivetodo.data.MicControl
 import com.android.ai.samples.geminilivetodo.data.Todo
 import com.android.ai.samples.geminilivetodo.data.TodoRepository
@@ -46,7 +47,6 @@ import com.google.firebase.ai.type.liveGenerationConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.lang.ref.WeakReference
 import javax.inject.Inject
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -56,25 +56,20 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.int
-
-private const val MIC_TODO_ID = 111
-private const val MIC_STATUS_TODO_ID = -999
+import kotlinx.serialization.json.jsonPrimitive
 
 @OptIn(PublicPreviewAPI::class)
 @HiltViewModel
 class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRepository) : ViewModel() {
     private val TAG = "TodoScreenViewModel"
-    private var session: LiveSession? = null
+    internal var session: LiveSession? = null
     private var hostActivityRef: WeakReference<Activity>? = null
 
     private val liveSessionState = MutableStateFlow<LiveSessionState>(LiveSessionState.NotReady)
     private val todos = todoRepository.todos
 
     val uiState: StateFlow<TodoScreenUiState> = combine(liveSessionState, todos) { liveSessionState, currentTodos ->
-
-
         val micItem = currentTodos.filterIsInstance<MicControl>().firstOrNull()
         val isMicOn = micItem?.isMicOn ?: false
 
@@ -94,76 +89,50 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
         initialValue = TodoScreenUiState.Initial,
     )
 
-    fun addTodo(taskDescription: String) {
-        todoRepository.addTodo(taskDescription)
+    fun addTodo(taskDescription: String): Int? {
+        return todoRepository.addTodo(taskDescription)
     }
 
     fun removeTodo(todoId: Int) {
-        if (todoId == MIC_TODO_ID || todoId == MIC_STATUS_TODO_ID) return
         todoRepository.removeTodo(todoId)
     }
 
     fun toggleTodoStatus(todoId: Int) {
-        if (todoId == MIC_TODO_ID) {
-            todoRepository.toggleTodoStatus(MIC_TODO_ID)
-            return
-        }
-        if (todoId == MIC_STATUS_TODO_ID) return
         todoRepository.toggleTodoStatus(todoId)
     }
 
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
-    private fun startLiveSession() {
-        val activity = hostActivityRef?.get() ?: run {
-            Log.e(TAG, "Cannot start Live Session: Host Activity reference lost.")
-            todoRepository.updateMicStatus(micIsOn = false)
-            return
-        }
-
+    @SuppressLint("MissingPermission")
+    fun toggleLiveSession(activity: Activity) {
         viewModelScope.launch {
             if (liveSessionState.value is LiveSessionState.NotReady) return@launch
 
             session?.let { currentSession ->
-                if (ContextCompat.checkSelfPermission(
-                        activity,
-                        Manifest.permission.RECORD_AUDIO,
-                    ) == PackageManager.PERMISSION_GRANTED
-                ) {
-                    try {
-                        liveSessionState.update { LiveSessionState.Running }
-                        Log.i(TAG, "API Sync: Live Session Started.")
-                        currentSession.startAudioConversation(::handleFunctionCall)
-                    }
-
-                    catch (e: CancellationException) {
-                        throw e
-                    }
-                    catch (e: Exception) {
-                        Log.e(TAG, "Error starting Live Session: ${e.message}", e)
-                        todoRepository.updateMicStatus(micIsOn = false)
-                        liveSessionState.update { LiveSessionState.Ready }
+                if (liveSessionState.value is LiveSessionState.Ready) {
+                    if (ContextCompat.checkSelfPermission(
+                            activity,
+                            Manifest.permission.RECORD_AUDIO,
+                        ) == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        try {
+                            Log.i(TAG, "API Sync: Live Session Starting...")
+                            currentSession.startAudioConversation(::handleFunctionCall)
+                            liveSessionState.update { LiveSessionState.Running }
+                            todoRepository.updateMicStatus(micIsOn = true)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error starting Live Session: ${e.message}", e)
+                            liveSessionState.update { LiveSessionState.Ready }
+                            todoRepository.updateMicStatus(micIsOn = false)
+                        }
+                    } else {
+                        requestAudioPermissionIfNeeded(activity)
                     }
                 } else {
-                    requestAudioPermissionIfNeeded(activity)
-                    todoRepository.updateMicStatus(micIsOn = false)
-                }
-            }
-        }
-    }
-
-    private fun stopLiveSession() {
-        viewModelScope.launch {
-            session?.let { currentSession ->
-                if (liveSessionState.value is LiveSessionState.Running) {
                     try {
                         currentSession.stopAudioConversation()
                         liveSessionState.update { LiveSessionState.Ready }
+                        todoRepository.updateMicStatus(micIsOn = false)
                         Log.i(TAG, "API Sync: Live Session Stopped.")
-                    }
-                    catch (e: CancellationException) {
-                        throw e
-                    }
-                    catch (e: Exception) {
+                    } catch (e: Exception) {
                         Log.e(TAG, "Error stopping Live Session: ${e.message}", e)
                         liveSessionState.update { LiveSessionState.Ready }
                     }
@@ -172,30 +141,13 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
         }
     }
 
-    fun toggleLiveSession(activity: Activity) {
-        todoRepository.toggleTodoStatus(MIC_TODO_ID)
-    }
-
     fun initializeGeminiLive(activity: Activity) {
+        if (liveSessionState.value !is LiveSessionState.NotReady) {
+            Log.d(TAG, "Gemini Live already initialized or initializing")
+            return
+        }
         hostActivityRef = WeakReference(activity)
         requestAudioPermissionIfNeeded(activity)
-
-        viewModelScope.launch {
-            todoRepository.todos.collect @androidx.annotation.RequiresPermission(android.Manifest.permission.RECORD_AUDIO) { todos ->
-                val isMicOnInUI = todos.find { it.id == MIC_TODO_ID }
-                    ?.let { it as? MicControl }?.isMicOn ?: false
-
-                val currentLiveStatus = liveSessionState.value is LiveSessionState.Running
-
-                if (isMicOnInUI != currentLiveStatus) {
-                    if (isMicOnInUI) {
-                        startLiveSession()
-                    } else {
-                        stopLiveSession()
-                    }
-                }
-            }
-        }
 
         viewModelScope.launch {
             Log.d(TAG, "Start Gemini Live initialization")
@@ -220,6 +172,8 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                 **Never share the id with the user:** you don't need to share the id with the user. It is 
                     just here to help you perform the check/uncheck and remove operations to the list.
     
+                **Voice Feedback Commands:** If the user sends a message like 'Turning Microphone On', you MUST acknowledge it immediately by saying that exact phrase clearly.
+
                 **If Unsure:** If you can't determine the update from the request, politely ask the user to rephrase or try something else.
                     """.trimIndent(),
                 )
@@ -239,8 +193,8 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
 
             val toggleTodoStatus = FunctionDeclaration(
                 "toggleTodoStatus",
-                "Change the status of the task",
-                mapOf("todoId" to Schema.integer("The id of the task to remove from the todo list")),
+                "Toggle the completion status of a task (e.g. check off or uncheck)",
+                mapOf("todoId" to Schema.integer("The id of the task to mark as completed or incomplete")),
             )
 
             val getTodoList = FunctionDeclaration(
@@ -249,8 +203,9 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
                 emptyMap(),
             )
 
-            val generativeModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).liveModel(
-                "gemini-live-2.5-flash-preview-native-audio-09-2025",
+            // See https://firebase.google.com/docs/ai-logic/live-api for an overview of available models
+            val generativeModel = Firebase.ai(backend = GenerativeBackend.googleAI()).liveModel(
+                "gemini-2.5-flash-native-audio-preview-12-2025",
                 generationConfig = liveGenerationConfig,
                 systemInstruction = systemInstruction,
                 tools = listOf(
@@ -265,19 +220,10 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
             try {
                 session = generativeModel.connect()
                 liveSessionState.update { LiveSessionState.Ready }
-
-                todoRepository.updateMicStatus(micIsOn = false)
                 Log.i(TAG, "MIC STATE UPDATE: Session connected (LiveSessionState.Ready).")
-            }
-            // Change: Rethrow CancellationException so the coroutine cancels properly
-            catch (e: CancellationException) {
-                throw e
-            }
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 Log.e(TAG, "Error connecting to the model", e)
                 liveSessionState.update { LiveSessionState.Error }
-                todoRepository.updateMicStatus(micIsOn = false)
-                Log.i(TAG, "MIC STATE UPDATE: Connection Error (LiveSessionState.Error).")
             }
         }
     }
@@ -285,47 +231,83 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
     private fun handleFunctionCall(functionCall: FunctionCallPart): FunctionResponsePart {
         return when (functionCall.name) {
             "getTodoList" -> {
-                val todoList = todoRepository.getTodoList().filterNot { it.id == MIC_STATUS_TODO_ID }.reversed()
+                Log.d(TAG, "Tool Call: getTodoList")
+                val todoList = todoRepository.getTodoList().filterIsInstance<Todo>()
+                
+                // Return structured JSON for reliable tool use
+                val jsonList = todoList.reversed().map { item ->
+                    JsonObject(
+                        mapOf(
+                            "id" to JsonPrimitive(item.id),
+                            "task" to JsonPrimitive(item.task),
+                            "isCompleted" to JsonPrimitive(item.isCompleted),
+                        ),
+                    )
+                }
                 val response = JsonObject(
                     mapOf(
                         "success" to JsonPrimitive(true),
-                        "message" to JsonPrimitive("List of tasks in the todo list: $todoList"),
+                        "tasks" to kotlinx.serialization.json.JsonArray(jsonList),
                     ),
                 )
                 FunctionResponsePart(functionCall.name, response, functionCall.id)
             }
             "addTodo" -> {
                 val taskDescription = functionCall.args["taskDescription"]!!.jsonPrimitive.content
-                todoRepository.addTodo(taskDescription)
-                val response = JsonObject(
-                    mapOf(
-                        "success" to JsonPrimitive(true),
-                        "message" to JsonPrimitive("Task $taskDescription added to the todo list"),
-                    ),
-                )
-                FunctionResponsePart(functionCall.name, response, functionCall.id)
+                val id = todoRepository.addTodo(taskDescription)
+                if (id != null) {
+                    val response = JsonObject(
+                        mapOf(
+                            "success" to JsonPrimitive(true),
+                            "message" to JsonPrimitive("Task $taskDescription added to the todo list (id: $id)"),
+                        ),
+                    )
+                    FunctionResponsePart(functionCall.name, response, functionCall.id)
+                } else {
+                    val response = JsonObject(
+                        mapOf(
+                            "success" to JsonPrimitive(false),
+                            "message" to JsonPrimitive("Task $taskDescription wasn't properly added to the list"),
+                        ),
+                    )
+                    FunctionResponsePart(functionCall.name, response, functionCall.id)
+                }
             }
             "removeTodo" -> {
-                val taskId = functionCall.args["todoId"]!!.jsonPrimitive.int
-                todoRepository.removeTodo(taskId)
-                val response = JsonObject(
-                    mapOf(
-                        "success" to JsonPrimitive(true),
-                        "message" to JsonPrimitive("Task was removed from the todo list"),
-                    ),
-                )
-                FunctionResponsePart(functionCall.name, response, functionCall.id)
+                try {
+                    val taskId = functionCall.args["todoId"]!!.jsonPrimitive.int
+                    todoRepository.removeTodo(taskId)
+                    val response = JsonObject(
+                        mapOf(
+                            "success" to JsonPrimitive(true),
+                            "message" to JsonPrimitive("Task removed successfully."),
+                        ),
+                    )
+                    FunctionResponsePart(functionCall.name, response, functionCall.id)
+                } catch (e: Exception) {
+                    val response = JsonObject(
+                        mapOf("success" to JsonPrimitive(false), "error" to JsonPrimitive(e.message))
+                    )
+                    FunctionResponsePart(functionCall.name, response, functionCall.id)
+                }
             }
             "toggleTodoStatus" -> {
-                val taskId = functionCall.args["todoId"]!!.jsonPrimitive.int
-                todoRepository.toggleTodoStatus(taskId)
-                val response = JsonObject(
-                    mapOf(
-                        "success" to JsonPrimitive(true),
-                        "message" to JsonPrimitive("Task was toggled in the todo list"),
-                    ),
-                )
-                FunctionResponsePart(functionCall.name, response, functionCall.id)
+                try {
+                    val taskId = functionCall.args["todoId"]!!.jsonPrimitive.int
+                    todoRepository.toggleTodoStatus(taskId)
+                    val response = JsonObject(
+                        mapOf(
+                            "success" to JsonPrimitive(true),
+                            "message" to JsonPrimitive("Task status toggled successfully."),
+                        ),
+                    )
+                    FunctionResponsePart(functionCall.name, response, functionCall.id)
+                } catch (e: Exception) {
+                    val response = JsonObject(
+                        mapOf("success" to JsonPrimitive(false), "error" to JsonPrimitive(e.message))
+                    )
+                    FunctionResponsePart(functionCall.name, response, functionCall.id)
+                }
             }
             else -> {
                 val response = JsonObject(
