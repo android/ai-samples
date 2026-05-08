@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,11 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.ai.samples.geminilivetodo.ui
 
 import android.app.Activity
+import android.content.Intent
+import android.os.Build
+import android.util.Log
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,6 +44,7 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -54,14 +60,21 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.xr.projected.ProjectedContext
+import androidx.xr.projected.experimental.ExperimentalProjectedApi
+import com.android.ai.samples.geminilivetodo.GlassesActivity
 import com.android.ai.samples.geminilivetodo.R
 import com.android.ai.samples.geminilivetodo.data.Todo
 import com.android.ai.uicomponent.GenerateButton
@@ -69,12 +82,47 @@ import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.SecondaryButton
 import com.android.ai.uicomponent.TextInput
 
-@OptIn(ExperimentalMaterial3Api::class)
+private const val TAG = "TodoScreenLaunch"
+
+private val GlassesConnectedGreen = Color(0xFF34A853)
+
+@OptIn(ExperimentalProjectedApi::class)
+@RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+private fun launchGlassesExperience(activity: Activity) {
+    Log.d(TAG, "Attempting to launch GlassesActivity on connected device...")
+
+    try {
+        val projectedContext = ProjectedContext.createProjectedDeviceContext(activity)
+        val options = ProjectedContext.createProjectedActivityOptions(projectedContext)
+        val intent = Intent(activity, GlassesActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+
+        activity.startActivity(intent, options.toBundle())
+        Log.i(TAG, "Successfully sent launch intent to the projected device.")
+
+    } catch (e: IllegalStateException) {
+        Log.e(TAG, "Projected device not ready: ${e.message}")
+    } catch (e: Exception) {
+        Log.e(TAG, "Error during launch: ${e.message}")
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalProjectedApi::class)
 @Composable
 fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val activity = LocalActivity.current as Activity
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    val isGlassesConnected = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+        ProjectedContext.isProjectedDeviceConnected(context, scope.coroutineContext)
+            .collectAsStateWithLifecycle(initialValue = false).value
+    } else {
+        false
+    }
 
     LaunchedEffect(Unit) {
         viewModel.initializeGeminiLive(activity)
@@ -90,7 +138,7 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
             SampleDetailTopAppBar(
                 sampleName = stringResource(R.string.gemini_live_title),
                 sampleDescription = stringResource(R.string.gemini_live_subtitle),
-                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/samples/gemini-live-todo",
+                sourceCodeUrl = "https://github.com/android/ai-samples/tree/main/ai-catalog/samples/gemini-live-todo",
                 topAppBarState = topAppBarState,
                 scrollBehavior = scrollBehavior,
                 onBackClick = { backDispatcher?.onBackPressed() },
@@ -106,55 +154,98 @@ fun TodoScreen(viewModel: TodoScreenViewModel = hiltViewModel()) {
                 .imePadding()
                 .fillMaxSize(),
         ) {
-            when (uiState) {
+
+            when (val state = uiState) {
                 is TodoScreenUiState.Initial -> {
                     Box(
                         modifier = Modifier
-                            .fillMaxSize(),
+                            .fillMaxSize()
+                            .weight(1f),
                         contentAlignment = Alignment.Center,
                     ) {
                         CircularProgressIndicator()
                     }
                 }
                 is TodoScreenUiState.Success -> {
-                    val todos = (uiState as TodoScreenUiState.Success).todos
+                    val itemsToRender = state.todoItems
                     LazyColumn(
                         modifier = Modifier
                             .widthIn(max = 646.dp)
                             .align(Alignment.CenterHorizontally)
                             .weight(1f),
                     ) {
-                        itemsIndexed(todos.reversed(), key = { index: Int, item: Todo -> item.id }) { index, todo ->
+                        itemsIndexed(itemsToRender, key = { _, item -> item.id }) { index, item ->
                             TodoItem(
-                                task = todo,
-                                onToggle = { viewModel.toggleTodoStatus(todo.id) },
-                                onDelete = { viewModel.removeTodo(todo.id) },
+                                task = item,
+                                onToggle = { viewModel.toggleTodoStatus(item.id) },
+                                onDelete = { viewModel.removeTodo(item.id) },
                             )
-                        }
-                    }
-                }
-                is TodoScreenUiState.Error -> {
-                    val todos = (uiState as TodoScreenUiState.Error).todos
-                    LazyColumn(modifier = Modifier.weight(1f)) {
-                        itemsIndexed(todos.reversed(), key = { index: Int, item: Todo -> item.id }) { index, todo ->
-                            TodoItem(
-                                task = todo,
-                                onToggle = { viewModel.toggleTodoStatus(todo.id) },
-                                onDelete = { viewModel.removeTodo(todo.id) },
-                            )
-                            if (index != todos.size - 1) {
+                            if (index != itemsToRender.size - 1) {
                                 HorizontalDivider()
                             }
                         }
                     }
                 }
+                is TodoScreenUiState.Error -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.error_message),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            }
+
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .widthIn(max = 646.dp)
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 16.dp),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    ExtendedFloatingActionButton(
+                        onClick = {
+                            launchGlassesExperience(activity)
+                        },
+                        expanded = true,
+                        containerColor = if (isGlassesConnected) {
+                            GlassesConnectedGreen
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainerHighest
+                        },
+                        contentColor = Color.Black,
+                        icon = {
+                            Icon(
+                                painter = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_glasses),
+                                contentDescription = null,
+                                modifier = Modifier.size(25.dp)
+                            )
+                        },
+                        text = {
+                            Text(
+                                text = if (isGlassesConnected) "Open on Glasses" else "Connect Glasses",
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    )
+                }
             }
 
             val textFieldState = rememberTextFieldState()
             val textInputEnabled = remember { mutableStateOf(true) }
+
             if (uiState is TodoScreenUiState.Success) {
+                val state = uiState as TodoScreenUiState.Success
                 when {
-                    (uiState as TodoScreenUiState.Success).liveSessionState is LiveSessionState.Running -> {
+                    state.liveSessionState is LiveSessionState.Running -> {
                         val listeningMessage = stringResource(R.string.listening)
                         LaunchedEffect(Unit) {
                             textFieldState.setTextAndPlaceCursorAtEnd(listeningMessage)
@@ -231,10 +322,12 @@ fun TodoItem(task: Todo, onToggle: () -> Unit, onDelete: () -> Unit) {
         )
         IconButton(
             onClick = onDelete,
-            modifier = Modifier.background(
-                color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                shape = RoundedCornerShape(10.dp),
-            ).size(32.dp),
+            modifier = Modifier
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    shape = RoundedCornerShape(10.dp),
+                )
+                .size(32.dp),
         ) {
             Icon(
                 painterResource(com.android.ai.uicomponent.R.drawable.ic_delete),

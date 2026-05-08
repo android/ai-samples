@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,20 +15,20 @@
  */
 package com.android.ai.samples.geminilivetodo.ui
 
+import androidx.compose.runtime.Immutable
 import com.android.ai.samples.geminilivetodo.data.Todo
 
+@Immutable
 sealed interface TodoScreenUiState {
     data object Initial : TodoScreenUiState
 
     data class Success(
-        val todos: List<Todo> = emptyList(),
+        val todoItems: List<Todo> = emptyList(),
+        val isMicOn: Boolean = false,
         val liveSessionState: LiveSessionState,
     ) : TodoScreenUiState
 
-    data class Error(
-        val todos: List<Todo> = emptyList(),
-        val liveSessionState: LiveSessionState,
-    ) : TodoScreenUiState
+    data object Error : TodoScreenUiState
 }
 
 sealed interface LiveSessionState {

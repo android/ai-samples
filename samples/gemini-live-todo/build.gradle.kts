@@ -18,11 +18,12 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.hilt.plugin)
 }
 
 android {
     namespace = "com.android.ai.samples.geminilivetodo"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24
@@ -50,7 +51,9 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.androidx.xr.glimmer)
+    implementation(libs.androidx.xr.projected)
+    implementation("com.google.firebase:firebase-ai:17.5.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(platform(libs.androidx.compose.bom))
