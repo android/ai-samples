@@ -20,9 +20,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.xr.glimmer.GlimmerTheme
+import androidx.xr.glimmer.googlefonts.createGoogleSansFlexTypography
 import com.android.ai.samples.geminilivetodo.ui.AudioExperience
 import com.android.ai.samples.geminilivetodo.ui.GlimmerTodoScreen
 import com.android.ai.samples.geminilivetodo.ui.TodoScreenViewModel
+import androidx.compose.ui.ComposeUiFlags
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.xr.projected.ProjectedDeviceController
 import androidx.xr.projected.ProjectedDeviceController.Capability
 import androidx.xr.projected.ProjectedDisplayController
@@ -57,9 +60,10 @@ class GlassesActivity : ComponentActivity() {
             setupContent()
         }
 
-    @OptIn(ExperimentalProjectedApi::class)
+    @OptIn(ExperimentalComposeUiApi::class, ExperimentalProjectedApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ComposeUiFlags.isInitialFocusOnFocusableAvailable = true
         
         viewModel.initializeGeminiLive(this)
 
@@ -97,16 +101,20 @@ class GlassesActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalProjectedApi::class)
     private fun setupContent() {
         setContent {
-            GlimmerTheme {
-                RootScreen(
-                    isGranted = isPermissionsGranted,
-                    isDisplayCapable = isDisplayCapable,
-                    areVisualsOn = areVisualsOn,
-                    viewModel = viewModel
-                )
-            }
+            GlimmerTheme(
+                typography = createGoogleSansFlexTypography(),
+                content = {
+                    RootScreen(
+                        isGranted = isPermissionsGranted,
+                        isDisplayCapable = isDisplayCapable,
+                        areVisualsOn = areVisualsOn,
+                        viewModel = viewModel
+                    )
+                }
+            )
         }
     }
 
@@ -120,6 +128,13 @@ class GlassesActivity : ComponentActivity() {
                 )
             )
         )
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Release high-drain resources (camera, mic, sensors)
+        // to prevent battery drain
+        viewModel.stopLiveSession()
     }
 }
 
@@ -150,12 +165,15 @@ fun RootScreen(
 @Preview(showBackground = true)
 @Composable
 fun PreviewRootScreen() {
-    GlimmerTheme {
-        RootScreen(
-            isGranted = false,
-            isDisplayCapable = true,
-            areVisualsOn = true,
-            viewModel = TodoScreenViewModel(com.android.ai.samples.geminilivetodo.data.TodoRepository())
-        )
-    }
+    GlimmerTheme(
+        typography = createGoogleSansFlexTypography(),
+        content = {
+            RootScreen(
+                isGranted = false,
+                isDisplayCapable = true,
+                areVisualsOn = true,
+                viewModel = TodoScreenViewModel(com.android.ai.samples.geminilivetodo.data.TodoRepository())
+            )
+        }
+    )
 }
