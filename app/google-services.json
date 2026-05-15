@@ -1,14 +1,12 @@
 {
-  "comment": "NOTE: Replace this file with your own google-services.json. Learn more at: https://firebase.google.com/docs/vertex-ai/get-started#no-existing-firebase",
   "project_info": {
-    "project_number": "123456",
-    "project_id": "mock_project",
-    "storage_bucket": "mock_project.firebasestorage.app"
+    "project_number": "15145657350",
+    "project_id": "google.com:adr-ai-lab"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456:android:123456",
+        "mobilesdk_app_id": "1:15145657350:android:e3edf1404daaae10d5cf87",
         "android_client_info": {
           "package_name": "com.android.ai.catalog"
         }
@@ -16,7 +14,45 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "123456-abcde"
+          "current_key": "AIzaSyDKsD-MlnxJnqEFp-c-AUh3YQVdxhdzbwE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:15145657350:android:ead7252fa5685384d5cf87",
+        "android_client_info": {
+          "package_name": "com.fmdev.tripplanner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKsD-MlnxJnqEFp-c-AUh3YQVdxhdzbwE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:15145657350:android:f40d30b2b99fdcecd5cf87",
+        "android_client_info": {
+          "package_name": "com.google.firebase.quickstart.ai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKsD-MlnxJnqEFp-c-AUh3YQVdxhdzbwE"
         }
       ],
       "services": {

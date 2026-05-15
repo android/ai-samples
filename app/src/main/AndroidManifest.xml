@@ -35,6 +35,15 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
+        <activity
+            android:name="com.android.ai.samples.geminilivetodo.GlassesActivity"
+            android:exported="true"
+            android:label="Glasses Experience"
+            android:requiredDisplayCategory="xr_projected">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="androidx.xr.projected.CATEGORY_PROJECTED"/>
+            </intent-filter>
+        </activity>
     </application>
-
 </manifest>
