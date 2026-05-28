@@ -23,7 +23,7 @@ plugins {
 
 android {
     namespace = "com.android.ai.samples.geminilivetodo"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24
@@ -52,6 +52,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.xr.glimmer)
+    implementation(libs.androidx.xr.glimmer.google.fonts)
     implementation(libs.androidx.xr.projected)
     implementation("com.google.firebase:firebase-ai:17.5.0")
     implementation(libs.androidx.core.ktx)

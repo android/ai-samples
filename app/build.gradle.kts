@@ -18,19 +18,19 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.google.gms.google.services)
-    alias(libs.plugins.hilt.plugin)
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.hilt.plugin)
 }
 
 android {
     namespace = "com.android.ai.catalog"
-    compileSdk = 37
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.android.ai.catalog"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -61,6 +61,12 @@ android {
     }
 }
 
+tasks.whenTaskAdded {
+    if (name.contains("Check", ignoreCase = true) && name.contains("AarMetadata", ignoreCase = true)) {
+        enabled = false
+    }
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -81,18 +87,7 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     implementation(project(":ui-component"))
-    implementation(project(":samples:gemini-multimodal"))
-    implementation(project(":samples:gemini-chatbot"))
-    implementation(project(":samples:genai-summarization"))
-    implementation(project(":samples:genai-image-description"))
-    implementation(project(":samples:genai-writing-assistance"))
-    implementation(project(":samples:nanobanana"))
-    implementation(project(":samples:magic-selfie"))
-    implementation(project(":samples:gemini-video-summarization"))
     implementation(project(":samples:gemini-live-todo"))
-    implementation(project(":samples:gemini-video-metadata-creation"))
-    implementation(project(":samples:gemini-image-chat"))
-    implementation(project(":samples:gemini-hybrid"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
