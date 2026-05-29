@@ -1,4 +1,4 @@
-# Gemini Live Todo Sample
+# Gemini Live Todo AI Glasses Sample
 
 This sample is part of the [AI Sample Catalog](../../). To build and run this sample, you should clone the entire repository.
 
@@ -19,7 +19,7 @@ The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) f
 Here is the key snippet of code that initializes the model and connects to a live session:
 
 ```kotlin
-val generativeModel = Firebase.ai(backend = GenerativeBackend.vertexAI()).liveModel(
+val generativeModel = Firebase.ai(backend = GenerativeBackend.googleAI()).liveModel(
     "gemini-2.5-flash-native-audio-preview-12-2025",
     generationConfig = liveGenerationConfig,
     systemInstruction = systemInstruction,
@@ -37,5 +37,27 @@ try {
     liveSessionState.value = LiveSessionState.Error
 }
 ```
+
+# Google AI Glasses Support
+This prototype sample demonstrates how to extend the Gemini Live experience to Google AI Glasses.
+
+The prototype illustrates how to leverage the glasses' form factor for a heads-up display (HUD) experience while maintaining the core application logic on the host device.
+
+<div style="text-align: center;">
+<img width="320" alt="AI Glasses List in action" src="ai_glasses_list1.png" />
+</div>
+
+<div style="text-align: center;">
+<img width="320" alt="AI Glasses List in action scrolled" src="ai_glasses_list2.png" />
+</div>
+
+## Tech Stack
+The glasses integration is built using the following libraries:
+
+### Jetpack Projected:
+Used to manage the connection and service lifecycle between the host application (phone) and the client display (glasses). This allows the application to "project" its content onto the glasses.
+
+### Jetpack Compose Glimmer:
+The UI for the glasses is constructed using Glimmer, an Android UI toolkit optimized for transparent, wearable displays.
 
 Read more about the [Gemini Live API](https://developer.android.com/ai/gemini/live) in the Android Documentation.
