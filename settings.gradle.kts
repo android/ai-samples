@@ -17,9 +17,14 @@
 
 pluginManagement {
     repositories {
-        google()
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
         mavenCentral()
-        maven { url = uri("https://androidx.dev/storage/compose-test/repository") }
         gradlePluginPortal()
     }
 }
@@ -28,7 +33,6 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://androidx.dev/storage/compose-test/repository") }
     }
 }
 

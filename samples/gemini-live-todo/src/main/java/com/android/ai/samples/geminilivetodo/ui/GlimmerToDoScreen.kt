@@ -45,7 +45,6 @@ import androidx.xr.glimmer.GlimmerTheme
 import androidx.xr.glimmer.ListItem
 import androidx.xr.glimmer.Text
 import androidx.xr.glimmer.TitleChip
-import androidx.xr.glimmer.googlefonts.createGoogleSansFlexTypography
 import androidx.xr.glimmer.list.VerticalList
 import com.android.ai.samples.geminilivetodo.R
 import com.android.ai.samples.geminilivetodo.data.Todo
@@ -75,25 +74,22 @@ fun GlimmerTodoScreen(
         }
     }
 
-    GlimmerTheme(
-        typography = createGoogleSansFlexTypography(),
-        content = {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = modifier
-                    .fillMaxSize()
-                    .background(GlimmerTheme.colors.background)
-            ) {
+    GlimmerTheme {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = modifier
+                .fillMaxSize()
+                .background(GlimmerTheme.colors.background)
+        ) {
 
-                GlimmerScreenContent(
-                    uiState = uiState,
-                    viewModel = viewModel,
-                    activity = activity,
-                    onExit = { onExit() }
-                )
-            }
+            GlimmerScreenContent(
+                uiState = uiState,
+                viewModel = viewModel,
+                activity = activity,
+                onExit = { onExit() }
+            )
         }
-    )
+    }
 }
 
 @Composable
@@ -252,26 +248,23 @@ private fun GlimmerTodoScreenPreview() {
         Todo(id = 3, task = "Call mom", isCompleted = false)
     )
 
-    GlimmerTheme(
-        typography = createGoogleSansFlexTypography(),
-        content = {
-            Box(
-                contentAlignment = Alignment.BottomCenter,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(GlimmerTheme.colors.background)
-            ) {
-                GlimmerScreenContent(
-                    uiState = TodoScreenUiState.Success(
-                        todoItems = mockTodoItems,
-                        isMicOn = true,
-                        liveSessionState = LiveSessionState.Running
-                    ),
-                    viewModel = TodoScreenViewModel(com.android.ai.samples.geminilivetodo.data.TodoRepository()),
-                    activity = null,
-                    onExit = {}
-                )
-            }
+    GlimmerTheme {
+        Box(
+            contentAlignment = Alignment.BottomCenter,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(GlimmerTheme.colors.background)
+        ) {
+            GlimmerScreenContent(
+                uiState = TodoScreenUiState.Success(
+                    todoItems = mockTodoItems,
+                    isMicOn = true,
+                    liveSessionState = LiveSessionState.Running
+                ),
+                viewModel = TodoScreenViewModel(com.android.ai.samples.geminilivetodo.data.TodoRepository()),
+                activity = null,
+                onExit = {}
+            )
         }
-    )
+    }
 }

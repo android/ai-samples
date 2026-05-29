@@ -318,18 +318,6 @@ class TodoScreenViewModel @Inject constructor(private val todoRepository: TodoRe
         }
     }
 
-    fun stopLiveSession() {
-        viewModelScope.launch {
-            try {
-                session?.stopAudioConversation()
-                liveSessionState.update { LiveSessionState.Ready }
-                todoRepository.updateMicStatus(micIsOn = false)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error stopping Live Session onStop: ${e.message}", e)
-            }
-        }
-    }
-
     fun requestAudioPermissionIfNeeded(activity: Activity) {
         if (ContextCompat.checkSelfPermission(
                 activity,
