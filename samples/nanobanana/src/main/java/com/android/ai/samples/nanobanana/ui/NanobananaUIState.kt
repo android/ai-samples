@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ai.samples.magicselfie.ui
+package com.android.ai.samples.nanobanana.ui
 
 import android.graphics.Bitmap
 
-sealed interface MagicSelfieUiState {
-    data object Initial : MagicSelfieUiState
-    data object GeneratingBackground : MagicSelfieUiState
-    data class Success(val bitmap: Bitmap) : MagicSelfieUiState
-    data class Error(val message: String?) : MagicSelfieUiState
+sealed interface NanobananaUIState {
+    data object Initial : NanobananaUIState
+    data object Loading : NanobananaUIState
+    data class ImageGenerated(
+        val bitmap: Bitmap,
+        val contentDescription: String,
+    ) : NanobananaUIState
+    data class Error(val message: String?) : NanobananaUIState
 }

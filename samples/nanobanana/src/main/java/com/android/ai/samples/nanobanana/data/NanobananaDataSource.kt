@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ai.samples.magicselfie.data
+package com.android.ai.samples.nanobanana.data
 
 import android.graphics.Bitmap
 import com.google.firebase.Firebase
@@ -21,28 +21,23 @@ import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.ResponseModality
 import com.google.firebase.ai.type.asImageOrNull
-import com.google.firebase.ai.type.content
 import com.google.firebase.ai.type.generationConfig
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class MagicSelfieRepository @Inject constructor() {
+class NanobananaDataSource @Inject constructor() {
     private val generativeModel by lazy {
         Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
             modelName = "gemini-3.1-flash-image-preview",
             generationConfig = generationConfig {
-                responseModalities = listOf(ResponseModality.TEXT, ResponseModality.IMAGE)
+                responseModalities = listOf(ResponseModality.IMAGE)
             }
         )
     }
 
-    suspend fun generateMagicSelfie(bitmap: Bitmap, prompt: String): Bitmap {
-        val multimodalPrompt = content {
-            image(bitmap)
-            text("Change the background of this image to $prompt")
-        }
-        val response = generativeModel.generateContent(multimodalPrompt)
+    suspend fun generateImage(prompt: String): Bitmap {
+        val response = generativeModel.generateContent(prompt)
         return response.candidates.firstOrNull()?.content?.parts?.firstNotNullOfOrNull { it.asImageOrNull() }
             ?: throw Exception("No image generated")
     }

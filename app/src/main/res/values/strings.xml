@@ -27,6 +27,10 @@
     <string name="gemini_live_todo_list_description">"Simple Todo app using the Gemini Live API to interact with the items in the list"</string>
     <string name="gemini_image_chat_list_title">Chat with Nano Banana</string>
     <string name="gemini_image_chat_list_description">Conversational Image generation with Gemini 2.5 Flash Image</string>
+    <string name="gemini_hybrid_sample_list_title">Gemini Hybrid</string>
+    <string name="gemini_hybrid_sample_list_description">An example of hybrid AI with Gemini Nano and Gemini Flash</string>
+    <string name="nanobanana_sample_list_title">Nano Banana</string>
+    <string name="nanobanana_sample_list_description">Generate images with Nano Banana</string>
     <string name="firebase_required">Firebase Required</string>
     <string name="firebase_required_description">This feature requires Firebase to be initialized.</string>
     <string name="close">Close</string>

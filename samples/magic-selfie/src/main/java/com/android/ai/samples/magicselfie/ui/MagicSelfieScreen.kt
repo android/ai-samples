@@ -235,7 +235,6 @@ private fun MagicSelfieScreen(
                             text = "",
                             icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_bg),
                             enabled = textFieldState.text.isNotEmpty() &&
-                                (uiState !is MagicSelfieUiState.RemovingBackground) &&
                                 (uiState !is MagicSelfieUiState.GeneratingBackground),
                         ) {
                             onGenerateClick(selfieBitmap, textFieldState.text.toString())
@@ -246,8 +245,7 @@ private fun MagicSelfieScreen(
                         SecondaryButton(
                             text = "",
                             icon = painterResource(id = com.android.ai.uicomponent.R.drawable.ic_ai_img),
-                            enabled = (uiState !is MagicSelfieUiState.RemovingBackground) &&
-                                (uiState !is MagicSelfieUiState.GeneratingBackground),
+                            enabled = (uiState !is MagicSelfieUiState.GeneratingBackground),
                             onClick = onTakePictureClick,
                         )
                     },

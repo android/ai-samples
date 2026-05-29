@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ai.samples.magicselfie.ui
+package com.android.ai.samples.nanobanana.ui
 
-import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.ai.samples.magicselfie.data.MagicSelfieRepository
+import com.android.ai.samples.nanobanana.data.NanobananaDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,24 +25,21 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
-class MagicSelfieViewModel @Inject constructor(private val magicSelfieRepository: MagicSelfieRepository) : ViewModel() {
+class NanobananaViewModel @Inject constructor(private val nanobananaDataSource: NanobananaDataSource) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<MagicSelfieUiState>(MagicSelfieUiState.Initial)
-    val uiState: StateFlow<MagicSelfieUiState> = _uiState
+    private val _uiState: MutableStateFlow<NanobananaUIState> = MutableStateFlow(NanobananaUIState.Initial)
+    val uiState: StateFlow<NanobananaUIState> = _uiState
 
-    fun createMagicSelfie(bitmap: Bitmap, prompt: String) {
+    fun generateImage(prompt: String) {
+        _uiState.value = NanobananaUIState.Loading
+
         viewModelScope.launch {
             try {
-                _uiState.value = MagicSelfieUiState.GeneratingBackground
-                val resultBitmap = magicSelfieRepository.generateMagicSelfie(bitmap, prompt)
-                _uiState.value = MagicSelfieUiState.Success(resultBitmap)
+                val bitmap = nanobananaDataSource.generateImage(prompt)
+                _uiState.value = NanobananaUIState.ImageGenerated(bitmap, contentDescription = prompt)
             } catch (e: Exception) {
-                _uiState.value = MagicSelfieUiState.Error(e.message)
+                _uiState.value = NanobananaUIState.Error(e.message)
             }
         }
-    }
-
-    fun resetError() {
-        _uiState.value = MagicSelfieUiState.Initial
     }
 }

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gemini_hybrid_title">Hybrid Inference</string>
+    <string name="gemini_hybrid_description">Inference with Firebase Hybrid SDK using either Gemini Nano on-device or Gemini Flash in the Cloud.</string>
+    <string name="gemini_hotel_review">Hotel review generation</string>
+    <string name="gemini_hybrid_generate_btn">Generate Review</string>
+    <string name="gemini_hybrid_translate_btn">Translate</string>
+    <string name="gemini_hybrid_lang_korean">Korean</string>
+    <string name="gemini_hybrid_lang_spanish">Spanish</string>
+    <string name="gemini_hybrid_lang_french">French</string>
+    <string name="gemini_hybrid_lang_german">German</string>
+    <string name="gemini_hybrid_status_generating_on_device">Generating on-device…</string>
+    <string name="gemini_hybrid_status_generating_cloud">Generating in cloud…</string>
+    <string name="gemini_hybrid_generated_cloud">Generated in the cloud</string>
+    <string name="gemini_hybrid_generated_on_device">Generated on device</string>
+    <string name="gemini_hybrid_mode_prefer_on_device">PREFER ON-DEVICE</string>
+    <string name="gemini_hybrid_mode_prefer_cloud">PREFER CLOUD</string>
+    <string name="gemini_hybrid_mode_only_on_device">ONLY ON-DEVICE</string>
+    <string name="gemini_hybrid_mode_only_cloud">ONLY CLOUD</string>
+    <string name="location">LOCATION</string>
+    <string name="view">VIEW</string>
+    <string name="service">SERVICE</string>
+    <string name="comfort">COMFORT</string>
+    <string name="food">FOOD</string>
+    <string name="spacious">SPACIOUS</string>
+    <string name="natural_light">NATURAL LIGHT</string>
+    <string name="select_topics_for_your_review">Select topics for your review:</string>
+</resources>

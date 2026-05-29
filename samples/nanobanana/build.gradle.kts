@@ -21,7 +21,7 @@ plugins {
 }
 
 android {
-    namespace = "com.android.ai.samples.magicselfie"
+    namespace = "com.android.ai.samples.nanobanana"
     compileSdk = 35
 
     buildFeatures {
@@ -44,15 +44,18 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
+
     kotlinOptions {
         jvmTarget = "17"
+    }
+
+    lint {
+        warningsAsErrors = true
     }
 }
 
@@ -61,7 +64,6 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.material.icons.extended)
     implementation(platform(libs.firebase.bom))
@@ -71,7 +73,6 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.ui.tooling.preview)
     debugImplementation(libs.ui.tooling)
-
     ksp(libs.hilt.compiler)
 
     implementation(project(":ui-component"))
