@@ -43,11 +43,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="androidx.xr.projected.CATEGORY_PROJECTED"/>
-                <category android:name="android.intent.category.XR_PROJECTED_LAUNCHER"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.XR_PROJECTED_LAUNCHER"/>
             </intent-filter>
         </activity>
     </application>
