@@ -138,6 +138,7 @@ fun GeminiHybridScreen(viewModel: GeminiHybridViewModel = hiltViewModel()) {
                                 onModeSelected = viewModel::setInferenceMode,
                                 selectedModelOption = uiState.selectedModelOption,
                                 onModelOptionSelected = viewModel::setModelOption,
+                                isPreviewModelAvailable = uiState.isPreviewModelAvailable,
                                 onGenerate = {
                                     val tagStrings =
                                         uiState.selectedTags.map { ContextCompat.getString(context, it) }
@@ -190,6 +191,7 @@ fun InitialReviewUi(
     onModeSelected: (InferenceMode) -> Unit,
     selectedModelOption: OnDeviceModelOption?,
     onModelOptionSelected: (OnDeviceModelOption?) -> Unit,
+    isPreviewModelAvailable: Boolean,
     onGenerate: () -> Unit,
 ) {
     Text(
@@ -224,10 +226,12 @@ fun InitialReviewUi(
         selectedMode = selectedMode,
         onModeSelected = onModeSelected,
     )
-    ModelOptionDropdown(
-        selectedOption = selectedModelOption,
-        onOptionSelected = onModelOptionSelected,
-    )
+    if (isPreviewModelAvailable) {
+        ModelOptionDropdown(
+            selectedOption = selectedModelOption,
+            onOptionSelected = onModelOptionSelected,
+        )
+    }
 
     GenerateButton(
         text = stringResource(R.string.gemini_hybrid_generate_btn),
@@ -471,6 +475,7 @@ fun InferenceModeDropdown(
 fun ModelOptionDropdown(
     selectedOption: OnDeviceModelOption?,
     onOptionSelected: (OnDeviceModelOption?) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
     val options = listOf(
@@ -480,7 +485,7 @@ fun ModelOptionDropdown(
     )
     val selectedText = options.find { it.first == selectedOption }?.second ?: ""
 
-    Box(modifier = Modifier.padding(start = 8.dp, top = 12.dp)) {
+    Box(modifier = modifier.padding(start = 8.dp, top = 12.dp)) {
         SplitButtonLayout(
             leadingButton = {
                 SplitButtonDefaults.LeadingButton(

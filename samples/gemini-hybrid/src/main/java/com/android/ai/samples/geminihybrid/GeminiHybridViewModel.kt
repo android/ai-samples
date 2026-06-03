@@ -24,6 +24,7 @@ import com.google.firebase.ai.InferenceSource
 import com.google.firebase.ai.OnDeviceConfig
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.OnDeviceModelOption
+import com.google.firebase.ai.OnDeviceModelStatus
 import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.PublicPreviewAPI
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -55,6 +56,7 @@ sealed interface GeminiStatus {
 data class GeminiHybridUiState(
     val selectedMode: InferenceMode = InferenceMode.ONLY_ON_DEVICE,
     val selectedModelOption: OnDeviceModelOption? = null,
+    val isPreviewModelAvailable: Boolean = false,
     val selectedTags: List<Int> = emptyList(),
     val reviewText: String = "",
     val reviewInferenceStatus: Int? = null,
@@ -67,6 +69,31 @@ data class GeminiHybridUiState(
 class GeminiHybridViewModel @Inject constructor() : ViewModel() {
     private val _uiState = MutableStateFlow(GeminiHybridUiState())
     val uiState: StateFlow<GeminiHybridUiState> = _uiState.asStateFlow()
+
+    init {
+        checkPreviewModelAvailability()
+    }
+
+    private fun checkPreviewModelAvailability() {
+        viewModelScope.launch {
+            try {
+                val model = Firebase.ai(backend = GenerativeBackend.googleAI())
+                    .generativeModel(
+                        "gemini-2.5-flash-lite",
+                        onDeviceConfig = OnDeviceConfig(
+                            mode = InferenceMode.ONLY_ON_DEVICE,
+                            modelOption = OnDeviceModelOption.PREVIEW
+                        )
+                    )
+                val status = model.onDeviceExtension?.checkStatus()
+                val isAvailable = status == OnDeviceModelStatus.AVAILABLE
+                _uiState.update { it.copy(isPreviewModelAvailable = isAvailable) }
+            } catch (e: Exception) {
+                Log.e("GeminiHybrid", "Failed to check preview model availability", e)
+                _uiState.update { it.copy(isPreviewModelAvailable = false) }
+            }
+        }
+    }
 
     val tags = listOf(
         R.string.location,
@@ -258,6 +285,8 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
     }
 
     fun reset() {
-        _uiState.value = GeminiHybridUiState()
+        _uiState.value = GeminiHybridUiState(
+            isPreviewModelAvailable = _uiState.value.isPreviewModelAvailable
+        )
     }
 }
