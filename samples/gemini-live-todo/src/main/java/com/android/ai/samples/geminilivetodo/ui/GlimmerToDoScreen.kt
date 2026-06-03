@@ -45,7 +45,7 @@ import androidx.xr.glimmer.GlimmerTheme
 import androidx.xr.glimmer.ListItem
 import androidx.xr.glimmer.Text
 import androidx.xr.glimmer.TitleChip
-import androidx.xr.glimmer.list.VerticalList
+import androidx.xr.glimmer.list.GlimmerLazyColumn
 import com.android.ai.samples.geminilivetodo.R
 import com.android.ai.samples.geminilivetodo.data.Todo
 import com.android.ai.uicomponent.R as UiComponentR
@@ -131,7 +131,7 @@ private fun TodoListView(
     val listHeight = (min(totalItems, MaxItemsInList) * DefaultListItemHeight.value +
             min(totalItems - 1, MaxItemsInList) * 12f)
 
-    VerticalList(
+    GlimmerLazyColumn(
         title = { TitleChip { Text("To-Do List") } },
         modifier = Modifier.height(listHeight.dp),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp),
