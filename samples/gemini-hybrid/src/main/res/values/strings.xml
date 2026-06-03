@@ -25,4 +25,7 @@
     <string name="spacious">SPACIOUS</string>
     <string name="natural_light">NATURAL LIGHT</string>
     <string name="select_topics_for_your_review">Select topics for your review:</string>
+    <string name="gemini_hybrid_model_default">Gemini Nano (Default)</string>
+    <string name="gemini_hybrid_model_preview">Gemini Nano v4 (Full)</string>
+    <string name="gemini_hybrid_model_preview_fast">Gemini Nano v4 (Fast)</string>
 </resources>

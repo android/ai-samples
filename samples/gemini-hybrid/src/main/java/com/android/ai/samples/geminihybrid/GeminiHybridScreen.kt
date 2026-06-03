@@ -77,6 +77,7 @@ import com.android.ai.uicomponent.GenerateButton
 import com.android.ai.uicomponent.SampleDetailTopAppBar
 import com.android.ai.uicomponent.UndoButton
 import com.google.firebase.ai.InferenceMode
+import com.google.firebase.ai.OnDeviceModelOption
 import com.google.firebase.ai.type.PublicPreviewAPI
 
 
@@ -135,6 +136,8 @@ fun GeminiHybridScreen(viewModel: GeminiHybridViewModel = hiltViewModel()) {
                                 onTagToggle = viewModel::toggleTag,
                                 selectedMode = uiState.selectedMode,
                                 onModeSelected = viewModel::setInferenceMode,
+                                selectedModelOption = uiState.selectedModelOption,
+                                onModelOptionSelected = viewModel::setModelOption,
                                 onGenerate = {
                                     val tagStrings =
                                         uiState.selectedTags.map { ContextCompat.getString(context, it) }
@@ -185,6 +188,8 @@ fun InitialReviewUi(
     onTagToggle: (Int) -> Unit,
     selectedMode: InferenceMode,
     onModeSelected: (InferenceMode) -> Unit,
+    selectedModelOption: OnDeviceModelOption?,
+    onModelOptionSelected: (OnDeviceModelOption?) -> Unit,
     onGenerate: () -> Unit,
 ) {
     Text(
@@ -218,6 +223,10 @@ fun InitialReviewUi(
     InferenceModeDropdown(
         selectedMode = selectedMode,
         onModeSelected = onModeSelected,
+    )
+    ModelOptionDropdown(
+        selectedOption = selectedModelOption,
+        onOptionSelected = onModelOptionSelected,
     )
 
     GenerateButton(
@@ -449,6 +458,65 @@ fun InferenceModeDropdown(
                     text = { Text(label) },
                     onClick = {
                         onModeSelected(mode)
+                        expanded = false
+                    },
+                )
+            }
+        }
+    }
+}
+
+@PublicPreviewAPI
+@Composable
+fun ModelOptionDropdown(
+    selectedOption: OnDeviceModelOption?,
+    onOptionSelected: (OnDeviceModelOption?) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val options = listOf(
+        null to stringResource(R.string.gemini_hybrid_model_default),
+        OnDeviceModelOption.PREVIEW to stringResource(R.string.gemini_hybrid_model_preview),
+        OnDeviceModelOption.PREVIEW_FAST to stringResource(R.string.gemini_hybrid_model_preview_fast),
+    )
+    val selectedText = options.find { it.first == selectedOption }?.second ?: ""
+
+    Box(modifier = Modifier.padding(start = 8.dp, top = 12.dp)) {
+        SplitButtonLayout(
+            leadingButton = {
+                SplitButtonDefaults.LeadingButton(
+                    onClick = { expanded = true },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                    ),
+                ) {
+                    Text(selectedText)
+                }
+            },
+            trailingButton = {
+                SplitButtonDefaults.TrailingButton(
+                    onClick = { expanded = true },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                    ),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = null,
+                    )
+                }
+            },
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            options.forEach { (option, label) ->
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    onClick = {
+                        onOptionSelected(option)
                         expanded = false
                     },
                 )

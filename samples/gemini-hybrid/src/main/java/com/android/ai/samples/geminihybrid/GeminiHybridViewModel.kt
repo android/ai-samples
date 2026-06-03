@@ -23,6 +23,7 @@ import com.google.firebase.ai.InferenceMode
 import com.google.firebase.ai.InferenceSource
 import com.google.firebase.ai.OnDeviceConfig
 import com.google.firebase.ai.ai
+import com.google.firebase.ai.OnDeviceModelOption
 import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.PublicPreviewAPI
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -53,6 +54,7 @@ sealed interface GeminiStatus {
 @OptIn(PublicPreviewAPI::class)
 data class GeminiHybridUiState(
     val selectedMode: InferenceMode = InferenceMode.ONLY_ON_DEVICE,
+    val selectedModelOption: OnDeviceModelOption? = null,
     val selectedTags: List<Int> = emptyList(),
     val reviewText: String = "",
     val reviewInferenceStatus: Int? = null,
@@ -85,6 +87,10 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
 
     fun setInferenceMode(mode: InferenceMode) {
         _uiState.update { it.copy(selectedMode = mode) }
+    }
+
+    fun setModelOption(option: OnDeviceModelOption?) {
+        _uiState.update { it.copy(selectedModelOption = option) }
     }
 
     fun toggleTag(tagResId: Int) {
@@ -130,7 +136,10 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
                 val model = Firebase.ai(backend = GenerativeBackend.googleAI())
                     .generativeModel(
                         "gemini-2.5-flash-lite",
-                        onDeviceConfig = OnDeviceConfig(mode = _uiState.value.selectedMode)
+                        onDeviceConfig = OnDeviceConfig(
+                            mode = _uiState.value.selectedMode,
+                            modelOption = _uiState.value.selectedModelOption
+                        )
                     )
                 model.generateContentStream(prompt).collect { chunk ->
                     val isCloud = chunk.inferenceSource == InferenceSource.IN_CLOUD
@@ -200,7 +209,10 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
                 val model = Firebase.ai(backend = GenerativeBackend.googleAI())
                     .generativeModel(
                         "gemini-2.5-flash-lite",
-                        onDeviceConfig = OnDeviceConfig(mode = _uiState.value.selectedMode)
+                        onDeviceConfig = OnDeviceConfig(
+                            mode = _uiState.value.selectedMode,
+                            modelOption = _uiState.value.selectedModelOption
+                        )
                     )
 
                 model.generateContentStream(prompt).collect { chunk ->
