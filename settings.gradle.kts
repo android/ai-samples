@@ -33,6 +33,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://androidx.dev/snapshots/builds/15770982/artifacts/repository") }
     }
 }
 
