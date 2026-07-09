@@ -47,6 +47,8 @@ class GlassesActivity : ComponentActivity() {
         Manifest.permission.RECORD_AUDIO
     )
 
+    @Suppress("DEPRECATION")
+    // TODO: Remove suppression once Android Emulator supports ProjectedActivityCompat.requestPermissions()
     @OptIn(ExperimentalProjectedApi::class)
     private val requestPermissionLauncher: ActivityResultLauncher<List<ProjectedPermissionsRequestParams>> =
         registerForActivityResult(ProjectedPermissionsResultContract()) { results ->

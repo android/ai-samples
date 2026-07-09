@@ -39,10 +39,10 @@
             android:name="com.android.ai.samples.geminilivetodo.GlassesActivity"
             android:exported="true"
             android:label="Glasses Experience"
-            android:requiredDisplayCategory="xr_projected">
+            android:requiredDisplayCategory="android.hardware.display.category.XR_PROJECTED">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-                <category android:name="androidx.xr.projected.CATEGORY_PROJECTED"/>
+                <category android:name="android.intent.category.XR_PROJECTED_LAUNCHER"/>
             </intent-filter>
         </activity>
     </application>
