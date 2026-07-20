@@ -72,3 +72,4 @@ include(":feature:trip:expenses")
 include(":feature:trip:voice_notes")
 
 include(":feature:trip:itinerary:enrichment")
+include(":feature:appfunctions")

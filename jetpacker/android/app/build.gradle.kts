@@ -59,6 +59,7 @@ android {
     compose = true
     buildConfig = true
   }
+
   packaging {
     jniLibs {
       useLegacyPackaging = false
@@ -90,6 +91,7 @@ dependencies {
   implementation(project(":data:db"))
   implementation(project(":data:itinerary"))
   implementation(project(":data:trips"))
+  implementation(project(":feature:appfunctions"))
   implementation(project(":feature:create_trip"))
   implementation(project(":feature:detail"))
   implementation(project(":feature:detail:museum_assistant"))

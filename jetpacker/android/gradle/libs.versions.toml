@@ -7,8 +7,8 @@ cameraCore = "1.5.0"
 cameraLifecycle = "1.5.0"
 cameraView = "1.5.0"
 coilCompose = "2.7.0"
-compileSdk = "36"
-compileSdkMinor = "1"
+compileSdk = "37"
+compileSdkMinor = "0"
 composeBom = "2026.03.00"
 composeScreenshot = "0.0.1-alpha15"
 converterMoshi = "2.12.0"
@@ -51,6 +51,7 @@ targetSdk = "36"
 truth = "1.4.2"
 versionCode = "1"
 versionName = "1.0"
+appfunctions = "1.0.0-alpha10"
 
 [libraries]
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanistPermissions" }
@@ -116,6 +117,8 @@ screenshot-validation-api = { group = "com.android.tools.screenshot", name = "sc
 mlkit-language-id = { group = "com.google.android.gms", name = "play-services-mlkit-language-id", version = "17.0.0" }
 firebase-appcheck-playintegrity = { group = "com.google.firebase", name = "firebase-appcheck-playintegrity" }
 firebase-appcheck-debug = { group = "com.google.firebase", name = "firebase-appcheck-debug" }
+androidx-appfunctions = { group = "androidx.appfunctions", name = "appfunctions", version.ref = "appfunctions" }
+androidx-appfunctions-compiler = { group = "androidx.appfunctions", name = "appfunctions-compiler", version.ref = "appfunctions" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

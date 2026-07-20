@@ -24,9 +24,9 @@ plugins {
 
 android {
   namespace = "com.example.jetpacker.feature.detail.review"
-  compileSdk = 36
+  compileSdk = libs.versions.compileSdk.get().toInt()
   defaultConfig {
-    minSdk = 26
+    minSdk = libs.versions.minSdk.get().toInt()
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17

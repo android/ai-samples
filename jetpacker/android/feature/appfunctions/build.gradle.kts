@@ -21,7 +21,7 @@ plugins {
 }
 
 android {
-  namespace = "com.example.jetpacker.core.speech"
+  namespace = "com.example.jetpacker.feature.appfunctions"
   compileSdk = libs.versions.compileSdk.get().toInt()
   defaultConfig { minSdk = libs.versions.minSdk.get().toInt() }
   compileOptions {
@@ -30,22 +30,16 @@ android {
   }
 }
 
-kotlin { jvmToolchain(17) }
-
 dependencies {
+  implementation(project(":data:trips"))
+  implementation(project(":data:itinerary"))
   implementation(libs.androidx.core.ktx)
+  implementation(libs.androidx.appfunctions)
+  "ksp"(libs.androidx.appfunctions.compiler)
   implementation(libs.hilt.android)
   "ksp"(libs.hilt.compiler)
-  implementation(libs.kotlinx.coroutines.core)
   implementation(libs.kotlinx.coroutines.android)
-  implementation(libs.kotlinx.coroutines.play.services)
-  implementation(libs.mlkit.genai.speech)
-  implementation(libs.mlkit.translate)
-  implementation(project(":core:flags"))
-
-  testImplementation(libs.junit)
-  testImplementation(libs.kotlinx.coroutines.test)
-  testImplementation(libs.androidx.core)
-  testImplementation(libs.androidx.junit)
-  testImplementation(libs.robolectric)
+  implementation(libs.kotlinx.coroutines.core)
 }
+
+kotlin { jvmToolchain(17) }

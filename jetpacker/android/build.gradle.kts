@@ -52,19 +52,4 @@ licenseReport {
   renderers = arrayOf(com.github.jk1.license.render.JsonReportRenderer("licenses.json"))
 }
 
-tasks.register<Exec>("generateThirdPartyNotices") {
-  dependsOn("generateLicenseReport")
-  commandLine("./gradle/scripts/generate_notices.py")
-}
-
-project(":app") {
-  afterEvaluate {
-    tasks.named("preBuild") {
-      dependsOn(rootProject.tasks.named("generateThirdPartyNotices"))
-    }
-  }
-}
-
-
-
 
