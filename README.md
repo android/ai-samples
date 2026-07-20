@@ -10,7 +10,7 @@ The table below catalogs the samples and applications available in this reposito
 
 | Sample App | Description | Directory |
 | :--- | :--- | :--- |
-| **Android AI Sample Catalog** <br><br> ![Android AI Sample Catalog](https://developer.android.com/static/ai/assets/images/ai_catalog_screenshot_1440.png) | A standalone showcase application containing multiple standalone, self-contained samples demonstrating various Gemini integration capabilities (hybrid inference, chat, multimodal, summarization, writing assistance, etc.) on Android. | [ai-sample-catalog/](file:///Users/jolandaverhoef/tmp/ai-samples/ai-sample-catalog) |
+| **Android AI Sample Catalog** <br><br> ![Android AI Sample Catalog](https://developer.android.com/static/ai/assets/images/ai_catalog_screenshot_1440.png) | A standalone showcase application containing multiple standalone, self-contained samples demonstrating various Gemini integration capabilities (hybrid inference, chat, multimodal, summarization, writing assistance, etc.) on Android. | [ai-sample-catalog/](ai-sample-catalog/) |
 | **Jetpacker (Coming Soon)** | A sample showing Jetpacker integration and AI-guided capabilities for Android development. | *To be added soon* |
 
 ---
