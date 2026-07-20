@@ -411,11 +411,7 @@ fun LanguageDropdown(
 
 @PublicPreviewAPI
 @Composable
-fun InferenceModeDropdown(
-    selectedMode: InferenceMode,
-    onModeSelected: (InferenceMode) -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun InferenceModeDropdown(selectedMode: InferenceMode, onModeSelected: (InferenceMode) -> Unit, modifier: Modifier = Modifier) {
     var expanded by remember { mutableStateOf(false) }
     val modes = listOf(
         InferenceMode.ONLY_ON_DEVICE to stringResource(R.string.gemini_hybrid_mode_only_on_device),
