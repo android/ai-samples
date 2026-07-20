@@ -35,5 +35,8 @@ data class ItineraryUiState(
   val items: List<ItineraryUiListItem> = emptyList(),
   val isGenerating: Boolean = false,
   val showAddEventDialog: Boolean = false,
+  val isTripSummaryAndTipsSupported: Boolean = true,
+  val isTripSummaryAndTipsLoading: Boolean = false,
+  val tripSummaryAndTips: String? = null,
   val showEditTripDialog: Boolean = false,
 )

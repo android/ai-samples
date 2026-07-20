@@ -16,12 +16,18 @@
 
 package com.example.jetpacker.feature.itinerary
 
+import com.example.jetpacker.feature.itinerary_enrichment.DailyThemeProvider
+import com.example.jetpacker.feature.itinerary_enrichment.DayThemeItem
+import com.example.jetpacker.feature.itinerary_enrichment.TripSummaryAndTipsProvider
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.jetpacker.core.flags.FeatureFlags
 import com.example.jetpacker.data.itinerary.ActivityDetail
+import com.example.jetpacker.data.itinerary.DayTheme
+import com.example.jetpacker.data.itinerary.DayThemeDao
 import com.example.jetpacker.data.itinerary.DiningDetail
 import com.example.jetpacker.data.itinerary.EventDao
 import com.example.jetpacker.data.itinerary.EventType
@@ -68,12 +74,18 @@ constructor(
   savedStateHandle: SavedStateHandle,
   private val eventDao: EventDao,
   private val tourDetailDao: TourDetailDao,
+  private val dayThemeDao: DayThemeDao,
   private val tripDao: TripDao,
+  private val tripSummaryAndTipsProvider: TripSummaryAndTipsProvider,
+  private val dailyThemeProvider: DailyThemeProvider,
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(ItineraryUiState())
   open val uiState: StateFlow<ItineraryUiState> = _uiState.asStateFlow()
 
   private var tripId: String = savedStateHandle["tripId"] ?: ""
+
+  private var isGeneratingThemes = false
+  private var attemptedThemeDates = emptySet<String>()
 
   init {
     loadEvents()
@@ -90,8 +102,10 @@ constructor(
       if (tripId.isNotEmpty()) {
         combine(
             eventDao.getEventsForTrip(tripId),
+            dayThemeDao.getThemesForTrip(tripId),
             tripDao.getTripById(tripId),
-          ) { events, trip ->
+          ) { events, themes, trip ->
+            val themesMap = themes.associateBy { it.date }
             val groupedEvents =
               events
                 .groupBy {
@@ -105,10 +119,11 @@ constructor(
             val uiItems = mutableListOf<ItineraryUiListItem>()
             val totalDays = groupedEvents.size
             groupedEvents.onEachIndexed { index, (date, eventList) ->
+              val theme = themesMap[date]?.theme
               uiItems.add(
                 ItineraryUiListItem.Header(
                   date = date,
-                  theme = null,
+                  theme = theme,
                   dayNumber = index + 1,
                   totalDays = totalDays,
                 )
@@ -116,13 +131,184 @@ constructor(
               uiItems.addAll(eventList.map { ItineraryUiListItem.Event(it) })
             }
 
-            Pair(uiItems, trip)
+            Triple(uiItems, events, trip)
           }
-          .collectLatest { (items, trip) ->
+          .collectLatest { (items, events, trip) ->
             _uiState.update { it.copy(items = items, trip = trip) }
+            if (events.isNotEmpty() && trip != null) {
+              if (FeatureFlags.ENABLE_ITINERARY_ENRICHMENT) {
+                if (!trip.tripSummaryAndTips.isNullOrBlank()) {
+                  _uiState.update {
+                    it.copy(tripSummaryAndTips = trip.tripSummaryAndTips, isTripSummaryAndTipsSupported = true)
+                  }
+                } else if (
+                  _uiState.value.tripSummaryAndTips == null && !_uiState.value.isTripSummaryAndTipsLoading
+                ) {
+                  // val now = System.currentTimeMillis()
+                  // to test for May 20, 2026, 12:15pm Pacific time, time of I/O live talk
+                  val now =
+                    ZonedDateTime.of(
+                        2026,
+                        5,
+                        20,
+                        12,
+                        15,
+                        0,
+                        0,
+                        ZoneId.of("America/Los_Angeles"),
+                      )
+                      .toInstant()
+                      .toEpochMilli()
+                  when {
+                    trip.startDate > now -> generateTripSummaryAndTips(events, trip)
+                    now > trip.endDate -> generateTripSummary(events, trip)
+                    else -> {
+                      val upcomingEvents = events.filter { it.timestamp > now }
+                      generateUpcomingTip(upcomingEvents, trip)
+                    }
+                  }
+                }
+
+                val headers = items.filterIsInstance<ItineraryUiListItem.Header>()
+                val missingThemeDates =
+                  headers.filter { it.theme.isNullOrBlank() }.map { it.date }.toSet()
+
+                if (
+                  missingThemeDates.isNotEmpty() &&
+                    !attemptedThemeDates.containsAll(missingThemeDates) &&
+                    !isGeneratingThemes
+                ) {
+                  // Stagger to avoid concurrent AI Core requests
+                  kotlinx.coroutines.delay(500)
+                  attemptedThemeDates = attemptedThemeDates + missingThemeDates
+                  generateDailyThemes(events)
+                }
+              }
+            } else {
+              _uiState.update { it.copy(tripSummaryAndTips = null) }
+            }
           }
       } else {
-        _uiState.update { it.copy(items = emptyList()) }
+        _uiState.update { it.copy(items = emptyList(), tripSummaryAndTips = null) }
+      }
+    }
+  }
+
+  private fun generateTripSummaryAndTips(events: List<TimelineEvent>, trip: Trip) {
+    viewModelScope.launch {
+      if (!tripSummaryAndTipsProvider.isSupported()) {
+        _uiState.update { it.copy(isTripSummaryAndTipsSupported = false) }
+        return@launch
+      }
+
+      _uiState.update { it.copy(isTripSummaryAndTipsLoading = true) }
+      try {
+        var fullSummary = ""
+        tripSummaryAndTipsProvider.generateTripSummaryAndTips(events, trip).collect { chunk ->
+          fullSummary += chunk
+          _uiState.update { state ->
+            state.copy(
+              tripSummaryAndTips = fullSummary,
+              isTripSummaryAndTipsSupported = true,
+              isTripSummaryAndTipsLoading = false,
+            )
+          }
+        }
+        if (fullSummary.isNotEmpty()) {
+          tripDao.insertTrip(trip.copy(tripSummaryAndTips = fullSummary))
+        }
+      } catch (e: Exception) {
+        // Fallback or unsupported state
+        _uiState.update { it.copy(isTripSummaryAndTipsSupported = false) }
+      } finally {
+        _uiState.update { it.copy(isTripSummaryAndTipsLoading = false) }
+      }
+    }
+  }
+
+  private fun generateTripSummary(events: List<TimelineEvent>, trip: Trip) {
+    viewModelScope.launch {
+      if (!tripSummaryAndTipsProvider.isSupported()) {
+        _uiState.update { it.copy(isTripSummaryAndTipsSupported = false) }
+        return@launch
+      }
+
+      _uiState.update { it.copy(isTripSummaryAndTipsLoading = true) }
+      try {
+        val voiceNotes = eventDao.getVoiceNotesForTrip(trip.id).first()
+        var fullSummary = ""
+        tripSummaryAndTipsProvider.generateTripSummary(events, trip, voiceNotes).collect { chunk ->
+          fullSummary += chunk
+          _uiState.update { state ->
+            state.copy(
+              tripSummaryAndTips = fullSummary,
+              isTripSummaryAndTipsSupported = true,
+              isTripSummaryAndTipsLoading = false,
+            )
+          }
+        }
+        if (fullSummary.isNotEmpty()) {
+          tripDao.insertTrip(trip.copy(tripSummaryAndTips = fullSummary))
+        }
+      } catch (e: Exception) {
+        _uiState.update { it.copy(isTripSummaryAndTipsSupported = false) }
+      } finally {
+        _uiState.update { it.copy(isTripSummaryAndTipsLoading = false) }
+      }
+    }
+  }
+
+  private fun generateUpcomingTip(events: List<TimelineEvent>, trip: Trip) {
+    viewModelScope.launch {
+      if (!tripSummaryAndTipsProvider.isSupported()) {
+        _uiState.update { it.copy(isTripSummaryAndTipsSupported = false) }
+        return@launch
+      }
+
+      _uiState.update { it.copy(isTripSummaryAndTipsLoading = true) }
+      try {
+        var fullSummary = ""
+        tripSummaryAndTipsProvider.generateUpcomingTip(events, trip).collect { chunk ->
+          fullSummary += chunk
+          _uiState.update { state ->
+            state.copy(
+              tripSummaryAndTips = fullSummary,
+              isTripSummaryAndTipsSupported = true,
+              isTripSummaryAndTipsLoading = false,
+            )
+          }
+        }
+        if (fullSummary.isNotEmpty()) {
+          tripDao.insertTrip(trip.copy(tripSummaryAndTips = fullSummary))
+        }
+      } catch (e: Exception) {
+        _uiState.update { it.copy(isTripSummaryAndTipsSupported = false) }
+      } finally {
+        _uiState.update { it.copy(isTripSummaryAndTipsLoading = false) }
+      }
+    }
+  }
+
+  private fun generateDailyThemes(events: List<TimelineEvent>) {
+    isGeneratingThemes = true
+    viewModelScope.launch {
+      try {
+        val themes = dailyThemeProvider.generateDailyThemes(events)
+        if (themes.isNotEmpty()) {
+          val dayThemes = themes.map { themeItem ->
+            DayTheme(
+              id = UUID.randomUUID().toString(),
+              tripId = tripId,
+              date = themeItem.day.trim(),
+              theme = themeItem.theme.trim(),
+            )
+          }
+          dayThemeDao.insertThemes(dayThemes)
+        }
+      } catch (e: Exception) {
+        Log.e("ItineraryViewModel", "Failed to generate daily themes", e)
+      } finally {
+        isGeneratingThemes = false
       }
     }
   }

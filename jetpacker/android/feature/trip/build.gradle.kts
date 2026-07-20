@@ -46,6 +46,8 @@ dependencies {
   implementation(project(":data:itinerary"))
   implementation(project(":data:trips"))
   implementation(project(":feature:trip:itinerary"))
+  implementation(project(":feature:trip:expenses"))
+  implementation(project(":feature:trip:voice_notes"))
 
   implementation(libs.androidx.compose.material.icons.core)
   implementation(libs.androidx.compose.material.icons.extended)

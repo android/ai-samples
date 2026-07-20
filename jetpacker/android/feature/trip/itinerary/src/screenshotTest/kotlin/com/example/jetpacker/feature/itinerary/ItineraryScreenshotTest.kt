@@ -16,6 +16,9 @@
 
 package com.example.jetpacker.feature.itinerary
 
+import com.example.jetpacker.feature.itinerary_enrichment.DayThemeItem
+import com.example.jetpacker.feature.itinerary_enrichment.TripSummaryAndTipsProvider
+import com.example.jetpacker.feature.itinerary_enrichment.DailyThemeProvider
 import android.content.Context
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
@@ -24,6 +27,8 @@ import com.android.tools.screenshot.PreviewTest
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import com.example.jetpacker.core.ui.JetPackerTheme
+import com.example.jetpacker.data.itinerary.DayTheme
+import com.example.jetpacker.data.itinerary.DayThemeDao
 import com.example.jetpacker.data.itinerary.TourDetail
 import com.example.jetpacker.data.itinerary.TourDetailDao
 import com.example.jetpacker.data.itinerary.EventDao
@@ -108,7 +113,47 @@ class ItineraryScreenshotTest {
         override suspend fun deleteAllActivityDetails() {}
       }
 
+    val fakeTripSummaryAndTipsProvider =
+      object : TripSummaryAndTipsProvider {
+        override suspend fun isSupported(): Boolean = true
+
+        override fun generateTripSummaryAndTips(events: List<TimelineEvent>, trip: Trip): Flow<String> =
+          flowOf("Amazing trip summaries and tips!")
+
+        override fun generateTripSummary(
+          events: List<TimelineEvent>,
+          trip: Trip,
+          voiceNotes: List<VoiceNoteEntity>,
+        ): Flow<String> = flowOf("Amazing summary!")
+
+        override fun generateUpcomingTip(events: List<TimelineEvent>, trip: Trip): Flow<String> =
+          flowOf("Upcoming tip!")
+      }
+
     val savedStateHandle = SavedStateHandle(mapOf("tripId" to "trip1"))
+
+    val fakeDailyThemeProvider =
+      object : DailyThemeProvider {
+        override suspend fun generateDailyThemes(events: List<TimelineEvent>): List<DayThemeItem> =
+          emptyList()
+      }
+
+    val fakeDayThemeDao =
+      object : DayThemeDao {
+        override fun getThemesForTrip(
+          tripId: String
+        ): Flow<List<DayTheme>> = flowOf(emptyList())
+
+        override suspend fun deleteThemesForTrip(tripId: String) {}
+
+        override suspend fun insertThemes(
+          themes: List<DayTheme>
+        ) {}
+
+        override suspend fun insertTheme(theme: DayTheme) {}
+
+        override suspend fun deleteAllThemes() {}
+      }
 
     val fakeTripDao =
       object : TripDao {
@@ -144,7 +189,10 @@ class ItineraryScreenshotTest {
           savedStateHandle = savedStateHandle,
           eventDao = fakeEventDao,
           tourDetailDao = fakeTourDetailDao,
+          dayThemeDao = fakeDayThemeDao,
           tripDao = fakeTripDao,
+          tripSummaryAndTipsProvider = fakeTripSummaryAndTipsProvider,
+          dailyThemeProvider = fakeDailyThemeProvider,
         ) {
         private val state =
           MutableStateFlow(
@@ -153,16 +201,18 @@ class ItineraryScreenshotTest {
                 run {
                   val parisEvents = DummyData.events.filter { it.tripId == "2026-3" }
                   val uiItems = mutableListOf<ItineraryUiListItem>()
-                  uiItems.add(ItineraryUiListItem.Header("Aug 12, 2026", null, 1, 3))
+                  uiItems.add(ItineraryUiListItem.Header("Aug 12, 2026", "Arrival & Check-in", 1, 3))
                   uiItems.addAll(parisEvents.take(2).map { ItineraryUiListItem.Event(it) })
-                  uiItems.add(ItineraryUiListItem.Header("Aug 13, 2026", null, 2, 3))
+                  uiItems.add(ItineraryUiListItem.Header("Aug 13, 2026", "Art & Haute Cuisine", 2, 3))
                   uiItems.addAll(parisEvents.drop(2).take(2).map { ItineraryUiListItem.Event(it) })
                   uiItems.add(
-                    ItineraryUiListItem.Header("Aug 14, 2026", null, 3, 3)
+                    ItineraryUiListItem.Header("Aug 14, 2026", "Royal Palaces & River Views", 3, 3)
                   )
                   uiItems.addAll(parisEvents.drop(4).take(2).map { ItineraryUiListItem.Event(it) })
                   uiItems
                 },
+              tripSummaryAndTips = "Relaxing, romantic, and cultural.",
+              isTripSummaryAndTipsSupported = true,
               isGenerating = false,
               showAddEventDialog = false,
             )

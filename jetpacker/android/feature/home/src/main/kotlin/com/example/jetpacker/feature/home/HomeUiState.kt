@@ -21,4 +21,13 @@ import com.example.jetpacker.data.trips.Trip
 data class HomeUiState(
   val trips: List<Trip> = emptyList(),
   val isLoading: Boolean = false,
+  val statusText: String = "Initializing...",
+  val transcription: String = "",
+  val partialTranscription: String = "",
+  val isListening: Boolean = false,
+  val showDialog: Boolean = false,
+  val translatedTranscription: String = "",
+  val transcriptionResult: String? = null,
+  val audioLevel: Float = 0f,
+  val isError: Boolean = false,
 )

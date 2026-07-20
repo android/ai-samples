@@ -19,6 +19,7 @@ package com.example.jetpacker.feature.home
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.jetpacker.core.speech.VoiceInputManager
 import com.example.jetpacker.data.itinerary.EventDao
 import com.example.jetpacker.data.itinerary.ExpenseDao
 import com.example.jetpacker.data.itinerary.TourDetailDao
@@ -52,12 +53,30 @@ constructor(
   private val eventDao: EventDao,
   private val tourDetailDao: TourDetailDao,
   private val expenseDao: ExpenseDao,
+  private val voiceInputManager: VoiceInputManager,
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(HomeUiState())
   open val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
   init {
     loadTrips()
+    viewModelScope.launch {
+      voiceInputManager.uiState.collectLatest { voiceState ->
+        _uiState.update { current ->
+          current.copy(
+            isListening = voiceState.isListening,
+            showDialog = voiceState.showDialog,
+            statusText = voiceState.statusText,
+            transcription = voiceState.transcription,
+            partialTranscription = voiceState.partialTranscription,
+            translatedTranscription = voiceState.translatedTranscription,
+            audioLevel = voiceState.audioLevel,
+            transcriptionResult = voiceState.transcriptionResult,
+            isError = voiceState.isError,
+          )
+        }
+      }
+    }
   }
 
   private fun loadTrips() {
@@ -90,6 +109,8 @@ constructor(
       DummyData.hotelDetails.forEach { eventDao.insertHotelDetail(it) }
       DummyData.diningDetails.forEach { eventDao.insertDiningDetail(it) }
       DummyData.museumDetails.forEach { eventDao.insertMuseumDetail(it) }
+      DummyData.expenses.forEach { expenseDao.insertExpense(it) }
+      DummyData.voiceNotes.forEach { eventDao.insertVoiceNote(it) }
     }
   }
 
@@ -98,5 +119,21 @@ constructor(
       eventDao.deleteEventsForTrip(trip.id)
       tripDao.deleteTrip(trip)
     }
+  }
+
+  open fun setPermissionGranted(granted: Boolean) {
+    voiceInputManager.setPermissionGranted(granted)
+  }
+
+  open fun handleListenToggle(onPermissionRequired: () -> Unit) {
+    voiceInputManager.handleListenToggle(onPermissionRequired)
+  }
+
+  open fun clearTranscriptionResult() {
+    voiceInputManager.clearTranscriptionResult()
+  }
+
+  open fun cancelListening() {
+    voiceInputManager.cancelListening()
   }
 }

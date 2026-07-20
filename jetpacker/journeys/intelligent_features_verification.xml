@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<journey name="Intelligent Features Verification Journey">
+    <description>
+        Verifies the on-device intelligent features of JetPacker including Trip Summaries and Tips, Voice Notes recording, and Expense Management using live visual screenshot comparisons.
+    </description>
+    <actions>
+        <action>
+            Launch the JetPacker MainActivity (`com.example.jetpacker/.MainActivity`)
+        </action>
+        <action>
+            Verify by capturing a live screenshot that the Home screen renders the Extended Floating Action Button containing both the standard add trip icon and the voice trip microphone input trigger
+        </action>
+        <action>
+            Tap on the first trip card ("California I/O")
+        </action>
+        <action>
+            Verify by capturing a live screenshot that the Itinerary screen renders the AI summary card ("Trip summaries and tips") prominently formatted above the timeline events list
+        </action>
+        <action>
+            Tap on the Voice Notes tab icon in the bottom navigation bar (`x=688, y=2221`)
+        </action>
+        <action>
+            Verify by capturing a live screenshot against visual baseline expectations that the Voice Notes screen displays the audio recorder controls and any recorded note cards without clipping
+        </action>
+        <action>
+            Tap on the Expenses tab icon in the bottom navigation bar (`x=450, y=2221`)
+        </action>
+        <action>
+            Verify by capturing a live screenshot against visual baseline expectations that the Manage Expenses screen renders the currency conversion rate cards and receipt scanner action button cleanly
+        </action>
+    </actions>
+</journey>

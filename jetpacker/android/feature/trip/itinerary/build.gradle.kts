@@ -44,9 +44,11 @@ dependencies {
   implementation(platform(libs.androidx.compose.bom))
 
   implementation(project(":core:flags"))
+  implementation(project(":core:speech"))
   implementation(project(":core:ui"))
   implementation(project(":data:itinerary"))
   implementation(project(":data:trips"))
+  implementation(project(":feature:trip:itinerary:enrichment"))
 
   implementation(libs.androidx.compose.material3)
   implementation(libs.androidx.compose.ui)
@@ -55,6 +57,9 @@ dependencies {
   implementation(libs.androidx.hilt.navigation.compose)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
+  implementation(libs.mlkit.genai.prompt)
+  implementation(libs.mlkit.genai.speech)
+  implementation(libs.mlkit.translate)
   implementation(libs.hilt.android)
   "ksp"(libs.hilt.compiler)
 

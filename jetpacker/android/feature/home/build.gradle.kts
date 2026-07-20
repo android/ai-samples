@@ -38,6 +38,7 @@ dependencies {
   implementation(platform(libs.androidx.compose.bom))
 
   implementation(project(":core:flags"))
+  implementation(project(":core:speech"))
   implementation(project(":core:ui"))
   implementation(project(":data:itinerary"))
   implementation(project(":data:trips"))
@@ -52,7 +53,7 @@ dependencies {
   implementation(libs.androidx.lifecycle.viewmodel.compose)
   implementation(libs.hilt.android)
   "ksp"(libs.hilt.compiler)
-
+  implementation(libs.mlkit.translate)
   screenshotTestImplementation(libs.androidx.compose.ui.tooling)
   screenshotTestImplementation(libs.screenshot.validation.api)
 }

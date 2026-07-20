@@ -22,6 +22,8 @@
 package com.example.jetpacker.feature.itinerary
 
 import com.example.jetpacker.core.ui.components.JetPackerFabConfig
+import com.example.jetpacker.feature.itinerary_enrichment.DayThemeItem
+import com.example.jetpacker.feature.itinerary_enrichment.TripSummaryAndTipsCard
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateBounds
@@ -359,7 +361,17 @@ fun ItineraryScreen(
               }
             }
 
-
+            if (uiState.isTripSummaryAndTipsSupported && FeatureFlags.ENABLE_ITINERARY_ENRICHMENT) {
+              item(key = "trip_summary_and_tips") {
+                TripSummaryAndTipsCard(
+                  modifier = Modifier.animateItem().padding(bottom = 8.dp),
+                  isLoading =
+                    uiState.isTripSummaryAndTipsLoading || (uiState.isGenerating && uiState.items.isEmpty()),
+                  summary = uiState.tripSummaryAndTips,
+                  trip = uiState.trip,
+                )
+              }
+            }
 
             if (uiState.isGenerating && uiState.items.isEmpty()) {
               items(3, key = { "shimmer_$it" }) {

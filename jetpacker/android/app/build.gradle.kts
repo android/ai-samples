@@ -81,6 +81,7 @@ dependencies {
   implementation(platform(libs.androidx.compose.bom))
 
   implementation(project(":core:flags"))
+  implementation(project(":core:speech"))
   implementation(project(":core:ui"))
   implementation(project(":data:db"))
   implementation(project(":data:itinerary"))
@@ -90,8 +91,10 @@ dependencies {
   implementation(project(":feature:home"))
   implementation(project(":feature:trip"))
   implementation(project(":feature:trip:itinerary"))
-
   implementation(libs.accompanist.permissions)
+  implementation(project(":feature:trip:voice_notes"))
+  implementation(project(":feature:trip:expenses"))
+  implementation(project(":feature:trip:itinerary:enrichment"))
   implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.camera.camera2)
   implementation(libs.androidx.camera.core)

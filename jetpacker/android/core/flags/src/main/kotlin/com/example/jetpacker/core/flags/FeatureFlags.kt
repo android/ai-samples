@@ -22,6 +22,11 @@ object FeatureFlags {
   const val KEY_DEMO_LANGUAGE = "demo_language"
   const val KEY_OVERRIDE_CURRENT_TIME_MILLIS = "override_current_time_millis"
   const val EXTRA_OVERRIDE_TIME = "override_time"
+  const val KEY_ENABLE_TRIP_SUMMARY_AND_TIPS = "enable_trip_summary_and_tips"
+  const val KEY_ENABLE_SURPRISE_ME = "enable_surprise_me"
+  const val KEY_ENABLE_ITINERARY_ENRICHMENT = "enable_itinerary_enrichment"
+  const val KEY_ENABLE_EXPENSE_MANAGEMENT = "enable_expense_management"
+  const val KEY_ENABLE_VOICE_NOTES = "enable_voice_notes"
 
   private var appContext: Context? = null
 
@@ -48,6 +53,23 @@ object FeatureFlags {
 
   val DEMO_LANGUAGE: String
     get() = readStringFlag(KEY_DEMO_LANGUAGE, DEFAULT_DEMO_LANGUAGE)
+
+  // Existing flags
+  val ENABLE_TRIP_SUMMARY_AND_TIPS: Boolean
+    get() = readFlag(KEY_ENABLE_TRIP_SUMMARY_AND_TIPS, true)
+
+  val ENABLE_SURPRISE_ME: Boolean
+    get() = readFlag(KEY_ENABLE_SURPRISE_ME, false)
+
+  // Offline features
+  val ENABLE_ITINERARY_ENRICHMENT: Boolean
+    get() = readFlag(KEY_ENABLE_ITINERARY_ENRICHMENT, true)
+
+  val ENABLE_EXPENSE_MANAGEMENT: Boolean
+    get() = readFlag(KEY_ENABLE_EXPENSE_MANAGEMENT, true)
+
+  val ENABLE_VOICE_NOTES: Boolean
+    get() = readFlag(KEY_ENABLE_VOICE_NOTES, true)
   private fun readLongFlag(keyName: String, defaultValue: Long): Long {
     val context = appContext ?: return defaultValue
     return context

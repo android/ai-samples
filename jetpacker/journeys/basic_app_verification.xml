@@ -14,7 +14,7 @@
             Tap on the first trip card ("California I/O")
         </action>
         <action>
-            Verify by capturing a live screenshot that the app navigates to the Itinerary screen showing timeline events (Flights, Hotels, Dining) and confirm via visual inspection that no AI Vibe Check card is rendered
+            Verify by capturing a live screenshot that the app navigates to the Itinerary screen showing timeline events (Flights, Hotels, Dining) and confirm via visual inspection that no AI summary card ("Trip summaries and tips") is rendered
         </action>
         <action>
             Tap on the Flight event card in the timeline

@@ -32,5 +32,5 @@ data class Trip(
   @JvmField val imageRes: Int? = null,
   @JvmField val imageUri: String? = null,
   @JvmField val participants: List<String> = emptyList(),
-  @JvmField val vibeCheckSummary: String? = null,
+  @JvmField val tripSummaryAndTips: String? = null,
 )

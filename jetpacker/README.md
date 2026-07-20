@@ -14,7 +14,7 @@
 </table>
 
 ## Overview
-JetPacker provides users with powerful tools to manage their upcoming trips and build out rich itineraries.
+JetPacker provides users with powerful tools to manage their upcoming trips, build out rich itineraries, record voice notes, manage travel expenses, and generate on-device "Trip Summaries and Tips".
 
 ## Architecture
 This project is built using modern Android architecture components:
@@ -22,6 +22,7 @@ This project is built using modern Android architecture components:
 - **Dependency Injection**: Dagger/Hilt
 - **Local Persistence**: Room Database
 - **State Management**: ViewModels with StateFlow
+- **On-Device AI**: ML Kit GenAI (Prompt, Speech Recognition)
 
 ## Module Overview
 JetPacker follows a clean, multi-module Android structure organized by responsibility and domain:
@@ -29,6 +30,7 @@ JetPacker follows a clean, multi-module Android structure organized by responsib
 ### Core Modules (`:core:*`)
 - **`:core:ui`**: Shared Jetpack Compose design system components (`JetPackerFab`, `JetPackerToolbar`, themes, custom typography).
 - **`:core:flags`**: Centralized feature toggle system (`FeatureFlags`) controlling optional runtime capabilities.
+- **`:core:speech`**: On-device speech recognition wrappers and audio processing utilities.
 
 ### Data Modules (`:data:*`)
 - **`:data:db`**: Room database configuration, entities, and local DAOs.
@@ -39,8 +41,11 @@ JetPacker follows a clean, multi-module Android structure organized by responsib
 - **`:feature:home`**: Dashboard screen displaying the user's upcoming trips list.
 - **`:feature:create_trip`**: Unified trip form module handling both new trip creation and existing trip editing (`EditTripScreen`).
 - **`:feature:detail`**: Detailed view screens for specific itinerary events (Flights, Hotels, Restaurants, Museums, Tours).
-- **`:feature:trip`**: Top-level trip container shell (`TripScreen`) holding navigation and orchestrating trip views.
+- **`:feature:trip`**: Top-level trip container shell (`TripScreen`) holding bottom navigation and orchestrating trip sub-tabs.
   - **`:feature:trip:itinerary`**: Pure itinerary timeline screen displaying daily scheduled events.
+    - **`:feature:trip:itinerary:enrichment`**: On-device AI summaries and tips (`TripSummaryAndTipsCard`) and dynamic daily theme generators.
+  - **`:feature:trip:expenses`**: Expense tracking screen and automated receipt parser.
+  - **`:feature:trip:voice_notes`**: Audio voice note recorder and real-time speech-to-text transcription screen.
 
 ## Getting Started
 
@@ -75,7 +80,7 @@ cd android
 ## On-Device AI Features
 JetPacker integrates pure on-device ML Kit capabilities.
 These features run locally on the device and can be toggled or customized in `android/core/flags/src/main/java/com/example/jetpacker/core/flags/FeatureFlags.kt`:
-- **ENABLE_AI_VIBE_CHECK**: Generates an on-device card summary of the current trip's vibe using ML Kit GenAI Prompt.
+- **ENABLE_TRIP_SUMMARY_AND_TIPS**: Generates an on-device card summary of the current trip using ML Kit GenAI Prompt.
 - **ENABLE_ITINERARY_ENRICHMENT**: Local enrichment for trip events.
 - **ENABLE_EXPENSE_MANAGEMENT**: Local expense management tracking.
 - **ENABLE_VOICE_NOTES**: On-device speech recognition and transcription for voice notes.

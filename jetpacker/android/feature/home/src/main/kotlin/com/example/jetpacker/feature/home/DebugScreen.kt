@@ -62,6 +62,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.jetpacker.core.flags.FeatureFlags
+import com.google.mlkit.nl.translate.TranslateLanguage
 import java.time.Instant
 import java.util.Locale
 
@@ -87,8 +88,69 @@ fun DebugScreen(onBack: () -> Unit = {}, viewModel: DebugViewModel = hiltViewMod
         Modifier.fillMaxSize()
           .padding(innerPadding)
           .padding(16.dp)
-          .verticalScroll(rememberScrollState()),
+          .verticalScroll(rememberScrollState())
     ) {
+      Text(
+        "Offline Features",
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+      )
+      HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+      FeatureToggle("Itinerary Enrichment", FeatureFlags.ENABLE_ITINERARY_ENRICHMENT) { value ->
+        FeatureFlags.toggleFlag(context, "enable_itinerary_enrichment", value)
+      }
+      FeatureToggle("Expense Management", FeatureFlags.ENABLE_EXPENSE_MANAGEMENT) { value ->
+        FeatureFlags.toggleFlag(context, "enable_expense_management", value)
+      }
+      FeatureToggle("Voice Notes", FeatureFlags.ENABLE_VOICE_NOTES) { value ->
+        FeatureFlags.toggleFlag(context, "enable_voice_notes", value)
+      }
+
+      Spacer(modifier = Modifier.padding(vertical = 16.dp))
+
+      Text(
+        "Voice Settings",
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+      )
+      HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+      var showLanguagePicker by remember { mutableStateOf(false) }
+      val currentLanguageCode = FeatureFlags.DEMO_LANGUAGE
+      val currentLanguageName =
+        remember(currentLanguageCode) {
+          Locale.forLanguageTag(currentLanguageCode).getDisplayName(Locale.US)
+        }
+
+      Row(
+        modifier =
+          Modifier.fillMaxWidth().clickable { showLanguagePicker = true }.padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Column(modifier = Modifier.weight(1f)) {
+          Text("Demo Language", style = MaterialTheme.typography.bodyLarge)
+          Text(
+            text = currentLanguageName,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+          )
+        }
+        Text("Change", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+      }
+
+      if (showLanguagePicker) {
+        LanguagePickerDialog(
+          currentLanguageCode = currentLanguageCode,
+          onLanguageSelected = { newLang ->
+            FeatureFlags.putStringFlag(context, "demo_language", newLang)
+          },
+          onDismiss = { showLanguagePicker = false },
+        )
+      }
+
+      Spacer(modifier = Modifier.padding(vertical = 16.dp))
+
       Text(
         "Time Override Settings",
         style = MaterialTheme.typography.titleMedium,
@@ -173,6 +235,107 @@ fun DebugScreen(onBack: () -> Unit = {}, viewModel: DebugViewModel = hiltViewMod
       }
     }
   }
+}
+
+@Composable
+fun FeatureToggle(name: String, initialValue: Boolean, onValueChange: (Boolean) -> Unit) {
+  var checked by remember { mutableStateOf(initialValue) }
+  Row(
+    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
+    Text(name, modifier = Modifier.weight(1f))
+    Spacer(modifier = Modifier.width(8.dp))
+    Switch(
+      checked = checked,
+      onCheckedChange = {
+        checked = it
+        onValueChange(it)
+      },
+    )
+  }
+}
+
+data class LanguageItem(val code: String, val displayName: String)
+
+@Composable
+fun LanguagePickerDialog(
+  currentLanguageCode: String,
+  onLanguageSelected: (String) -> Unit,
+  onDismiss: () -> Unit,
+) {
+  var searchQuery by remember { mutableStateOf("") }
+
+  val allLanguages = remember {
+    TranslateLanguage.getAllLanguages()
+      .map { code ->
+        val displayName = Locale.forLanguageTag(code).getDisplayName(Locale.US)
+        LanguageItem(code, displayName)
+      }
+      .sortedBy { it.displayName }
+  }
+
+  val filteredLanguages =
+    remember(searchQuery) {
+      allLanguages.filter {
+        it.displayName.contains(searchQuery, ignoreCase = true) ||
+          it.code.contains(searchQuery, ignoreCase = true)
+      }
+    }
+
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    title = { Text("Select Demo Language") },
+    text = {
+      Column(modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+          value = searchQuery,
+          onValueChange = { searchQuery = it },
+          label = { Text("Search Languages") },
+          singleLine = true,
+          modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+        )
+
+        LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp)) {
+          items(filteredLanguages) { lang ->
+            val isSelected = lang.code == currentLanguageCode
+            Row(
+              modifier =
+                Modifier.fillMaxWidth()
+                  .clickable {
+                    onLanguageSelected(lang.code)
+                    onDismiss()
+                  }
+                  .padding(vertical = 12.dp, horizontal = 8.dp),
+              verticalAlignment = Alignment.CenterVertically,
+            ) {
+              Text(
+                text = lang.displayName,
+                style =
+                  if (isSelected) {
+                    MaterialTheme.typography.bodyLarge.copy(
+                      fontWeight = FontWeight.Bold,
+                      color = MaterialTheme.colorScheme.primary,
+                    )
+                  } else {
+                    MaterialTheme.typography.bodyLarge
+                  },
+                modifier = Modifier.weight(1f),
+              )
+              if (isSelected) {
+                Icon(
+                  imageVector = Icons.Default.Check,
+                  contentDescription = "Selected",
+                  tint = MaterialTheme.colorScheme.primary,
+                )
+              }
+            }
+          }
+        }
+      }
+    },
+    confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+  )
 }
 
 @Composable

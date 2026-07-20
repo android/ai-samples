@@ -44,6 +44,8 @@ include(":app")
 
 include(":core:flags")
 
+include(":core:speech")
+
 include(":core:ui")
 
 include(":data:db")
@@ -61,3 +63,9 @@ include(":feature:home")
 include(":feature:trip")
 
 include(":feature:trip:itinerary")
+
+include(":feature:trip:expenses")
+
+include(":feature:trip:voice_notes")
+
+include(":feature:trip:itinerary:enrichment")

@@ -36,7 +36,10 @@ import com.example.jetpacker.feature.detail.TourDetailScreen
 import com.example.jetpacker.feature.home.DebugScreen
 import com.example.jetpacker.feature.home.HomeScreen
 import com.example.jetpacker.feature.itinerary.ItineraryScreen
+import com.example.jetpacker.feature.itinerary.ItineraryViewModel
+import com.example.jetpacker.feature.expenses.ManageExpensesScreen
 import com.example.jetpacker.feature.trip.TripScreen
+import com.example.jetpacker.feature.voice_notes.VoiceNotesScreen
 import kotlinx.serialization.Serializable
 
 sealed interface Screen : NavKey {
@@ -45,11 +48,13 @@ sealed interface Screen : NavKey {
   @Serializable data class EditTrip(val tripId: String) : Screen
   @Serializable data class FlightDetail(val eventId: String) : Screen
   @Serializable data class HotelDetail(val eventId: String) : Screen
+  @Serializable data object ManageExpenses : Screen
   @Serializable data class MuseumDetail(val eventId: String) : Screen
   @Serializable data object MyTrips : Screen
   @Serializable data class RestaurantDetail(val eventId: String) : Screen
   @Serializable data class Timeline(val tripId: String) : Screen
   @Serializable data class TourDetail(val eventId: String) : Screen
+  @Serializable data class VoiceNotes(val tripId: String) : Screen
 }
 
 @Composable
@@ -122,11 +127,25 @@ fun JetPackerNavGraph(
               else -> navigator.navigate(Screen.TourDetail(eventId))
             }
           },
+          onVoiceNotesClick = { navigator.navigate(Screen.VoiceNotes(tripId)) },
           onNavigateToDebug = { navigator.navigate(Screen.Debug) },
         )
       }
       entry<Screen.TourDetail> { key ->
         TourDetailScreen(eventId = key.eventId, onBack = { navigator.goBack() })
+      }
+      entry<Screen.VoiceNotes> { key ->
+        VoiceNotesScreen(
+          tripId = key.tripId,
+          contentPadding = PaddingValues(0.dp),
+          onBack = { navigator.goBack() },
+        )
+      }
+      entry<Screen.ManageExpenses> {
+        ManageExpensesScreen(
+          contentPadding = PaddingValues(0.dp),
+          onBack = { navigator.goBack() },
+        )
       }
     }
   }
