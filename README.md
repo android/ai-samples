@@ -20,8 +20,7 @@ The table below catalogs the samples and applications available in this reposito
 To explore or run a specific sample, navigate to its respective directory and follow the setup instructions inside its local `README.md`.
 
 For example, to run the Android AI Sample Catalog:
-1. Open the [ai-sample-catalog/](file:///Users/jolandaverhoef/tmp/ai-samples/ai-sample-catalog) directory in Android Studio.
-2. Follow the Firebase project configuration instructions detailed in the [ai-sample-catalog/README.md](file:///Users/jolandaverhoef/tmp/ai-samples/ai-sample-catalog/README.md).
+1. Open the [ai-sample-catalog/](ai-sample-catalog/) directory in Android Studio.\n2. Follow the Firebase project configuration instructions detailed in the [ai-sample-catalog/README.md](ai-sample-catalog/README.md).
 3. Build and run the `app` configuration.
 
 ---
