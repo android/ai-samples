@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 plugins {
   alias(libs.plugins.android.library)
   alias(libs.plugins.kotlin.compose)
@@ -24,10 +23,10 @@ plugins {
 }
 
 android {
-  namespace = "com.example.jetpacker.feature.itinerary"
-  compileSdk = libs.versions.compileSdk.get().toInt()
+  namespace = "com.example.jetpacker.feature.detail.review"
+  compileSdk = 36
   defaultConfig {
-    minSdk = libs.versions.minSdk.get().toInt()
+    minSdk = 26
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -36,50 +35,34 @@ android {
   experimentalProperties["android.experimental.enableScreenshotTest"] = true
   buildFeatures {
     compose = true
-    buildConfig = true
   }
 }
 
 dependencies {
-  implementation(platform(libs.androidx.compose.bom))
-
-  implementation(project(":core:flags"))
-  implementation(project(":core:speech"))
-  implementation(project(":core:ui"))
-  implementation(project(":data:itinerary"))
-  implementation(project(":data:trips"))
-  implementation(project(":feature:trip:itinerary:enrichment"))
-
-  implementation(libs.androidx.compose.material3)
-  implementation(libs.androidx.compose.ui)
-  implementation(libs.androidx.compose.ui.tooling.preview)
   implementation(libs.androidx.core.ktx)
-  implementation(libs.androidx.hilt.navigation.compose)
-  implementation(libs.androidx.lifecycle.runtime.compose)
+  implementation(project(":core:ui"))
+  implementation(platform(libs.androidx.compose.bom))
+  implementation(libs.androidx.compose.material3)
+  implementation(libs.androidx.compose.ui.tooling.preview)
+  debugImplementation(libs.androidx.compose.ui.tooling)
+  implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
-  implementation(libs.mlkit.genai.prompt)
-  implementation(libs.mlkit.genai.speech)
-  implementation(libs.mlkit.translate)
+  implementation(libs.androidx.lifecycle.runtime.compose)
+  implementation(libs.androidx.hilt.navigation.compose)
   implementation(libs.hilt.android)
   "ksp"(libs.hilt.compiler)
-
-  debugImplementation(libs.androidx.compose.ui.tooling)
-
-  implementation(libs.mlkit.language.id)
+  implementation(libs.mlkit.genai.prompt)
   implementation(platform(libs.firebase.bom))
   implementation(libs.firebase.ai)
   implementation(libs.firebase.ai.ondevice)
-  implementation(libs.firebase.auth.ktx)
-  implementation(libs.firebase.firestore)
 
   screenshotTestImplementation(libs.androidx.compose.ui.tooling)
   screenshotTestImplementation(libs.screenshot.validation.api)
 
-  testImplementation(libs.androidx.core)
-  testImplementation(libs.androidx.junit)
-  testImplementation(libs.google.truth)
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.androidx.core)
+  testImplementation(libs.androidx.junit)
   testImplementation(libs.robolectric)
 }
 

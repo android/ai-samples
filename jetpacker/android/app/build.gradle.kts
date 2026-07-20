@@ -22,6 +22,7 @@ plugins {
   alias(libs.plugins.google.devtools.ksp)
   alias(libs.plugins.android.compose.screenshot)
   alias(libs.plugins.hilt.android)
+  alias(libs.plugins.google.services)
 }
 
 android {
@@ -59,6 +60,9 @@ android {
     buildConfig = true
   }
   packaging {
+    jniLibs {
+      useLegacyPackaging = false
+    }
     resources {
       excludes += "META-INF/DEPENDENCIES"
       excludes += "META-INF/LICENSE"
@@ -88,6 +92,9 @@ dependencies {
   implementation(project(":data:trips"))
   implementation(project(":feature:create_trip"))
   implementation(project(":feature:detail"))
+  implementation(project(":feature:detail:museum_assistant"))
+  implementation(project(":feature:detail:hotel_chat"))
+  implementation(project(":feature:detail:review"))
   implementation(project(":feature:home"))
   implementation(project(":feature:trip"))
   implementation(project(":feature:trip:itinerary"))
@@ -132,6 +139,13 @@ dependencies {
   implementation(libs.okhttp)
   implementation(libs.play.services.location)
   implementation(libs.retrofit)
+
+  implementation(platform(libs.firebase.bom))
+  implementation(libs.firebase.ai)
+  implementation(libs.firebase.ai.ondevice)
+  implementation(libs.firebase.auth.ktx)
+  implementation(libs.firebase.appcheck.playintegrity)
+  implementation(libs.firebase.appcheck.debug)
 
   debugImplementation(libs.androidx.compose.ui.test.manifest)
   debugImplementation(libs.androidx.compose.ui.tooling)

@@ -19,7 +19,13 @@ package com.example.jetpacker
 import android.app.Application
 import androidx.compose.ui.ComposeUiFlags
 import androidx.compose.ui.ExperimentalComposeUiApi
+import android.util.Log
 import com.example.jetpacker.core.flags.FeatureFlags
+import com.google.firebase.Firebase
+import com.google.firebase.appcheck.appCheck
+import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
+import com.google.firebase.auth.auth
+import com.google.firebase.initialize
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
@@ -30,5 +36,17 @@ class JetPackerApplication : Application() {
     ComposeUiFlags.isMediaQueryIntegrationEnabled = true
     super.onCreate()
     FeatureFlags.initialize(this)
+    Firebase.initialize(context = this)
+    Firebase.appCheck.installAppCheckProviderFactory(
+      DebugAppCheckProviderFactory.getInstance(),
+    )
+    Firebase.auth.signInAnonymously()
+      .addOnCompleteListener { task ->
+        if (task.isSuccessful) {
+          Log.d("JetPackerApplication", "Anonymous auth successful")
+        } else {
+          Log.w("JetPackerApplication", "Anonymous auth failed", task.exception)
+        }
+      }
   }
 }

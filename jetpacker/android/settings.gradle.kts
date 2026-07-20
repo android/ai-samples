@@ -57,6 +57,9 @@ include(":data:trips")
 include(":feature:create_trip")
 
 include(":feature:detail")
+include(":feature:detail:museum_assistant")
+include(":feature:detail:hotel_chat")
+include(":feature:detail:review")
 
 include(":feature:home")
 

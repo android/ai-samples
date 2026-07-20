@@ -27,6 +27,10 @@ object FeatureFlags {
   const val KEY_ENABLE_ITINERARY_ENRICHMENT = "enable_itinerary_enrichment"
   const val KEY_ENABLE_EXPENSE_MANAGEMENT = "enable_expense_management"
   const val KEY_ENABLE_VOICE_NOTES = "enable_voice_notes"
+  const val KEY_ENABLE_REVIEW_GENERATION = "enable_review_generation"
+  const val KEY_ENABLE_MUSEUM_ASSISTANT = "enable_museum_assistant"
+  const val KEY_ENABLE_URL_GROUNDING = "enable_url_grounding"
+  const val KEY_ENABLE_SEARCH_GROUNDING = "enable_search_grounding"
 
   private var appContext: Context? = null
 
@@ -70,6 +74,19 @@ object FeatureFlags {
 
   val ENABLE_VOICE_NOTES: Boolean
     get() = readFlag(KEY_ENABLE_VOICE_NOTES, true)
+
+  // Online features
+  val ENABLE_REVIEW_GENERATION: Boolean
+    get() = readFlag(KEY_ENABLE_REVIEW_GENERATION, true)
+
+  val ENABLE_MUSEUM_ASSISTANT: Boolean
+    get() = readFlag(KEY_ENABLE_MUSEUM_ASSISTANT, true)
+
+  val ENABLE_URL_GROUNDING: Boolean
+    get() = readFlag(KEY_ENABLE_URL_GROUNDING, true)
+
+  val ENABLE_SEARCH_GROUNDING: Boolean
+    get() = readFlag(KEY_ENABLE_SEARCH_GROUNDING, true)
   private fun readLongFlag(keyName: String, defaultValue: Long): Long {
     val context = appContext ?: return defaultValue
     return context

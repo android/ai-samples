@@ -375,14 +375,28 @@ fun HotelDetailScreen(
         Row(
           modifier = Modifier.padding(24.dp).fillMaxWidth(),
           verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-          Icon(
-            Icons.Default.Phone,
-            contentDescription = "Call",
-            tint = MaterialTheme.colorScheme.tertiary,
-          )
-          Spacer(modifier = Modifier.width(8.dp))
-          Text(phone, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+              Icons.Default.Phone,
+              contentDescription = "Call",
+              tint = MaterialTheme.colorScheme.tertiary,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(phone, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+          }
+          Button(
+            onClick = { onOpenHotelChat(hotelName, language) },
+            colors =
+              ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.tertiary,
+                contentColor = MaterialTheme.colorScheme.onTertiary,
+              ),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+          ) {
+            Text("Chat with staff")
+          }
         }
       }
     }

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<journey name="Cloud Hybrid Features Verification Journey">
+    <description>
+        Verifies the cloud-hybrid and online intelligent features of JetPacker including the Museum Assistant, Review Generation, and Hotel Chat with Translation using live visual screenshot comparisons.
+    </description>
+    <actions>
+        <action>
+            Launch the JetPacker MainActivity (`com.example.jetpacker/.MainActivity`)
+        </action>
+        <action>
+            Simulate a device shake gesture to open the AI Feature Debug Screen
+        </action>
+        <action>
+            Verify by capturing a live screenshot that the Online Features are enabled (Review Generation, Museum Assistant, and Grounding flags checked)
+        </action>
+        <action>
+            Tap the back button to return to the Home screen dashboard
+        </action>
+        <action>
+            Tap on the "Romantic Paris" trip card to open its Itinerary screen
+        </action>
+        <action>
+            Tap on the "Visit to the Louvre" event card in the timeline
+        </action>
+        <action>
+            Scroll down on the Museum Detail screen and tap the "Open assistant" button
+        </action>
+        <action>
+            Verify that the Museum Assistant chat screen is displayed, type "What are the opening hours?" and tap Send
+        </action>
+        <action>
+            Verify by capturing a live screenshot that the message is sent and a response is returned from the AI assistant
+        </action>
+        <action>
+            Tap the system back button twice to return to the Itinerary screen
+        </action>
+        <action>
+            Tap on the "Dinner at Le Jules Verne" dining event card in the timeline
+        </action>
+        <action>
+            Tap the "Write a review" button on the Restaurant Detail screen
+        </action>
+        <action>
+            Select "Food Quality" and "Service" positive chips on the Review Topics screen and tap the "Generate Review" button
+        </action>
+        <action>
+            Verify by capturing a live screenshot that the AI generated review text field is populated and the "Post Review" action is visible
+        </action>
+        <action>
+            Tap the system back button twice to return to the Itinerary screen
+        </action>
+        <action>
+            Tap on the "Check-in: Hotel Le Meurice" stay event card in the timeline
+        </action>
+        <action>
+            Tap the "Chat with staff" button on the Hotel Detail screen
+        </action>
+        <action>
+            Verify that the Hotel Support Chat screen is displayed, type "I would like to check in early." and tap Send
+        </action>
+        <action>
+            Verify by capturing a live screenshot that the message is sent, a receptionist response is returned (e.g. in French), and the "Translate to English" option is visible
+        </action>
+        <action>
+            Tap "Translate to English"
+        </action>
+        <action>
+            Verify by capturing a live screenshot that the message gets translated in-place
+        </action>
+    </actions>
+</journey>

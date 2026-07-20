@@ -318,6 +318,21 @@ fun RestaurantDetailScreen(
           ) {
             Text("Open in Maps")
           }
+
+          if (FeatureFlags.ENABLE_REVIEW_GENERATION) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+              onClick = { onOpenReviewScreen(placeId, restaurantName) },
+              colors =
+                ButtonDefaults.buttonColors(
+                  containerColor = MaterialTheme.colorScheme.tertiary,
+                  contentColor = MaterialTheme.colorScheme.onTertiary,
+                ),
+              modifier = Modifier.fillMaxWidth(),
+            ) {
+              Text("Write a review")
+            }
+          }
         }
       }
 

@@ -110,6 +110,28 @@ fun DebugScreen(onBack: () -> Unit = {}, viewModel: DebugViewModel = hiltViewMod
       Spacer(modifier = Modifier.padding(vertical = 16.dp))
 
       Text(
+        "Online Features",
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+      )
+      HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+      FeatureToggle("Review Generation", FeatureFlags.ENABLE_REVIEW_GENERATION) { value ->
+        FeatureFlags.toggleFlag(context, "enable_review_generation", value)
+      }
+      FeatureToggle("Museum Assistant", FeatureFlags.ENABLE_MUSEUM_ASSISTANT) { value ->
+        FeatureFlags.toggleFlag(context, "enable_museum_assistant", value)
+      }
+      FeatureToggle("Museum Assistant – url grounding", FeatureFlags.ENABLE_URL_GROUNDING) { value ->
+        FeatureFlags.toggleFlag(context, "enable_url_grounding", value)
+      }
+      FeatureToggle("Museum Assistant – web grounding", FeatureFlags.ENABLE_SEARCH_GROUNDING) { value ->
+        FeatureFlags.toggleFlag(context, "enable_search_grounding", value)
+      }
+
+      Spacer(modifier = Modifier.padding(vertical = 16.dp))
+
+      Text(
         "Voice Settings",
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.Bold,

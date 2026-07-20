@@ -40,6 +40,9 @@ import com.example.jetpacker.feature.itinerary.ItineraryViewModel
 import com.example.jetpacker.feature.expenses.ManageExpensesScreen
 import com.example.jetpacker.feature.trip.TripScreen
 import com.example.jetpacker.feature.voice_notes.VoiceNotesScreen
+import com.example.jetpacker.feature.detail.museum_assistant.ChatbotScreen
+import com.example.jetpacker.feature.detail.review.ReviewScreen
+import com.example.jetpacker.feature.detail.hotel_chat.HotelSupportChat
 import kotlinx.serialization.Serializable
 
 sealed interface Screen : NavKey {
@@ -55,6 +58,9 @@ sealed interface Screen : NavKey {
   @Serializable data class Timeline(val tripId: String) : Screen
   @Serializable data class TourDetail(val eventId: String) : Screen
   @Serializable data class VoiceNotes(val tripId: String) : Screen
+  @Serializable data class Assistant(val eventId: String) : Screen
+  @Serializable data class ReviewScreen(val placeId: String, val placeName: String) : Screen
+  @Serializable data class HotelChat(val hotelName: String, val language: String) : Screen
 }
 
 @Composable
@@ -90,12 +96,18 @@ fun JetPackerNavGraph(
         HotelDetailScreen(
           eventId = key.eventId,
           onBack = { navigator.goBack() },
+          onOpenHotelChat = { hotelName, language ->
+            navigator.navigate(Screen.HotelChat(hotelName, language))
+          }
         )
       }
       entry<Screen.MuseumDetail> { key ->
         MuseumDetailScreen(
           eventId = key.eventId,
           onBack = { navigator.goBack() },
+          onOpenAssistant = { eventId ->
+            navigator.navigate(Screen.Assistant(eventId))
+          }
         )
       }
       entry<Screen.MyTrips> {
@@ -110,6 +122,9 @@ fun JetPackerNavGraph(
         RestaurantDetailScreen(
           eventId = key.eventId,
           onBack = { navigator.goBack() },
+          onOpenReviewScreen = { placeId, placeName ->
+            navigator.navigate(Screen.ReviewScreen(placeId, placeName))
+          }
         )
       }
       entry<Screen.Timeline> { key ->
@@ -133,6 +148,15 @@ fun JetPackerNavGraph(
       }
       entry<Screen.TourDetail> { key ->
         TourDetailScreen(eventId = key.eventId, onBack = { navigator.goBack() })
+      }
+      entry<Screen.Assistant> { key ->
+        ChatbotScreen(eventId = key.eventId, onBack = { navigator.goBack() })
+      }
+      entry<Screen.ReviewScreen> { key ->
+        ReviewScreen(placeId = key.placeId, placeName = key.placeName, onBack = { navigator.goBack() })
+      }
+      entry<Screen.HotelChat> { key ->
+        HotelSupportChat(hotelName = key.hotelName, language = key.language, onBack = { navigator.goBack() })
       }
       entry<Screen.VoiceNotes> { key ->
         VoiceNotesScreen(

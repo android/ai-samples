@@ -38,6 +38,11 @@ subprojects {
   }
   configurations.all {
     exclude(group = "com.google.protobuf", module = "protobuf-java")
+    resolutionStrategy.eachDependency {
+      if (requested.group == "com.google.firebase" && requested.name == "firebase-ai") {
+        useVersion("17.10.1")
+      }
+    }
   }
 }
 

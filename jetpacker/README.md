@@ -14,7 +14,7 @@
 </table>
 
 ## Overview
-JetPacker provides users with powerful tools to manage their upcoming trips, build out rich itineraries, record voice notes, manage travel expenses, and generate on-device "Trip Summaries and Tips".
+JetPacker provides users with powerful tools to manage their upcoming trips, build out rich itineraries, record voice notes, manage travel expenses, generate on-device "Trip Summaries and Tips", generate AI reviews, chat with hotel staff via automatic translation, and get real-time museum assistant guidance.
 
 ## Architecture
 This project is built using modern Android architecture components:
@@ -22,7 +22,9 @@ This project is built using modern Android architecture components:
 - **Dependency Injection**: Dagger/Hilt
 - **Local Persistence**: Room Database
 - **State Management**: ViewModels with StateFlow
-- **On-Device AI**: ML Kit GenAI (Prompt, Speech Recognition)
+- **On-Device AI**: ML Kit GenAI (Prompt, Speech Recognition, Translation)
+- **Cloud & Hybrid AI**: Firebase AI Logic (Gemini grounded with URL/Maps/Search, and hybrid models with on-device fallback)
+- **App Security**: Firebase App Check (with Play Integrity and Debug Provider)
 
 ## Module Overview
 JetPacker follows a clean, multi-module Android structure organized by responsibility and domain:
@@ -53,8 +55,6 @@ This project is built using the standard Android Gradle build system, allowing d
 
 ### Configuration Setup
 
-Before building or running the application, configure your local Android SDK path:
-
 1. **Local Properties Setup**:
    - Navigate to the `android` directory and copy `local.properties.example` to `local.properties`:
      ```bash
@@ -62,6 +62,19 @@ Before building or running the application, configure your local Android SDK pat
      cp local.properties.example local.properties
      ```
    - Update `sdk.dir` inside `local.properties` with your local Android SDK directory path.
+
+2. **Firebase Setup (`google-services.json`)**:
+   - Register the application in your Firebase Project Console.
+   - Download the project's custom `google-services.json` and place it in the `android/app/` directory (overwriting the mock placeholder file).
+
+3. **Firebase App Check Debug Attestation**:
+   - Run the application on an emulator or a connected device.
+   - Filter your logcat logs for `DebugAppCheckProvider`. You will see a log similar to:
+     ```text
+     Enter this debug secret into the allow list in the Firebase Console for your project: a8c2dd4c-7f7f-4764-b653-ef6c114ba27e
+     ```
+   - Copy the debug token and register it in the **Firebase Console** under **App Check** -> **Apps** -> **Manage Debug Tokens**.
+
 
 ### Building Using Gradle
 To compile the application and run unit tests using Gradle, execute the following commands in your terminal (from the `android` directory):
@@ -78,12 +91,18 @@ cd android
 ```
 
 ## On-Device AI Features
-JetPacker integrates pure on-device ML Kit capabilities.
-These features run locally on the device and can be toggled or customized in `android/core/flags/src/main/java/com/example/jetpacker/core/flags/FeatureFlags.kt`:
+JetPacker integrates local on-device AI capabilities using ML Kit. These features run entirely on-device and can be toggled or customized in `android/core/flags/src/main/kotlin/com/example/jetpacker/core/flags/FeatureFlags.kt`:
 - **ENABLE_TRIP_SUMMARY_AND_TIPS**: Generates an on-device card summary of the current trip using ML Kit GenAI Prompt.
-- **ENABLE_ITINERARY_ENRICHMENT**: Local enrichment for trip events.
-- **ENABLE_EXPENSE_MANAGEMENT**: Local expense management tracking.
+- **ENABLE_ITINERARY_ENRICHMENT**: Local enrichment for timeline events.
+- **ENABLE_EXPENSE_MANAGEMENT**: Local expense management receipt scanner and parser.
 - **ENABLE_VOICE_NOTES**: On-device speech recognition and transcription for voice notes.
+
+## Cloud-Hybrid & Online AI Features
+JetPacker also integrates online hybrid features using Firebase AI Logic (Gemini API) and ML Kit:
+- **ENABLE_MUSEUM_ASSISTANT**: Museum Assistant chatbot with URL, Maps, and Search grounding (uses Gemini 2.5 flash-lite).
+- **ENABLE_REVIEW_GENERATION**: Topic-selected review generator (uses Gemini 2.5 flash-lite on-device with cloud fallback).
+- **Hotel Support Chat**: Receives hotel receptionist assistance with real-time ML Kit + Gemini translation.
+
 
 ## IDE Setup & Development
 

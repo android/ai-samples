@@ -340,6 +340,20 @@ fun MuseumDetailScreen(
         }
       }
 
+      if (FeatureFlags.ENABLE_MUSEUM_ASSISTANT && (uiState.infoUrls?.isNotEmpty() == true)) {
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+          onClick = { onOpenAssistant(uiState.eventId ?: "") },
+          modifier = Modifier.height(56.dp).fillMaxWidth(),
+          colors =
+            ButtonDefaults.buttonColors(
+              containerColor = MaterialTheme.colorScheme.tertiary,
+              contentColor = MaterialTheme.colorScheme.onPrimary,
+            ),
+        ) {
+          Text("Open assistant")
+        }
+      }
     }
   }
 }
