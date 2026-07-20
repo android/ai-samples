@@ -19,8 +19,12 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: write # Needed for git-auto-commit-action
+    defaults:
+      run:
+        working-directory: ai-sample-catalog
     strategy:
       fail-fast: false
+
 
     steps:
       - name: Checkout code
@@ -48,7 +52,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 🤖 Apply Spotless formatting
-          file_pattern: '**/*.kt **/*.kts **/*.java **/*.xml'
+          file_pattern: '**/*.kt **/*.kts **/*.xml'
 
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-configuration-cache
@@ -119,6 +123,7 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+        working-directory: ai-sample-catalog
 
       - name: Build projects and run instrumentation tests
         uses: reactivecircus/android-emulator-runner@v2
@@ -128,7 +133,7 @@ jobs:
           disable-animations: true
           disk-size: 6000M
           heap-size: 600M
-          script: ./gradlew connectedDebugAndroidTest
+          script: cd ai-sample-catalog && ./gradlew connectedDebugAndroidTest
 
 
       - name: Upload test reports

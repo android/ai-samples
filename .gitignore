@@ -1,8 +1,7 @@
-/build
-/.gradle
-/.idea
-/.kotlin
-app/google-services.json
-build
-/local.properties
+build/
+.gradle/
+.idea/
+.kotlin/
+**/local.properties
+**/google-services.json
 .DS_Store
