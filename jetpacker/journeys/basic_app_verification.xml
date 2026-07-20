@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<journey name="Basic App Verification Journey">
+    <description>
+        Verifies the core UI layout, itinerary timeline navigation, detail screens rendering, and trip creation flow for the JetPacker base-app version without intelligent features using live visual screenshot comparisons.
+    </description>
+    <actions>
+        <action>
+            Launch the JetPacker MainActivity (`com.example.jetpacker/.MainActivity`)
+        </action>
+        <action>
+            Verify by capturing a live screenshot against baseline expectations that the app is on its Home screen dashboard, showing the top toolbar and prepopulated trip cards without text truncation or layout overlap
+        </action>
+        <action>
+            Tap on the first trip card ("California I/O")
+        </action>
+        <action>
+            Verify by capturing a live screenshot that the app navigates to the Itinerary screen showing timeline events (Flights, Hotels, Dining) and confirm via visual inspection that no AI Vibe Check card is rendered
+        </action>
+        <action>
+            Tap on the Flight event card in the timeline
+        </action>
+        <action>
+            Verify by capturing a live screenshot that the Flight Detail screen is displayed with complete airline, route, and boarding schedule information cleanly formatted
+        </action>
+        <action>
+            Tap the system back button
+        </action>
+        <action>
+            Tap on the Hotel event card in the timeline
+        </action>
+        <action>
+            Verify by capturing a live screenshot that the Hotel Detail screen is displayed with check-in and check-out schedule cards properly aligned
+        </action>
+        <action>
+            Tap the system back button twice to return to the Home screen dashboard
+        </action>
+        <action>
+            Tap the "+ Create trip" Extended Floating Action Button
+        </action>
+        <action>
+            Verify by capturing a live screenshot that the Create Trip screen form is displayed with input fields for title, location, date picker, and participants cleanly rendered
+        </action>
+        <action>
+            Enter trip title "Alpine Escape" and location "Swiss Alps", pick dates, and tap the Save Trip button
+        </action>
+        <action>
+            Verify that the app returns to the Home screen dashboard and displays the newly created "Alpine Escape" trip card
+        </action>
+        <action>
+            Tap on the newly created "Alpine Escape" trip card to open its Itinerary screen
+        </action>
+        <action>
+            Tap the "Edit Trip" action icon in the top navigation bar
+        </action>
+        <action>
+            Update the trip title from "Alpine Escape" to "Alpine Adventure" and save the changes
+        </action>
+        <action>
+            Verify that the Itinerary top bar reflects the updated title "Alpine Adventure"
+        </action>
+        <action>
+            Tap the system back button to return to the Home screen dashboard
+        </action>
+        <action>
+            Perform a swipe-to-delete gesture on the "Alpine Adventure" trip card and confirm deletion in the confirmation bottom sheet
+        </action>
+        <action>
+            Verify by capturing a live screenshot that the "Alpine Adventure" trip has been cleanly removed from the Home screen dashboard
+        </action>
+    </actions>
+</journey>

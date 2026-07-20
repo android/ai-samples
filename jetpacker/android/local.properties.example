@@ -1,0 +1,10 @@
+#
+# This is an example local.properties file.
+# Copy this file to local.properties and customize the values for your local environment.
+#
+
+# Location of the Android SDK on your machine.
+# On macOS: /Users/<username>/Library/Android/sdk
+# On Windows: C:\\Users\\<username>\\AppData\\Local\\Android\\Sdk
+# On Linux: /home/<username>/Android/Sdk
+sdk.dir=/path/to/your/sdk

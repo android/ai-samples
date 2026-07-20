@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="create_trip_title">Create Trip</string>
+    <string name="edit_trip_title">Edit Trip</string>
+    <string name="save_action">Save</string>
+    <string name="cancel_action">Cancel</string>
+    <string name="delete_action">Delete</string>
+    <string name="confirm_action">Confirm</string>
+    <string name="itinerary_label">Itinerary</string>
+    <string name="event_type_label">Event Type</string>
+    <string name="upcoming_trips_section">Upcoming</string>
+    <string name="past_trips_section">Past</string>
+</resources>

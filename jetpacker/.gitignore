@@ -1,0 +1,28 @@
+# Built artifacts
+**/build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Google Services configuration (contains credentials)
+**/google-services.json
+
+# Log Files
+*.log
+
+# Android Studio local configuration
+.idea/
+*.iml
+
+# Gradle files
+.gradle/
+
+# Backup files
+*.bak
+*~
+
+# Exported versions
+export/
+
+# Generated third-party notices
+THIRD_PARTY_NOTICES
