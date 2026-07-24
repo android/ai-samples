@@ -1,0 +1,73 @@
+{
+  "catalogId": "https://example.com/catalogs/booking_assistant/v1/catalog.json",
+  "components": [
+    {
+      "name": "InteractiveOptionPicker",
+      "description": "Renders custom options and confirm action",
+      "properties": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Prompt header text."
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of custom option button labels."
+          },
+          "selectedIdx": {
+            "type": "integer",
+            "description": "Index of the currently selected option (0-indexed)."
+          },
+          "confirmBtnText": {
+            "type": "string",
+            "description": "Label for the confirmation button."
+          }
+        },
+        "required": ["prompt", "options"]
+      }
+    },
+    {
+      "name": "SeatSelectionPicker",
+      "description": "Renders seat choices as a clean selection grid",
+      "properties": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Prompt choice text."
+          },
+          "seats": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of seat label strings."
+          },
+          "selectedSeat": {
+            "type": "string",
+            "description": "Selected seat label."
+          }
+        },
+        "required": ["prompt", "seats"]
+      }
+    },
+    {
+      "name": "BookingStatus",
+      "description": "Renders final booking success confirmation banner",
+      "properties": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Banner success message text."
+          }
+        },
+        "required": ["text"]
+      }
+    }
+  ]
+}

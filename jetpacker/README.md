@@ -14,7 +14,7 @@
 </table>
 
 ## Overview
-JetPacker provides users with powerful tools to manage their upcoming trips, build out rich itineraries, record voice notes, manage travel expenses, generate on-device "Trip Summaries and Tips", generate AI reviews, chat with hotel staff via automatic translation, get real-time museum assistant guidance, and contribute to Android's intelligence system with trip management functions through [AppFunctions](https://d.android.com/ai/appfunctions).
+JetPacker provides users with powerful tools to manage their upcoming trips, build out rich itineraries, record voice notes, manage travel expenses, generate on-device "Trip Summaries and Tips", generate AI reviews, chat with hotel staff via automatic translation, and get real-time museum assistant guidance.
 
 ## Architecture
 This project is built using modern Android architecture components:
@@ -25,7 +25,6 @@ This project is built using modern Android architecture components:
 - **On-Device AI**: ML Kit GenAI (Prompt, Speech Recognition, Translation)
 - **Cloud & Hybrid AI**: Firebase AI Logic (Gemini grounded with URL/Maps/Search, and hybrid models with on-device fallback)
 - **App Security**: Firebase App Check (with Play Integrity and Debug Provider)
-- **Assistant Integration**: Android [AppFunctions](https://d.android.com/ai/appfunctions) (`androidx.appfunctions`)
 
 ## Module Overview
 JetPacker follows a clean, multi-module Android structure organized by responsibility and domain:
@@ -44,7 +43,6 @@ JetPacker follows a clean, multi-module Android structure organized by responsib
 - **`:feature:home`**: Dashboard screen displaying the user's upcoming trips list.
 - **`:feature:create_trip`**: Unified trip form module handling both new trip creation and existing trip editing (`EditTripScreen`).
 - **`:feature:detail`**: Detailed view screens for specific itinerary events (Flights, Hotels, Restaurants, Museums, Tours).
-- **`:feature:appfunctions`**: Android AppFunctions framework integration (`JetPackerAppFunctionService`) contributing structured functions to Android's intelligence system for trips, expenses, itineraries, and voice notes.
 - **`:feature:trip`**: Top-level trip container shell (`TripScreen`) holding bottom navigation and orchestrating trip sub-tabs.
   - **`:feature:trip:itinerary`**: Pure itinerary timeline screen displaying daily scheduled events.
     - **`:feature:trip:itinerary:enrichment`**: On-device AI summaries and tips (`TripSummaryAndTipsCard`) and dynamic daily theme generators.
@@ -92,6 +90,25 @@ cd android
 ./gradlew test
 ```
 
+### Running the Booking Assistant Server
+JetPacker uses a local Python-based Server-Sent Events (SSE) server to simulate the booking agents. To run the booking assistant backend:
+
+```bash
+# Navigate to the booking-server directory
+cd android/booking-server
+
+# Set your Gemini API Key
+export GEMINI_API_KEY="your-api-key-here"
+
+# Run the server using its virtual environment
+./.venv/bin/uvicorn booking_server:app --host 0.0.0.0 --port 8000
+```
+
+> [!IMPORTANT]
+> A valid `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) environment variable is required. If the key is missing at startup, the server will print a clear error banner and exit immediately.
+
+This runs the FastAPI booking server on port 8000. When running the app on the Android Emulator, localhost is remapped to `10.0.2.2:8000` to automatically route requests to this server.
+
 ## On-Device AI Features
 JetPacker integrates local on-device AI capabilities using ML Kit. These features run entirely on-device and can be toggled or customized in `android/core/flags/src/main/kotlin/com/example/jetpacker/core/flags/FeatureFlags.kt`:
 - **ENABLE_TRIP_SUMMARY_AND_TIPS**: Generates an on-device card summary of the current trip using ML Kit GenAI Prompt.
@@ -104,14 +121,6 @@ JetPacker also integrates online hybrid features using Firebase AI Logic (Gemini
 - **ENABLE_MUSEUM_ASSISTANT**: Museum Assistant chatbot with URL, Maps, and Search grounding (uses Gemini 2.5 flash-lite).
 - **ENABLE_REVIEW_GENERATION**: Topic-selected review generator (uses Gemini 2.5 flash-lite on-device with cloud fallback).
 - **Hotel Support Chat**: Receives hotel receptionist assistance with real-time ML Kit + Gemini translation.
-
-## AppFunctions Integration
-JetPacker uses Android's [**AppFunctions**](https://d.android.com/ai/appfunctions) library (`androidx.appfunctions`) in `:feature:appfunctions` to contribute to Android's intelligence system with structured travel actions and data queries via `JetPackerAppFunctionService`:
-- **Trip Management**: `searchTrip` (filter by ID, name, location, and dates) and `createTrip`.
-- **Itinerary Events**: `getItinerary` and `addItineraryEvent` (activity, dining, accommodation, etc.).
-- **Expense Tracking**: `getExpenses` and `addExpense` (amount, currency, category).
-- **Voice Notes**: `getVoiceNotes` and `addVoiceNote` (recorded transcriptions linked to trips).
-- **Day Themes**: `getDayThemes` and `setDayTheme` for daily trip customization.
 
 
 ## IDE Setup & Development

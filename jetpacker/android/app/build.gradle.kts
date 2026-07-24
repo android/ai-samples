@@ -103,6 +103,7 @@ dependencies {
   implementation(libs.accompanist.permissions)
   implementation(project(":feature:trip:voice_notes"))
   implementation(project(":feature:trip:expenses"))
+  implementation(project(":feature:trip:booking_assistant"))
   implementation(project(":feature:trip:itinerary:enrichment"))
   implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.camera.camera2)
@@ -148,6 +149,8 @@ dependencies {
   implementation(libs.firebase.auth.ktx)
   implementation(libs.firebase.appcheck.playintegrity)
   implementation(libs.firebase.appcheck.debug)
+
+
 
   debugImplementation(libs.androidx.compose.ui.test.manifest)
   debugImplementation(libs.androidx.compose.ui.tooling)

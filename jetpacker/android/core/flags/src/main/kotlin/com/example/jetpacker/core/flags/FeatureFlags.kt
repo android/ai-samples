@@ -31,6 +31,7 @@ object FeatureFlags {
   const val KEY_ENABLE_MUSEUM_ASSISTANT = "enable_museum_assistant"
   const val KEY_ENABLE_URL_GROUNDING = "enable_url_grounding"
   const val KEY_ENABLE_SEARCH_GROUNDING = "enable_search_grounding"
+  const val KEY_ENABLE_BOOKING_ASSISTANT = "enable_booking_assistant"
 
   private var appContext: Context? = null
 
@@ -87,6 +88,11 @@ object FeatureFlags {
 
   val ENABLE_SEARCH_GROUNDING: Boolean
     get() = readFlag(KEY_ENABLE_SEARCH_GROUNDING, true)
+
+  // Booking Assistant (server - ADK)
+  val ENABLE_BOOKING_ASSISTANT: Boolean
+    get() = readFlag(KEY_ENABLE_BOOKING_ASSISTANT, true)
+
   private fun readLongFlag(keyName: String, defaultValue: Long): Long {
     val context = appContext ?: return defaultValue
     return context

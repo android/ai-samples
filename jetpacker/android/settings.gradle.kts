@@ -35,6 +35,7 @@ dependencyResolutionManagement {
   repositories {
     google()
     mavenCentral()
+    maven { url = uri("https://androidx.dev/snapshots/builds/15935338/artifacts/repository") }
   }
 }
 
@@ -73,3 +74,4 @@ include(":feature:trip:voice_notes")
 
 include(":feature:trip:itinerary:enrichment")
 include(":feature:appfunctions")
+include(":feature:trip:booking_assistant")
