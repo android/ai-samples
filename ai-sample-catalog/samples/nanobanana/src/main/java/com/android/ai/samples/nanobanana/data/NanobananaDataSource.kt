@@ -29,7 +29,7 @@ import javax.inject.Singleton
 class NanobananaDataSource @Inject constructor() {
     private val generativeModel by lazy {
         Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
-            modelName = "gemini-3.1-flash-image-preview",
+            modelName = "gemini-3.1-flash-image",
             generationConfig = generationConfig {
                 responseModalities = listOf(ResponseModality.IMAGE)
             },

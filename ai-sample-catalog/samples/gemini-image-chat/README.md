@@ -17,7 +17,7 @@ The application uses the Firebase AI SDK (see [How to run](../../#how-to-run)) f
 Here is how the model is instantiated:
 ```kotlin
  Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
-            "gemini-3-pro-image-preview",
+            "gemini-3-pro-image",
             generationConfig = generationConfig {
                 temperature = 0.9f
                 topK = 32

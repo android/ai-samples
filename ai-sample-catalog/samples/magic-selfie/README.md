@@ -4,7 +4,7 @@ This sample is part of the [AI Sample Catalog](../../). To build and run this sa
 
 ## Description
 
-This sample demonstrates how to create a "magic selfie" by replacing the background of a user's photo with a generated image. It uses the Nano Banana 2 (`gemini-3.1-flash-image-preview`) model to perform semantic image editing, transforming the background based on a text prompt while preserving the subject.
+This sample demonstrates how to create a "magic selfie" by replacing the background of a user's photo with a generated image. It uses the Nano Banana 2 (`gemini-3.1-flash-image`) model to perform semantic image editing, transforming the background based on a text prompt while preserving the subject.
 
 <div style="text-align: center;">
 <img width="320" alt="Magic Selfie in action" src="magic_selfie.png" />
