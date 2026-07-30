@@ -56,13 +56,13 @@ private val chaptersSchema = Schema.array(
 /**
  * The configured generative model for creating video chapters.
  *
- * This model is initialized with the "gemini-2.5-flash" model name and
+ * This model is initialized with the "gemini-3.6-flash" model name and
  * configured to expect a JSON response. The `responseSchema` ensures that
  * the output conforms to the `Chapters` data structure.
  */
 private val chaptersModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
     .generativeModel(
-        modelName = "gemini-2.5-flash",
+        modelName = "gemini-3.6-flash",
         // Tell Firebase AI the exact format of the response.
         generationConfig {
             responseMimeType = "application/json"

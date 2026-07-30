@@ -50,7 +50,7 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
 
     private val generativeModel by lazy {
         Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
-            "gemini-2.5-flash",
+            "gemini-3.6-flash",
             generationConfig = generationConfig {
                 temperature = 0.9f
                 topK = 32

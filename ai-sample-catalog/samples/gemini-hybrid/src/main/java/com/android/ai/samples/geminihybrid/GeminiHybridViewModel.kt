@@ -79,7 +79,7 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
             try {
                 val model = Firebase.ai(backend = GenerativeBackend.googleAI())
                     .generativeModel(
-                        "gemini-2.5-flash-lite",
+                        "gemini-3.5-flash-lite",
                         onDeviceConfig = OnDeviceConfig(
                             mode = InferenceMode.ONLY_ON_DEVICE,
                             modelOption = OnDeviceModelOption.PREVIEW,
@@ -162,7 +162,7 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
 
                 val model = Firebase.ai(backend = GenerativeBackend.googleAI())
                     .generativeModel(
-                        "gemini-2.5-flash-lite",
+                        "gemini-3.5-flash-lite",
                         onDeviceConfig = OnDeviceConfig(
                             mode = _uiState.value.selectedMode,
                             modelOption = _uiState.value.selectedModelOption,
@@ -235,7 +235,7 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
 
                 val model = Firebase.ai(backend = GenerativeBackend.googleAI())
                     .generativeModel(
-                        "gemini-2.5-flash-lite",
+                        "gemini-3.5-flash-lite",
                         onDeviceConfig = OnDeviceConfig(
                             mode = _uiState.value.selectedMode,
                             modelOption = _uiState.value.selectedModelOption,

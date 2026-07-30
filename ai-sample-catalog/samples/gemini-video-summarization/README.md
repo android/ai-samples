@@ -19,7 +19,7 @@ Here is the key snippet of code that calls the generative model:
 ```kotlin
 val generativeModel =
     Firebase.ai(backend = GenerativeBackend.vertexAI())
-        .generativeModel("gemini-2.5-flash")
+        .generativeModel("gemini-3.6-flash")
 
 val requestContent = content {
     fileData(videoSource.toString(), "video/mp4")

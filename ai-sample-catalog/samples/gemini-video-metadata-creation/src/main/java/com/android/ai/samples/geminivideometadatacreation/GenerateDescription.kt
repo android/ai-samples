@@ -42,7 +42,7 @@ import com.google.firebase.ai.type.content
  */
 suspend fun generateDescription(videoUri: Uri): @Composable () -> Unit {
     val response = Firebase.ai(backend = GenerativeBackend.vertexAI())
-        .generativeModel(modelName = "gemini-2.5-flash")
+        .generativeModel(modelName = "gemini-3.6-flash")
         .generateContent(
             content {
                 fileData(videoUri.toString(), "video/mp4")

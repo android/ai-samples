@@ -39,13 +39,13 @@ private val thumbnailsSchema = Schema.array(items = Schema.long("thumbnail times
 
 /**
  * Initializes the generative model for thumbnail generation.
- * This model uses the "gemini-2.5-flash" model via the Vertex AI backend.
+ * This model uses the "gemini-3.6-flash" model via the Vertex AI backend.
  * It's configured to expect a JSON response with a specific schema (`thumbnailsSchema`)
  * defining an array of long integers representing thumbnail timestamps.
  */
 private val thumbnailsModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
     .generativeModel(
-        modelName = "gemini-2.5-flash",
+        modelName = "gemini-3.6-flash",
         // Tell Firebase AI the exact format of the response.
         generationConfig {
             responseMimeType = "application/json"

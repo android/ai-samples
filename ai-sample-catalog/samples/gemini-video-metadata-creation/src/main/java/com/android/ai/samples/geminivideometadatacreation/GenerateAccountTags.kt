@@ -57,7 +57,7 @@ private val accountTagsSchema = Schema.array(
  * for generating account tags.
  *
  * This model is specifically set up with:
- * - `modelName = "gemini-2.5-flash"`: Specifies the underlying Gemini model to use.
+ * - `modelName = "gemini-3.6-flash"`: Specifies the underlying Gemini model to use.
  * - `responseMimeType = "application/json"`:  Indicates that the model is expected to
  *   return its response in JSON format.
  * - `responseSchema = accountTagsSchema`: Defines the expected structure of the JSON
@@ -69,7 +69,7 @@ private val accountTagsSchema = Schema.array(
  */
 private val accountTagsModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
     .generativeModel(
-        modelName = "gemini-2.5-flash",
+        modelName = "gemini-3.6-flash",
         // Tell Firebase AI the exact format of the response.
         generationConfig {
             responseMimeType = "application/json"

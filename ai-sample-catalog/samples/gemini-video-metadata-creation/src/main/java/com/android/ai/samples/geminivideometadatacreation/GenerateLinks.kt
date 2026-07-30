@@ -39,13 +39,13 @@ private val linksSchema = Schema.array(items = Schema.string("Link"))
  * The configured generative model for extracting links.
  *
  * This model is specifically configured to:
- * - Use the "gemini-2.5-flash" model.
+ * - Use the "gemini-3.6-flash" model.
  * - Expect a response in "application/json" format.
  * - Adhere to the `linksSchema`, which defines the expected JSON structure as an array of strings (links).
  */
 private val linksModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
     .generativeModel(
-        modelName = "gemini-2.5-flash",
+        modelName = "gemini-3.6-flash",
         // Tell Firebase AI the exact format of the response.
         generationConfig {
             responseMimeType = "application/json"

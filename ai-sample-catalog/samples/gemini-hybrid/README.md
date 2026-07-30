@@ -18,7 +18,7 @@ Here is how the model is instantiated to leverage hybrid inference:
 ```kotlin
 val model = Firebase.ai(backend = GenerativeBackend.googleAI())
                 .generativeModel(
-                    "gemini-2.5-flash-lite",
+                    "gemini-3.5-flash-lite",
                     onDeviceConfig = OnDeviceConfig(mode = InferenceMode.PREFER_ON_DEVICE)
                 )
 

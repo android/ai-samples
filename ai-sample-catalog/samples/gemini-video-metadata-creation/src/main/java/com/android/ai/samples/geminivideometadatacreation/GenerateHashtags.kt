@@ -40,14 +40,14 @@ private val hashtagSchema = Schema.array(items = Schema.string("Hashtag"))
 /**
  * A generative model instance configured to generate hashtags for video content.
  *
- * This model uses the "gemini-2.5-flash" model from Vertex AI and is specifically configured
+ * This model uses the "gemini-3.6-flash" model from Vertex AI and is specifically configured
  * to return a JSON array of strings, where each string represents a hashtag.
  * The `responseMimeType` is set to "application/json" and the `responseSchema` defines
  * the expected output format as an array of strings with the item name "Hashtag".
  */
 private val hashtagsModel = Firebase.ai(backend = GenerativeBackend.vertexAI())
     .generativeModel(
-        modelName = "gemini-2.5-flash",
+        modelName = "gemini-3.6-flash",
         // Tell Firebase AI the exact format of the response.
         generationConfig {
             responseMimeType = "application/json"
