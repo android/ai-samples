@@ -101,7 +101,7 @@ JetPacker integrates local on-device AI capabilities using ML Kit. These feature
 
 ## Cloud-Hybrid & Online AI Features
 JetPacker also integrates online hybrid features using Firebase AI Logic (Gemini API) and ML Kit:
-- **ENABLE_MUSEUM_ASSISTANT**: Museum Assistant chatbot with URL, Maps, and Search grounding (uses Gemini 3.6 flash-lite).
+- **ENABLE_MUSEUM_ASSISTANT**: Museum Assistant chatbot with URL, Maps, and Search grounding (uses Gemini 3.5 flash-lite).
 - **ENABLE_REVIEW_GENERATION**: Topic-selected review generator (uses Gemini 3.5 flash-lite on-device with cloud fallback).
 - **Hotel Support Chat**: Receives hotel receptionist assistance with real-time ML Kit + Gemini translation.
 
