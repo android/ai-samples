@@ -65,7 +65,7 @@ class HotelSupportChatViewModel(val hotelName: String = "Hotel", val language: S
   private val hybridTranslationModel =
     Firebase.ai(backend = GenerativeBackend.googleAI())
       .generativeModel(
-        modelName = "gemini-3-flash-preview",
+        modelName = "gemini-3.6-flash",
         onDeviceConfig = OnDeviceConfig(mode = InferenceMode.PREFER_ON_DEVICE),
       )
 
@@ -74,7 +74,7 @@ class HotelSupportChatViewModel(val hotelName: String = "Hotel", val language: S
   private val cloudTranslationModel =
     Firebase.ai(backend = GenerativeBackend.googleAI())
       .generativeModel(
-        modelName = "gemini-3-flash-preview", // Represents cloud TranslateGemma
+        modelName = "gemini-3.6-flash", // Represents cloud TranslateGemma
       )
 
   // Firebase AI for chat
@@ -87,7 +87,7 @@ class HotelSupportChatViewModel(val hotelName: String = "Hotel", val language: S
               "You are a helpful hotel receptionist at $hotelName only speaking $language. Answer politely in $language. The bar closes at 10pm and breakfast is from 7am to 10am. There's someone at the desk 24/7. You can retrieve your luggage from the storage room at the back of the lobby at any time."
             )
           },
-        modelName = "gemini-3-flash-preview",
+        modelName = "gemini-3.6-flash",
       )
 
   private val chat = generativeModel.startChat()

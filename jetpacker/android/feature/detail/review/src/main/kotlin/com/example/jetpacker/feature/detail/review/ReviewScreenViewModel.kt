@@ -72,7 +72,7 @@ class ReviewScreenViewModel @Inject constructor(savedStateHandle: SavedStateHand
   private val generativeModel =
     Firebase.ai(backend = GenerativeBackend.googleAI())
       .generativeModel(
-        modelName = "gemini-2.5-flash-lite",
+        modelName = "gemini-3.5-flash-lite",
         onDeviceConfig = OnDeviceConfig(mode = InferenceMode.PREFER_ON_DEVICE),
       )
 

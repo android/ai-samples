@@ -73,7 +73,7 @@ constructor(savedStateHandle: SavedStateHandle, private val eventDao: EventDao) 
               "You are a helpful museum assistant, answering questions about a museum. Never use markdown, use plain text."
             )
           },
-        modelName = "gemini-3.1-flash-lite",
+        modelName = "gemini-3.5-flash-lite",
         tools = toolList,
       )
 
