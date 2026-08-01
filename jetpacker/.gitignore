@@ -26,3 +26,8 @@ export/
 
 # Generated third-party notices
 THIRD_PARTY_NOTICES
+
+# Python files
+**/__pycache__/
+*.pyc
+

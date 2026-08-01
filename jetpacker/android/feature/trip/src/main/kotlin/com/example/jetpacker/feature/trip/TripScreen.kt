@@ -42,6 +42,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Event
 import androidx.compose.material.icons.rounded.Wallet
+import androidx.compose.material.icons.rounded.SmartToy
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -63,12 +64,14 @@ import com.example.jetpacker.core.ui.components.JetPackerToolbarAction
 import com.example.jetpacker.data.itinerary.EventType
 import com.example.jetpacker.feature.expenses.ManageExpensesScreen
 import com.example.jetpacker.feature.itinerary.ItineraryScreen
+import com.example.jetpacker.feature.booking_assistant.BookingAssistantScreen
 import com.example.jetpacker.feature.voice_notes.VoiceNotesScreen
 
 enum class TripTab {
   ITINERARY,
   EXPENSES,
   VOICE_NOTES,
+  BOOKING_ASSISTANT,
 }
 
 /**
@@ -92,10 +95,12 @@ fun TripScreen(
     bottomBar = {
       val showExpenses = FeatureFlags.ENABLE_EXPENSE_MANAGEMENT
       val showVoiceNotes = FeatureFlags.ENABLE_VOICE_NOTES
+      val showBookingAssistant = FeatureFlags.ENABLE_BOOKING_ASSISTANT
 
-      var visibleCount = 1
+      var visibleCount = 1 // itinerary is always visible
       if (showExpenses) visibleCount++
       if (showVoiceNotes) visibleCount++
+      if (showBookingAssistant) visibleCount++
 
       if (visibleCount > 1) {
         AnimatedVisibility(
@@ -143,6 +148,14 @@ fun TripScreen(
             onFabConfigChange = { fabConfig = it },
           )
         }
+
+        TripTab.BOOKING_ASSISTANT -> {
+          BookingAssistantScreen(
+            tripId = tripId,
+            contentPadding = innerPadding,
+            onBack = { selectedTab = TripTab.ITINERARY },
+          )
+        }
       }
     }
   }
@@ -157,6 +170,7 @@ fun JetPackerBottomBar(
 ) {
   val showExpenses = FeatureFlags.ENABLE_EXPENSE_MANAGEMENT
   val showVoiceNotes = FeatureFlags.ENABLE_VOICE_NOTES
+  val showBookingAssistant = FeatureFlags.ENABLE_BOOKING_ASSISTANT
 
   LookaheadScope {
     Row(
@@ -170,7 +184,7 @@ fun JetPackerBottomBar(
       horizontalArrangement = Arrangement.Center,
     ) {
       JetPackerToolbar(
-        modifier = Modifier.widthIn(max = 272.dp).animateBounds(this@LookaheadScope)
+        modifier = Modifier.widthIn(max = 340.dp).animateBounds(this@LookaheadScope)
       ) {
         JetPackerToolbarAction(
           icon = Icons.Rounded.Event,
@@ -193,6 +207,15 @@ fun JetPackerBottomBar(
             onClick = { onTabSelected(TripTab.VOICE_NOTES) },
             icon = ImageVector.vectorResource(R.drawable.speech_to_text),
             contentDescription = "Voice Notes",
+          )
+        }
+
+        if (showBookingAssistant) {
+          JetPackerToolbarAction(
+            icon = Icons.Rounded.SmartToy,
+            onClick = { onTabSelected(TripTab.BOOKING_ASSISTANT) },
+            selected = selectedTab == TripTab.BOOKING_ASSISTANT,
+            contentDescription = "Booking Assistant",
           )
         }
       }

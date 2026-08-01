@@ -72,6 +72,8 @@ dependencies {
   implementation(libs.firebase.auth.ktx)
   implementation(libs.firebase.firestore)
 
+
+
   screenshotTestImplementation(libs.androidx.compose.ui.tooling)
   screenshotTestImplementation(libs.screenshot.validation.api)
 
@@ -83,7 +85,7 @@ dependencies {
   testImplementation(libs.robolectric)
 }
 
-kotlin { jvmToolchain(17) }
+kotlin { jvmToolchain(21) }
 
 screenshotTests {
   imageDifferenceThreshold = 0.05f

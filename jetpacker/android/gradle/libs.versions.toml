@@ -1,4 +1,7 @@
 [versions]
+adk = "0.5.0"
+agui = "0.4.1"
+ktor = "3.0.3"
 accompanistPermissions = "0.37.3"
 activityCompose = "1.13.0"
 agp = "9.2.1"
@@ -47,7 +50,7 @@ roomCompiler = "2.7.0"
 roomKtx = "2.7.0"
 roomRuntime = "2.7.0"
 runner = "1.6.2"
-targetSdk = "36"
+targetSdk = "37"
 truth = "1.4.2"
 versionCode = "1"
 versionName = "1.0"
@@ -119,6 +122,18 @@ firebase-appcheck-playintegrity = { group = "com.google.firebase", name = "fireb
 firebase-appcheck-debug = { group = "com.google.firebase", name = "firebase-appcheck-debug" }
 androidx-appfunctions = { group = "androidx.appfunctions", name = "appfunctions", version.ref = "appfunctions" }
 androidx-appfunctions-compiler = { group = "androidx.appfunctions", name = "appfunctions-compiler", version.ref = "appfunctions" }
+google-adk = { group = "com.google.adk", name = "google-adk-kotlin-core-android", version.ref = "adk" }
+google-adk-processor = { group = "com.google.adk", name = "google-adk-kotlin-processor", version.ref = "adk" }
+google-adk-firebase = { group = "com.google.adk", name = "google-adk-kotlin-firebase-android", version.ref = "adk" }
+agui-client = { group = "com.ag-ui.community", name = "kotlin-client", version.ref = "agui" }
+ktor-server-core = { group = "io.ktor", name = "ktor-server-core-jvm", version.ref = "ktor" }
+ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty-jvm", version.ref = "ktor" }
+ktor-server-content-negotiation = { group = "io.ktor", name = "ktor-server-content-negotiation-jvm", version.ref = "ktor" }
+
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

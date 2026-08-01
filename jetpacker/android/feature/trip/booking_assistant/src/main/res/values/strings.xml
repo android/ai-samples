@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright 2026 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<resources>
+    <string name="manage_bookings_title">MANAGE BOOKINGS</string>
+    <string name="current_itinerary_label">Current Itinerary •</string>
+    <string name="your_next_journey_title">YOUR NEXT JOURNEY</string>
+    <string name="booking_assistant_description">Review and finalize your travel segments. We\'ve organized your selections for a seamless booking.</string>
+    
+    <string name="category_flights">Flights</string>
+    <string name="category_hotels">Hotels</string>
+    <string name="category_museums">Museums</string>
+    <string name="category_restaurants">Restaurants</string>
+    
+    <string name="action_required_label">Action required</string>
+    <string name="interactive_widgets_label">Interactive Booking Widgets</string>
+    <string name="agent_logs_label">Agent Stream Logs</string>
+    <string name="initialize_prompt">Press Initialize to start the agent stream…</string>
+    <string name="initialize_session_action">Initialize Booking Assistant Session</string>
+    <string name="local_booking_assistant_title">ADK local Booking Assistant</string>
+    <string name="local_booking_assistant_desc">Remaps localhost to 10.0.2.2 for Android emulator. Ensure Ktor server is running on the host machine at port 8000.</string>
+</resources>

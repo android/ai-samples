@@ -19,11 +19,10 @@ plugins {
   alias(libs.plugins.kotlin.compose)
   alias(libs.plugins.hilt.android)
   alias(libs.plugins.google.devtools.ksp)
-  alias(libs.plugins.android.compose.screenshot)
 }
 
 android {
-  namespace = "com.example.jetpacker.feature.trip"
+  namespace = "com.example.jetpacker.feature.booking_assistant"
   compileSdk = libs.versions.compileSdk.get().toInt()
   defaultConfig {
     minSdk = libs.versions.minSdk.get().toInt()
@@ -32,9 +31,9 @@ android {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
   }
-  experimentalProperties["android.experimental.enableScreenshotTest"] = true
   buildFeatures {
     compose = true
+    buildConfig = true
   }
 }
 
@@ -45,13 +44,7 @@ dependencies {
   implementation(project(":core:ui"))
   implementation(project(":data:itinerary"))
   implementation(project(":data:trips"))
-  implementation(project(":feature:trip:itinerary"))
-  implementation(project(":feature:trip:expenses"))
-  implementation(project(":feature:trip:voice_notes"))
-  implementation(project(":feature:trip:booking_assistant"))
 
-  implementation(libs.androidx.compose.material.icons.core)
-  implementation(libs.androidx.compose.material.icons.extended)
   implementation(libs.androidx.compose.material3)
   implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.compose.ui.tooling.preview)
@@ -64,18 +57,28 @@ dependencies {
 
   debugImplementation(libs.androidx.compose.ui.tooling)
 
-  screenshotTestImplementation(libs.androidx.compose.ui.tooling)
-  screenshotTestImplementation(libs.screenshot.validation.api)
+  implementation(libs.google.adk)
+  implementation(libs.google.adk.firebase)
+  "ksp"(libs.google.adk.processor)
+  implementation(libs.agui.client)
+  implementation(libs.ktor.client.core)
+  implementation(libs.ktor.client.okhttp)
+  implementation(libs.ktor.client.content.negotiation)
+  implementation(libs.ktor.serialization.kotlinx.json)
+  implementation(libs.kotlinx.serialization.json)
 
-  testImplementation(libs.junit)
-  testImplementation(libs.kotlinx.coroutines.test)
+  implementation("androidx.a2ui:a2ui-engine:1.0.0-SNAPSHOT")
+  implementation("androidx.a2ui:a2ui-model:1.0.0-SNAPSHOT")
+  implementation("androidx.a2ui.compose:compose-runtime:1.0.0-SNAPSHOT")
+  implementation("androidx.a2ui.compose:compose-ui:1.0.0-SNAPSHOT")
+
+
   testImplementation(libs.androidx.core)
   testImplementation(libs.androidx.junit)
+  testImplementation(libs.google.truth)
+  testImplementation(libs.junit)
+  testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.robolectric)
 }
 
-kotlin { jvmToolchain(17) }
-
-screenshotTests {
-  imageDifferenceThreshold = 0.05f
-}
+kotlin { jvmToolchain(21) }
