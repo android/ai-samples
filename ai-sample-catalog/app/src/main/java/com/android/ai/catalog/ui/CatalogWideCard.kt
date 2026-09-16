@@ -82,10 +82,19 @@ fun CatalogWideCard(catalogItem: SampleCatalogItem, onClick: () -> Unit) {
             }
             Text(
                 modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    .padding(start = 16.dp, end = 16.dp, bottom = if (catalogItem.needsBilling) 8.dp else 16.dp),
                 style = MaterialTheme.typography.bodyMedium,
                 text = stringResource(catalogItem.description),
             )
+            if (catalogItem.needsBilling) {
+                Text(
+                    modifier = Modifier
+                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = stringResource(R.string.billing_required_note),
+                )
+            }
         }
     }
 }

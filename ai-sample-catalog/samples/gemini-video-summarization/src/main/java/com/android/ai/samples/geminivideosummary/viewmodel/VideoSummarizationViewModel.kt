@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.geminivideosummary.util.VideoItem
 import com.android.ai.samples.geminivideosummary.util.sampleVideoList
+import com.android.ai.uicomponent.toUserFacingAiErrorMessage
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
@@ -93,7 +94,7 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
             } catch (error: Exception) {
                 _uiState.update {
                     it.copy(
-                        summarizationState = SummarizationState.Error(error.localizedMessage ?: "An unknown error occurred"),
+                        summarizationState = SummarizationState.Error(error.toUserFacingAiErrorMessage()),
                     )
                 }
                 Log.e(tag, "Error processing prompt : $error")

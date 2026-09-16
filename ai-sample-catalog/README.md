@@ -12,7 +12,9 @@ some of Google's models.
 > [Now In Android](https://github.com/android/nowinandroid)
 
 > **Requires Firebase setup** the samples relying on Google Cloud models (Gemini Pro, Gemini Flash, etc...) 
-> require setting up a Firebase project and connecting the app to Firebase (read more [here](https://firebase.google.com/docs/ai-logic/get-started?platform=android&api=dev#set-up-firebase)).   
+> require setting up a Firebase project and connecting the app to Firebase (read more [here](https://firebase.google.com/docs/ai-logic/get-started?platform=android&api=dev#set-up-firebase)).
+> Enable the **Firebase AI Logic API** and include it in your Android API key restrictions, otherwise generate-content requests are blocked.
+> Image generation samples (Nano Banana / Nano Banana Pro) typically also require the [Blaze billing plan](https://firebase.google.com/docs/ai-logic/error-codes).   
 
 > 🚧 **Work-in-Progress:** we are working on bringing more samples into the application.
 
@@ -23,6 +25,11 @@ some of Google's models.
 3. Set up a Firebase project and connect your app to Firebase by adding your Firebase configuration 
 file (`google-services.json`) to the `/app` directory. Read more in the [Firebase documentation](https://firebase.google.com/docs/ai-logic/get-started?platform=android&api=dev#set-up-firebase) and the [Android-specific setup guide](https://firebase.google.com/docs/android/learn-more?authuser=0#google-services-plugin-and-file).
 4. Sync & Run `app` configuration
+
+If a cloud sample fails with an error that generate-content requests are blocked, confirm that:
+- The Firebase AI Logic API is enabled for the project
+- The Android API key in Google Cloud Console includes the Firebase AI Logic API
+- Image generation samples are using a project on the Blaze plan when required by the model
 
 The app will open with the samples list screen that allows you to navigate throughout the different 
 available samples.

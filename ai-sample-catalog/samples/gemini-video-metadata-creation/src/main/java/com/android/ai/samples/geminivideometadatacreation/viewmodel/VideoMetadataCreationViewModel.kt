@@ -36,6 +36,7 @@ import com.android.ai.samples.geminivideometadatacreation.generateHashtags
 import com.android.ai.samples.geminivideometadatacreation.generateLinks
 import com.android.ai.samples.geminivideometadatacreation.generateThumbnails
 import com.android.ai.samples.geminivideometadatacreation.util.sampleVideoList
+import com.android.ai.uicomponent.toUserFacingAiErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -88,7 +89,7 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
                 _uiState.update {
                     it.copy(
                         metadataCreationState = MetadataCreationState.Error(
-                            e.localizedMessage ?: "An unknown error occurred",
+                            e.toUserFacingAiErrorMessage(),
                         ),
                     )
                 }

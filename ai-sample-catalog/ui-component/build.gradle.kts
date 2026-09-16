@@ -67,4 +67,6 @@ dependencies {
     implementation(libs.richtext.commonmark)
     implementation(libs.ui.tooling.preview)
     debugImplementation(libs.ui.tooling)
+
+    testImplementation(libs.junit)
 }

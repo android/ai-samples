@@ -18,6 +18,7 @@ package com.android.ai.samples.geminichatbot
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.uicomponent.ChatMessage
+import com.android.ai.uicomponent.toUserFacingAiErrorMessage
 import com.google.firebase.Firebase
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
@@ -99,7 +100,7 @@ class GeminiChatbotViewModel @Inject constructor() : ViewModel() {
                 }
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(geminiMessageState = GeminiMessageState.Error(e.localizedMessage ?: "Something went wrong, try again"))
+                    it.copy(geminiMessageState = GeminiMessageState.Error(e.toUserFacingAiErrorMessage()))
                 }
             }
         }

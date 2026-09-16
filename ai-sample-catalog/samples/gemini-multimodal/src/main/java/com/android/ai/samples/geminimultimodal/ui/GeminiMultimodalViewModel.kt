@@ -19,6 +19,7 @@ import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.geminimultimodal.data.GeminiDataSource
+import com.android.ai.uicomponent.toUserFacingAiErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +39,7 @@ class GeminiMultimodalViewModel @Inject constructor(private val geminiDataSource
                 val result = geminiDataSource.generateText(bitmap, prompt)
                 _uiState.value = GeminiMultimodalUiState.Success(result)
             } catch (e: Exception) {
-                _uiState.value = GeminiMultimodalUiState.Error(e.message)
+                _uiState.value = GeminiMultimodalUiState.Error(e.toUserFacingAiErrorMessage())
             }
         }
     }
