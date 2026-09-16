@@ -6,6 +6,8 @@ This sample is part of the [AI Sample Catalog](../../). To build and run this sa
 
 This sample demonstrates a chat bot using `Gemini 3 Pro Image` (a.k.a [Nano Banana Pro](https://deepmind.google/models/gemini-image/pro/)) that can understand both text and images and generate images and text in return. Users can send a message that includes an image, and the generative model will respond based on the multimodal input. This showcases how to build powerful, interactive image generation chat experiences with the Gemini API.
 
+This model typically requires a billed Firebase project. If generate-content requests are blocked, enable the Firebase AI Logic API, allow it on the Android API key, and confirm the project is on the Blaze plan.
+
 <div style="text-align: center;">
 <img width="320" alt="Gemini Image chat in action" src="android_nano_banana.png" />
 </div>

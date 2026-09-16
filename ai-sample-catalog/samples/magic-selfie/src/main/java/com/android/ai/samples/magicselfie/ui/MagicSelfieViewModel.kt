@@ -19,6 +19,7 @@ import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.magicselfie.data.MagicSelfieRepository
+import com.android.ai.uicomponent.toUserFacingAiErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +39,7 @@ class MagicSelfieViewModel @Inject constructor(private val magicSelfieRepository
                 val resultBitmap = magicSelfieRepository.generateMagicSelfie(bitmap, prompt)
                 _uiState.value = MagicSelfieUiState.Success(resultBitmap)
             } catch (e: Exception) {
-                _uiState.value = MagicSelfieUiState.Error(e.message)
+                _uiState.value = MagicSelfieUiState.Error(e.toUserFacingAiErrorMessage())
             }
         }
     }

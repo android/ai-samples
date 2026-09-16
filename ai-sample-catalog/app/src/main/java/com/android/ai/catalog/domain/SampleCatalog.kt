@@ -58,6 +58,7 @@ val sampleCatalog = listOf(
         tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         keyArt = R.drawable.img_keyart_chatbot,
         needsFirebase = true,
+        needsBilling = true,
         isFeatured = true,
     ),
     SampleCatalogItem(
@@ -110,6 +111,7 @@ val sampleCatalog = listOf(
         sampleEntryScreen = { NanobananaScreen() },
         tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
+        needsBilling = true,
         keyArt = R.drawable.img_keyart_imagen,
     ),
     SampleCatalogItem(
@@ -119,6 +121,7 @@ val sampleCatalog = listOf(
         sampleEntryScreen = { MagicSelfieScreen() },
         tags = listOf(SampleTags.GEMINI_FLASH, SampleTags.FIREBASE),
         needsFirebase = true,
+        needsBilling = true,
         keyArt = R.drawable.img_keyart_magic_selfie,
     ),
     SampleCatalogItem(
@@ -159,6 +162,7 @@ data class SampleCatalogItem(
     val sampleEntryScreen: @Composable () -> Unit,
     val tags: List<SampleTags> = emptyList(),
     val needsFirebase: Boolean = false,
+    val needsBilling: Boolean = false,
     val isFeatured: Boolean = false,
     @DrawableRes val keyArt: Int? = null,
 )

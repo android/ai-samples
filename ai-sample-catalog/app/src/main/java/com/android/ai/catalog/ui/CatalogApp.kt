@@ -156,7 +156,7 @@ fun CatalogApp(modifier: Modifier = Modifier) {
                 isDialogOpened = false
                 val intent = Intent(
                     Intent.ACTION_VIEW,
-                    "https://firebase.google.com/docs/vertex-ai/get-started#no-existing-firebase".toUri(),
+                    FIREBASE_AI_LOGIC_GET_STARTED_URL.toUri(),
                 )
                 context.startActivity(intent)
             },
@@ -227,3 +227,6 @@ fun isFirebaseInitialized(): Boolean {
         return false
     }
 }
+
+private const val FIREBASE_AI_LOGIC_GET_STARTED_URL =
+    "https://firebase.google.com/docs/ai-logic/get-started?platform=android&api=dev#set-up-firebase"

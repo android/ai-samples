@@ -18,6 +18,7 @@ package com.android.ai.samples.nanobanana.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.nanobanana.data.NanobananaDataSource
+import com.android.ai.uicomponent.toUserFacingAiErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +39,7 @@ class NanobananaViewModel @Inject constructor(private val nanobananaDataSource: 
                 val bitmap = nanobananaDataSource.generateImage(prompt)
                 _uiState.value = NanobananaUIState.ImageGenerated(bitmap, contentDescription = prompt)
             } catch (e: Exception) {
-                _uiState.value = NanobananaUIState.Error(e.message)
+                _uiState.value = NanobananaUIState.Error(e.toUserFacingAiErrorMessage())
             }
         }
     }

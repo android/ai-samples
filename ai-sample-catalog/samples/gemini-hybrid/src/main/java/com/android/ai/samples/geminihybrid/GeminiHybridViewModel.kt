@@ -18,6 +18,7 @@ package com.android.ai.samples.geminihybrid
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.android.ai.uicomponent.toUserFacingAiErrorMessage
 import com.google.firebase.Firebase
 import com.google.firebase.ai.InferenceMode
 import com.google.firebase.ai.InferenceSource
@@ -208,7 +209,7 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
             } catch (e: Exception) {
                 Log.e("GeminiHybrid", "Inference failed", e)
                 _uiState.update {
-                    it.copy(status = GeminiStatus.Error(e.localizedMessage ?: "Unknown error occurred"))
+                    it.copy(status = GeminiStatus.Error(e.toUserFacingAiErrorMessage()))
                 }
             }
         }
@@ -278,7 +279,7 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
             } catch (e: Exception) {
                 Log.e("GeminiHybrid", "Inference failed", e)
                 _uiState.update {
-                    it.copy(status = GeminiStatus.Error(e.localizedMessage ?: "Unknown error occurred"))
+                    it.copy(status = GeminiStatus.Error(e.toUserFacingAiErrorMessage()))
                 }
             }
         }

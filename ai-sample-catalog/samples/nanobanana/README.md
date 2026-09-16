@@ -6,6 +6,8 @@ This sample is part of the [AI Sample Catalog](../../). To build and run this sa
 
 This sample demonstrates how to generate images from text prompts using the Gemini 3.1 Flash Image model (a.k.a. "Nano Banana"). Users can input a text description, and the generative model will create an image based on that prompt, showcasing the power of text-to-image generation with Gemini.
 
+Image generation models typically require a billed Firebase project (Blaze plan).
+
 <div style="text-align: center;">
 <img width="320" alt="Nanobanana Image Generation in action" src="../../samples/gemini-image-chat/android_nano_banana.png" />
 </div>

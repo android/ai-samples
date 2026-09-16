@@ -28,7 +28,8 @@
     <string name="gemini_hybrid_sample_list_title">Gemini Hybrid</string>
     <string name="gemini_hybrid_sample_list_description">Inference with Firebase Hybrid SDK using either Gemini Nano on-device or Gemini Flash in the Cloud.</string>
     <string name="firebase_required">Firebase Required</string>
-    <string name="firebase_required_description">This feature requires Firebase to be initialized.</string>
+    <string name="firebase_required_description">This sample needs a Firebase project with Firebase AI Logic enabled. Add google-services.json, enable the Firebase AI Logic API, and include that API in this app\'s Android API key restrictions.</string>
+    <string name="billing_required_note">Image generation models such as Nano Banana typically require a billed Firebase project (Blaze plan).</string>
     <string name="close">Close</string>
     <string name="firebase_doc_button">Show me how</string>
 </resources>
