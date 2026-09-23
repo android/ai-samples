@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "catalogId": "https://example.com/catalogs/booking_assistant/v1/catalog.json",
+  "title": "Booking Assistant Component Catalog",
+  "version": "v0.9",
+  "updateComponents": {
+    "surfaceId": "Flight Reservation",
+    "components": [
+      {
+        "id": "flight_option_picker",
+        "component": "InteractiveOptionPicker",
+        "properties": {
+          "prompt": "Select a flight time:",
+          "options": [
+            "10:00 AM",
+            "2:00 PM"
+          ],
+          "selectedIdx": null,
+          "confirmBtnText": "Confirm Flight"
+        }
+      }
+    ]
+  },
+  "components": {
+    "InteractiveOptionPicker": {
+      "type": "object",
+      "properties": {
+        "component": {
+          "const": "InteractiveOptionPicker"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "selectedIdx": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "confirmBtnText": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "component",
+        "prompt",
+        "options",
+        "confirmBtnText"
+      ]
+    },
+    "SeatSelectionPicker": {
+      "type": "object",
+      "properties": {
+        "component": {
+          "const": "SeatSelectionPicker"
+        },
+        "title": {
+          "type": "string"
+        },
+        "rows": {
+          "type": "integer"
+        },
+        "cols": {
+          "type": "integer"
+        },
+        "occupiedSeats": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "selectedSeat": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirmBtnText": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "component",
+        "title",
+        "rows",
+        "cols",
+        "occupiedSeats",
+        "confirmBtnText"
+      ]
+    },
+    "BookingStatus": {
+      "type": "object",
+      "properties": {
+        "component": {
+          "const": "BookingStatus"
+        },
+        "status": {
+          "type": "string"
+        },
+        "bookingReference": {
+          "type": "string"
+        },
+        "details": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "component",
+        "status",
+        "bookingReference",
+        "details"
+      ]
+    }
+  }
+}
