@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.compose)
@@ -28,9 +27,10 @@ plugins {
 android {
   namespace = "com.example.jetpacker"
   compileSdk {
-    version = release(libs.versions.compileSdk.get().toInt()) {
-      minorApiLevel = libs.versions.compileSdkMinor.get().toInt()
-    }
+    version =
+      release(libs.versions.compileSdk.get().toInt()) {
+        minorApiLevel = libs.versions.compileSdkMinor.get().toInt()
+      }
   }
 
   defaultConfig {
@@ -61,9 +61,7 @@ android {
   }
 
   packaging {
-    jniLibs {
-      useLegacyPackaging = false
-    }
+    jniLibs { useLegacyPackaging = false }
     resources {
       excludes += "META-INF/DEPENDENCIES"
       excludes += "META-INF/LICENSE"
@@ -92,6 +90,7 @@ dependencies {
   implementation(project(":data:itinerary"))
   implementation(project(":data:trips"))
   implementation(project(":feature:appfunctions"))
+  implementation(libs.androidx.appfunctions)
   implementation(project(":feature:create_trip"))
   implementation(project(":feature:detail"))
   implementation(project(":feature:detail:museum_assistant"))
@@ -104,6 +103,7 @@ dependencies {
   implementation(project(":feature:trip:voice_notes"))
   implementation(project(":feature:trip:expenses"))
   implementation(project(":feature:trip:itinerary:enrichment"))
+  implementation(project(":feature:trip:booking_assistant"))
   implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.camera.camera2)
   implementation(libs.androidx.camera.core)

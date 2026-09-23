@@ -1,4 +1,5 @@
 [versions]
+a2ui = "1.0.0-SNAPSHOT"
 accompanistPermissions = "0.37.3"
 activityCompose = "1.13.0"
 agp = "9.2.1"
@@ -47,13 +48,17 @@ roomCompiler = "2.7.0"
 roomKtx = "2.7.0"
 roomRuntime = "2.7.0"
 runner = "1.6.2"
-targetSdk = "36"
+targetSdk = "37"
 truth = "1.4.2"
 versionCode = "1"
 versionName = "1.0"
 appfunctions = "1.0.0-alpha10"
 
 [libraries]
+androidx-a2ui-model = { group = "androidx.a2ui", name = "a2ui-model", version.ref = "a2ui" }
+androidx-a2ui-compose-runtime = { group = "androidx.a2ui.compose", name = "compose-runtime", version.ref = "a2ui" }
+androidx-a2ui-compose-ui = { group = "androidx.a2ui.compose", name = "compose-ui", version.ref = "a2ui" }
+androidx-compose-material3-a2ui = { group = "androidx.compose.material3", name = "material3-a2ui", version.ref = "a2ui" }
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanistPermissions" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "cameraCamera2" }
