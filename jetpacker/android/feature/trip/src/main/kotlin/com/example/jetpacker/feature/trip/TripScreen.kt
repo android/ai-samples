@@ -26,7 +26,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -40,6 +39,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.ConfirmationNumber
 import androidx.compose.material.icons.rounded.Event
 import androidx.compose.material.icons.rounded.Wallet
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.example.jetpacker.core.flags.FeatureFlags
@@ -61,6 +62,7 @@ import com.example.jetpacker.core.ui.components.JetPackerFabConfig
 import com.example.jetpacker.core.ui.components.JetPackerToolbar
 import com.example.jetpacker.core.ui.components.JetPackerToolbarAction
 import com.example.jetpacker.data.itinerary.EventType
+import com.example.jetpacker.feature.booking_assistant.BookingAssistantScreen
 import com.example.jetpacker.feature.expenses.ManageExpensesScreen
 import com.example.jetpacker.feature.itinerary.ItineraryScreen
 import com.example.jetpacker.feature.voice_notes.VoiceNotesScreen
@@ -69,11 +71,12 @@ enum class TripTab {
   ITINERARY,
   EXPENSES,
   VOICE_NOTES,
+  BOOKING,
 }
 
 /**
- * Composable screen serving as the main container for viewing details of a specific trip.
- * Displays the itinerary and links to event details, maps, and editing options.
+ * Composable screen serving as the main container for viewing details of a specific trip. Displays
+ * the itinerary and links to event details, maps, and editing options.
  */
 @Composable
 fun TripScreen(
@@ -92,10 +95,12 @@ fun TripScreen(
     bottomBar = {
       val showExpenses = FeatureFlags.ENABLE_EXPENSE_MANAGEMENT
       val showVoiceNotes = FeatureFlags.ENABLE_VOICE_NOTES
+      val showBooking = FeatureFlags.ENABLE_BOOKING_ASSISTANT
 
       var visibleCount = 1
       if (showExpenses) visibleCount++
       if (showVoiceNotes) visibleCount++
+      if (showBooking) visibleCount++
 
       if (visibleCount > 1) {
         AnimatedVisibility(
@@ -143,6 +148,14 @@ fun TripScreen(
             onFabConfigChange = { fabConfig = it },
           )
         }
+
+        TripTab.BOOKING -> {
+          BookingAssistantScreen(
+            tripId = tripId,
+            contentPadding = innerPadding,
+            onBack = { selectedTab = TripTab.ITINERARY },
+          )
+        }
       }
     }
   }
@@ -157,6 +170,7 @@ fun JetPackerBottomBar(
 ) {
   val showExpenses = FeatureFlags.ENABLE_EXPENSE_MANAGEMENT
   val showVoiceNotes = FeatureFlags.ENABLE_VOICE_NOTES
+  val showBooking = FeatureFlags.ENABLE_BOOKING_ASSISTANT
 
   LookaheadScope {
     Row(
@@ -170,7 +184,7 @@ fun JetPackerBottomBar(
       horizontalArrangement = Arrangement.Center,
     ) {
       JetPackerToolbar(
-        modifier = Modifier.widthIn(max = 272.dp).animateBounds(this@LookaheadScope)
+        modifier = Modifier.widthIn(max = 336.dp).animateBounds(this@LookaheadScope)
       ) {
         JetPackerToolbarAction(
           icon = Icons.Rounded.Event,
@@ -193,6 +207,15 @@ fun JetPackerBottomBar(
             onClick = { onTabSelected(TripTab.VOICE_NOTES) },
             icon = ImageVector.vectorResource(R.drawable.speech_to_text),
             contentDescription = "Voice Notes",
+          )
+        }
+
+        if (showBooking) {
+          JetPackerToolbarAction(
+            selected = selectedTab == TripTab.BOOKING,
+            onClick = { onTabSelected(TripTab.BOOKING) },
+            icon = Icons.Rounded.ConfirmationNumber,
+            contentDescription = "Booking Assistant",
           )
         }
       }

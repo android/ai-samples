@@ -19,63 +19,50 @@ plugins {
   alias(libs.plugins.kotlin.compose)
   alias(libs.plugins.hilt.android)
   alias(libs.plugins.google.devtools.ksp)
-  alias(libs.plugins.android.compose.screenshot)
 }
 
 android {
-  namespace = "com.example.jetpacker.feature.trip"
+  namespace = "com.example.jetpacker.feature.booking_assistant"
   compileSdk = libs.versions.compileSdk.get().toInt()
-  defaultConfig {
-    minSdk = libs.versions.minSdk.get().toInt()
-  }
+  defaultConfig { minSdk = libs.versions.minSdk.get().toInt() }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
   }
-  experimentalProperties["android.experimental.enableScreenshotTest"] = true
-  buildFeatures {
-    compose = true
-  }
+  buildFeatures { compose = true }
 }
 
 dependencies {
-  implementation(platform(libs.androidx.compose.bom))
-
-  implementation(project(":core:flags"))
+  implementation(libs.androidx.core.ktx)
   implementation(project(":core:ui"))
+  implementation(project(":core:flags"))
   implementation(project(":data:itinerary"))
   implementation(project(":data:trips"))
-  implementation(project(":feature:trip:itinerary"))
-  implementation(project(":feature:trip:expenses"))
-  implementation(project(":feature:trip:voice_notes"))
-  implementation(project(":feature:trip:booking_assistant"))
 
+  implementation(platform(libs.androidx.compose.bom))
+  implementation(libs.androidx.compose.material3)
   implementation(libs.androidx.compose.material.icons.core)
   implementation(libs.androidx.compose.material.icons.extended)
-  implementation(libs.androidx.compose.material3)
-  implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.compose.ui.tooling.preview)
-  implementation(libs.androidx.core.ktx)
-  implementation(libs.androidx.hilt.navigation.compose)
-  implementation(libs.androidx.lifecycle.runtime.compose)
+  debugImplementation(libs.androidx.compose.ui.tooling)
+  implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
+  implementation(libs.androidx.lifecycle.runtime.compose)
+  implementation(libs.androidx.hilt.navigation.compose)
   implementation(libs.hilt.android)
   "ksp"(libs.hilt.compiler)
 
-  debugImplementation(libs.androidx.compose.ui.tooling)
+  // A2UI Compose Renderer (Jetpack snapshot build 16368166)
+  implementation(libs.androidx.a2ui.model)
+  implementation(libs.androidx.a2ui.compose.runtime)
+  implementation(libs.androidx.a2ui.compose.ui)
+  implementation(libs.androidx.compose.material3.a2ui)
 
-  screenshotTestImplementation(libs.androidx.compose.ui.tooling)
-  screenshotTestImplementation(libs.screenshot.validation.api)
-
-  testImplementation(libs.junit)
-  testImplementation(libs.kotlinx.coroutines.test)
-  testImplementation(libs.androidx.core)
-  testImplementation(libs.androidx.junit)
-  testImplementation(libs.robolectric)
+  // Cloud Run backend streaming
+  implementation(libs.okhttp)
+  implementation(platform(libs.firebase.bom))
+  implementation(libs.firebase.auth.ktx)
+  implementation(libs.kotlinx.coroutines.play.services)
 }
 
 kotlin { jvmToolchain(17) }
-
-screenshotTests {
-  imageDifferenceThreshold = 0.05f
-}

@@ -14,11 +14,12 @@
 </table>
 
 ## Overview
-JetPacker provides users with powerful tools to manage their upcoming trips, build out rich itineraries, record voice notes, manage travel expenses, generate on-device "Trip Summaries and Tips", generate AI reviews, chat with hotel staff via automatic translation, get real-time museum assistant guidance, and contribute to Android's intelligence system with trip management functions through [AppFunctions](https://d.android.com/ai/appfunctions).
+JetPacker provides users with powerful tools to manage their upcoming trips, build out rich itineraries, record voice notes, manage travel expenses, generate on-device "Trip Summaries and Tips", generate AI reviews, chat with hotel staff via automatic translation, get real-time museum assistant guidance, coordinate reservations with an AI Booking Assistant using Jetpack A2UI, and contribute to Android's intelligence system with trip management functions through [AppFunctions](https://d.android.com/ai/appfunctions).
 
 ## Architecture
 This project is built using modern Android architecture components:
 - **UI**: Jetpack Compose
+- **Agent-Driven UI**: Jetpack A2UI (`androidx.a2ui`) Compose renderer
 - **Dependency Injection**: Dagger/Hilt
 - **Local Persistence**: Room Database
 - **State Management**: ViewModels with StateFlow
@@ -50,6 +51,7 @@ JetPacker follows a clean, multi-module Android structure organized by responsib
     - **`:feature:trip:itinerary:enrichment`**: On-device AI summaries and tips (`TripSummaryAndTipsCard`) and dynamic daily theme generators.
   - **`:feature:trip:expenses`**: Expense tracking screen and automated receipt parser.
   - **`:feature:trip:voice_notes`**: Audio voice note recorder and real-time speech-to-text transcription screen.
+  - **`:feature:trip:booking_assistant`**: Booking Assistant interactive agent interface rendered with Jetpack A2UI.
 
 ## Getting Started
 
@@ -92,6 +94,26 @@ cd android
 ./gradlew test
 ```
 
+### Running the Booking Assistant Server
+JetPacker uses a Python-based Server-Sent Events (SSE) server powered by Google ADK to coordinate the booking agents. To run the booking assistant backend locally:
+
+```bash
+# Navigate to the server directory
+cd server
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the server
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+Alternatively, run with Docker:
+```bash
+docker build -t jetpacker-server .
+docker run -p 8080:8080 jetpacker-server
+```
+
 ## On-Device AI Features
 JetPacker integrates local on-device AI capabilities using ML Kit. These features run entirely on-device and can be toggled or customized in `android/core/flags/src/main/kotlin/com/example/jetpacker/core/flags/FeatureFlags.kt`:
 - **ENABLE_TRIP_SUMMARY_AND_TIPS**: Generates an on-device card summary of the current trip using ML Kit GenAI Prompt.
@@ -104,6 +126,7 @@ JetPacker also integrates online hybrid features using Firebase AI Logic (Gemini
 - **ENABLE_MUSEUM_ASSISTANT**: Museum Assistant chatbot with URL, Maps, and Search grounding (uses Gemini 3.5 flash-lite).
 - **ENABLE_REVIEW_GENERATION**: Topic-selected review generator (uses Gemini 3.5 flash-lite on-device with cloud fallback).
 - **Hotel Support Chat**: Receives hotel receptionist assistance with real-time ML Kit + Gemini translation.
+- **Booking Assistant**: Parallel multi-agent travel coordinator providing dynamic interactive booking cards rendered via Jetpack A2UI with Cloud Run SSE backend streaming.
 
 ## AppFunctions Integration
 JetPacker uses Android's [**AppFunctions**](https://d.android.com/ai/appfunctions) library (`androidx.appfunctions`) in `:feature:appfunctions` to contribute to Android's intelligence system with structured travel actions and data queries via `JetPackerAppFunctionService`:

@@ -1,0 +1,61 @@
+swagger: '2.0'
+info:
+  title: JetPacker API Gateway
+  description: API Gateway for JetPacker
+  version: 1.0.0
+schemes:
+  - https
+
+securityDefinitions:
+  firebase:
+    authorizationUrl: ""
+    flow: "implicit"
+    type: "oauth2"
+    x-google-issuer: "https://securetoken.google.com/android-devrel-ci"
+    x-google-jwks_uri: "https://www.googleapis.com/service_accounts/v1/metadata/x509/securetoken@system.gserviceaccount.com"
+    x-google-audiences: "android-devrel-ci"
+
+security:
+  - firebase: []
+
+paths:
+  /orchestrate:
+    post:
+      summary: Orchestrate
+      operationId: orchestrate
+      x-google-backend:
+        address: https://jetpacker-server-254502043090.us-central1.run.app/orchestrate
+        deadline: 300.0
+      responses:
+        '200':
+          description: OK
+  /stream:
+    get:
+      summary: Stream
+      operationId: stream
+      x-google-backend:
+        address: https://jetpacker-server-254502043090.us-central1.run.app/stream
+        deadline: 300.0
+      responses:
+        '200':
+          description: OK
+  /respond:
+    post:
+      summary: Respond
+      operationId: respond
+      x-google-backend:
+        address: https://jetpacker-server-254502043090.us-central1.run.app/respond
+        deadline: 300.0
+      responses:
+        '200':
+          description: OK
+  /status_stream:
+    post:
+      summary: Status Stream
+      operationId: status_stream
+      x-google-backend:
+        address: https://jetpacker-server-254502043090.us-central1.run.app/status_stream
+        deadline: 300.0
+      responses:
+        '200':
+          description: OK

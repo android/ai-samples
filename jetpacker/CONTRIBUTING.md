@@ -42,6 +42,7 @@ If you wish to run, explore, or modify the code locally:
 1. Clone the repository:
    ```bash
    git clone https://github.com/android/ai-samples.git
+   cd ai-samples/jetpacker
    ```
 2. Open the project in Android Studio.
 3. Gradle will automatically sync and resolve dependencies.
