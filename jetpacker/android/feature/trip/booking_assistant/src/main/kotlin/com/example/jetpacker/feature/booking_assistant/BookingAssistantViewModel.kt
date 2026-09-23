@@ -414,6 +414,52 @@ class BookingAssistantViewModel @Inject constructor(
   private fun parseAndApplyEvent(jsonStr: String) {
     try {
       val json = JSONObject(jsonStr)
+
+      // Direct A2UI protocol messages from A2UI server
+      if (json.has("createSurface")) {
+        val cs = json.getJSONObject("createSurface")
+        val surfaceId = cs.getString("surfaceId")
+        val catalogId = cs.optString("catalogId", BOOKING_ASSISTANT_CATALOG_ID)
+        messageProcessor.processMessage(
+          A2uiCreateSurfaceMessage(
+            surfaceId = surfaceId,
+            catalogId = catalogId,
+          )
+        )
+        return
+      }
+
+      if (json.has("updateComponents")) {
+        val uc = json.getJSONObject("updateComponents")
+        val surfaceId = uc.getString("surfaceId")
+        val componentsArr = uc.optJSONArray("components")
+        val componentsList = mutableListOf<A2uiComponentPayload>()
+        if (componentsArr != null) {
+          for (i in 0 until componentsArr.length()) {
+            val compObj = componentsArr.getJSONObject(i)
+            val id = compObj.optString("id", "root")
+            val type = compObj.optString("component", compObj.optString("type"))
+            val propsObj = compObj.optJSONObject("properties") ?: JSONObject()
+            val propsMap = mutableMapOf<String, Any?>()
+            val keys = propsObj.keys()
+            while (keys.hasNext()) {
+              val key = keys.next()
+              propsMap[key] = when (val v = propsObj.get(key)) {
+                is JSONArray -> List(v.length()) { idx -> v.get(idx) }
+                JSONObject.NULL -> null
+                else -> v
+              }
+            }
+            componentsList.add(A2uiComponentPayload(id = id, type = type, properties = propsMap))
+          }
+        }
+        val firstComp = componentsList.firstOrNull()
+        if (firstComp != null) {
+          upsertSurface(surfaceId, firstComp)
+        }
+        return
+      }
+
       val author = json.optString("author")
       if (author.isEmpty()) return
 
