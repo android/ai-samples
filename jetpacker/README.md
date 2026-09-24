@@ -68,8 +68,13 @@ This project is built using the standard Android Gradle build system, allowing d
    - Update `sdk.dir` inside `local.properties` with your local Android SDK directory path.
 
 2. **Firebase Setup (`google-services.json`)**:
-   - Register the application in your Firebase Project Console.
-   - Download the project's custom `google-services.json` and place it in the `android/app/` directory (overwriting the mock placeholder file).
+   - Register an Android app in your **Firebase Project Console** using the package name `com.example.jetpacker`.
+   - In the Firebase Console, navigate to **Authentication** -> **Sign-in method** and enable **Anonymous** sign-in (used for session-based communication with the booking coordinator and AI services).
+   - Download your project's `google-services.json` and place it in the `android/app/` directory (replacing the mock placeholder file). The Gradle `google-services` plugin automatically parses this file and configures the required resources at build time—no code changes or extra XML files are required.
+   - *Git Safety*: To prevent accidentally committing your personal Firebase credentials back to the repository, tell git to ignore local changes to this file:
+     ```bash
+     git update-index --skip-worktree android/app/google-services.json
+     ```
 
 3. **Firebase App Check Debug Attestation**:
    - Run the application on an emulator or a connected device.
