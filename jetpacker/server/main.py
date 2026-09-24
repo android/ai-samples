@@ -1,628 +1,551 @@
-# Copyright 2026 Google LLC.
-# SPDX-License-Identifier: Apache-2.0
-
-"""Booking Assistant ADK Agent Server for Jetpacker with Jetpack A2UI."""
-
 import asyncio
 import json
-import os
-import re
-import traceback
-from typing import Any, Dict, List, Optional
+from typing import AsyncGenerator
 import urllib.request
-import uuid
 
 import fastapi
-from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
-from google.adk import Agent
-from google.adk.runners import InMemoryRunner
-from google.adk.tools import FunctionTool
-from google.adk.tools.tool_context import ToolContext
-from google.genai import types as genai_types
+from google.adk.agents.base_agent import BaseAgent
+from google.adk.agents.invocation_context import InvocationContext
+from google.adk.agents.parallel_agent import ParallelAgent
+from google.adk.cli.fast_api import get_fast_api_app
+from google.adk.cli.utils.base_agent_loader import BaseAgentLoader
+from google.adk.events.event import Event
+from google.adk.events.event_actions import EventActions
+from google import genai
+from google.genai import types
 import pydantic
-from pydantic import BaseModel, Field
 import uvicorn
 
-from a2ui.basic_catalog.provider import BasicCatalog
-from a2ui.schema.catalog import CatalogConfig
-from a2ui.schema.constants import VERSION_0_9
-from a2ui.schema.manager import A2uiSchemaManager
-
-
-def sanitize_agent_name(title: str) -> str:
-  sanitized = re.sub(r'[^a-zA-Z0-9_]', '_', title)
-  if not re.match(r'^[a-zA-Z_]', sanitized):
-    sanitized = '_' + sanitized
-  return sanitized
-
-
-app = FastAPI(title="JetPacker Booking Assistant Server", version="1.0.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Initialize A2UI Schema Manager with custom booking component catalog
-CATALOG_PATH = os.path.join(os.path.dirname(__file__), "booking_catalog.json")
-
-schema_manager = A2uiSchemaManager(
-    version=VERSION_0_9,
-    catalogs=[
-        BasicCatalog.get_config(version=VERSION_0_9),
-        CatalogConfig.from_path(
-            name="https://example.com/catalogs/booking_assistant/v1/catalog.json",
-            catalog_path=CATALOG_PATH,
-        ),
-    ],
-)
-
-A2UI_SYSTEM_INSTRUCTION = schema_manager.generate_system_prompt(
-    role_description="You are a helpful travel booking assistant.",
-    ui_description=(
-        "Use InteractiveOptionPicker for choices, SeatSelectionPicker for seat"
-        " selection, and BookingStatus for confirmed status."
-    ),
-    include_schema=True,
-    include_examples=True,
-    allowed_components=[
-        "InteractiveOptionPicker",
-        "SeatSelectionPicker",
-        "BookingStatus",
-    ],
-).replace("${expression}", "$(expression)")
+app = fastapi.FastAPI()
 
 
 class SessionState:
 
   def __init__(self):
-    self.pause_events: Dict[str, asyncio.Future] = {}
-    self.queue: asyncio.Queue = asyncio.Queue()
-    self.bg_tasks: List[asyncio.Task] = []
+    self.pause_events: dict[str, asyncio.Event] = {}
+    self.results: dict[str, any] = {}
+    self.completed_steps: dict[str, int] = {}
 
 
-sessions: Dict[str, SessionState] = {}
+sessions: dict[str, SessionState] = {}
 
 
-class ComponentProperties(BaseModel):
-  title: Optional[str] = Field(default=None, description="Title for the card.")
-  category: Optional[str] = Field(
-      default=None,
-      description="Category name (Flight, Hotel, Activity, Dining).",
-  )
-  status: Optional[str] = Field(
-      default=None,
-      description="Status label (e.g. CONFIRMATION REQUIRED, ACTION REQUIRED).",
-  )
-  prompt: Optional[str] = Field(
-      default=None, description="Header prompt/choice text for picker widgets."
-  )
-  options: Optional[List[str]] = Field(
-      default=None,
-      description="Custom option labels for InteractiveOptionPicker.",
-  )
-  selectedOption: Optional[str] = Field(
-      default=None, description="Currently selected option string."
-  )
-  selectedIdx: Optional[int] = Field(
-      default=None,
-      description="Currently selected option index (0-indexed).",
-  )
-  confirmBtnText: Optional[str] = Field(
-      default=None, description="Label for picker confirmation button."
-  )
-  seats: Optional[List[str]] = Field(
-      default=None, description="Seat labels list for SeatSelectionPicker."
-  )
-  selectedSeat: Optional[str] = Field(
-      default=None, description="Currently selected seat label."
-  )
-  description: Optional[str] = Field(
-      default=None, description="Booking status description text."
-  )
-  text: Optional[str] = Field(
-      default=None, description="Booking status description text fallback."
-  )
-  action: Optional[Dict[str, Any]] = Field(
-      default=None, description="Custom action payload."
-  )
+class BaseSimulationAgent(BaseAgent):
 
-
-class A2uiComponent(BaseModel):
-  id: str = Field(
-      default="root",
-      description="Must be 'root' for the main element in the surface card.",
-  )
-  component: str = Field(
-      description=(
-          "The component name (e.g. 'InteractiveOptionPicker',"
-          " 'SeatSelectionPicker', 'BookingStatus')."
-      )
-  )
-  properties: ComponentProperties = Field(
-      description="The properties for the component."
-  )
-
-
-def make_update_ui(surface_id: str, session: SessionState):
-  async def update_ui(
-      components: List[A2uiComponent],
-      tool_context: ToolContext = None,
-  ) -> str:
-    """Updates the UI surface with the specified components and waits for user interaction."""
-    components_dict = [c.model_dump(exclude_none=True) for c in components]
-    for c in components_dict:
-      if "type" not in c and "component" in c:
-        c["type"] = c["component"]
-
-    option_picker = next(
-        (c for c in components if c.component == "InteractiveOptionPicker"),
-        None,
+  async def _generate_text(self, prompt: str) -> str:
+    client = genai.Client(vertexai=True)
+    response = await asyncio.to_thread(
+        client.models.generate_content,
+        model="gemini-2.5-flash",
+        contents=prompt,
     )
-    seat_picker = next(
-        (c for c in components if c.component == "SeatSelectionPicker"), None
+    text = response.text or ""
+    return text.strip()
+
+  def _create_text_event(
+      self, ctx: InvocationContext, text: str, author: str | None = None
+  ) -> Event:
+    return Event(
+        invocation_id=ctx.invocation_id,
+        author=author or self.name,
+        content=types.Content(parts=[types.Part(text=text)]),
+        branch=ctx.branch,
     )
 
-    if option_picker:
-      options = option_picker.properties.options or []
-      selected_option = option_picker.properties.selectedOption or (
-          options[0] if options else ""
-      )
+  def _create_end_event(
+      self, ctx: InvocationContext, author: str | None = None
+  ) -> Event:
+    return Event(
+        invocation_id=ctx.invocation_id,
+        author=author or self.name,
+        actions=EventActions(end_of_agent=True),
+        content=types.Content(parts=[]),
+        branch=ctx.branch,
+    )
+
+  def _create_options_event(
+      self,
+      ctx: InvocationContext,
+      title: str,
+      options: list[str],
+      message: str,
+      ui_type: str = "seat_map",
+  ) -> Event:
+    return self._create_text_event(
+        ctx,
+        json.dumps({
+            "ui": ui_type,
+            "options": options,
+            "message": message,
+        }),
+        author=title,
+    )
+
+
+class SingleFlightSimulationAgent(BaseSimulationAgent):
+  name: str = "single_flight"
+  item_title: str = "Flight"
+
+  async def _run_async_impl(
+      self, ctx: InvocationContext
+  ) -> AsyncGenerator[Event, None]:
+    session = sessions[ctx.session.id]
+    title = self.item_title
+
+    # Step 1: Time Confirmation
+    if session.completed_steps.get(title, 0) < 1:
       confirmed = False
-
       while not confirmed:
-        for c in components_dict:
-          if c.get("component") == "InteractiveOptionPicker":
-            c["properties"]["selectedOption"] = selected_option
-            c["properties"]["status"] = "CONFIRMATION REQUIRED"
+        time_proposal = await self._generate_text(
+            f"Propose a single logical departure time for the flight '{title}'"
+            " (assume origin is France). Keep it under 10 words."
+        )
 
-        await session.queue.put({
-            "updateComponents": {
-                "surfaceId": surface_id,
-                "components": components_dict,
-            }
-        })
+        yield self._create_options_event(
+            ctx,
+            title,
+            options=[f"Confirm {time_proposal}", "Try Another Time"],
+            message=(
+                f"I found a flight at {time_proposal}. Please confirm or"
+                " request another time."
+            ),
+            ui_type="time_selection",
+        )
 
-        fut = asyncio.get_event_loop().create_future()
-        session.pause_events[surface_id] = fut
-        response = await fut
+        if title not in session.pause_events:
+          session.pause_events[title] = asyncio.Event()
+        else:
+          session.pause_events[title].clear()
 
-        if response.startswith("SelectOption_"):
-          idx = int(response.removeprefix("SelectOption_"))
-          if 0 <= idx < len(options):
-            selected_option = options[idx]
-        elif response.startswith("ConfirmSelection_") or response in [
-            "Confirmed",
-            "Confirm",
-        ]:
+        await session.pause_events[title].wait()
+
+        response = session.results.get(title)
+        if response and "Confirm" in response:
           confirmed = True
         else:
-          selected_option = response
-          confirmed = True
+          session.results[title] = None
+          yield self._create_text_event(
+              ctx, "Searching for alternative flight times...", author=title
+          )
+          await asyncio.sleep(2)
+      session.completed_steps[title] = 1
 
-      return selected_option
-
-    elif seat_picker:
-      seats = (
-          seat_picker.properties.seats
-          or seat_picker.properties.options
-          or ["1A", "1B", "2A", "2B"]
+    # Step 2: Seat Selection
+    if session.completed_steps.get(title, 0) < 2:
+      yield self._create_options_event(
+          ctx,
+          title,
+          options=["1A", "1B", "2A", "2B"],
+          message=f"Flight time confirmed! Please select a seat for {title}.",
       )
-      selected_seat = seat_picker.properties.selectedSeat or seats[0]
-      seat_confirmed = False
 
-      while not seat_confirmed:
-        for c in components_dict:
-          if c.get("component") == "SeatSelectionPicker":
-            c["properties"]["selectedSeat"] = selected_seat
-            c["properties"]["status"] = "ACTION REQUIRED"
+      session.pause_events[title].clear()
+      await session.pause_events[title].wait()
 
-        await session.queue.put({
-            "updateComponents": {
-                "surfaceId": surface_id,
-                "components": components_dict,
-            }
-        })
+      selected_seat = session.results.get(title) or "Unknown"
 
-        fut = asyncio.get_event_loop().create_future()
-        session.pause_events[surface_id] = fut
-        response = await fut
+      confirmed_text = await self._generate_text(
+          "Generate a SINGLE realistic status line for confirming the flight"
+          f" '{title}' with seat {selected_seat}. Do NOT include flight details"
+          " in the output, just the status."
+      )
+      yield self._create_text_event(ctx, confirmed_text, author=title)
+      yield self._create_end_event(ctx, author=title)
+      await asyncio.sleep(1)
+      session.completed_steps[title] = 2
 
-        selected_seat = response
-        seat_confirmed = True
 
-      return selected_seat
+class FlightSimulationAgent(BaseSimulationAgent):
+  name: str = "flight"
+  items: list[dict] = []
 
+  async def _run_async_impl(
+      self, ctx: InvocationContext
+  ) -> AsyncGenerator[Event, None]:
+    if not self.items:
+      return
+
+    sub_agents = [
+        SingleFlightSimulationAgent(
+            name=f"single_flight_{i}",
+            item_title=item.get("title", "Flight"),
+        )
+        for i, item in enumerate(self.items)
+    ]
+    parallel_agent = ParallelAgent(name="flights_parallel", sub_agents=sub_agents)
+
+    async for event in parallel_agent.run_async(ctx):
+      yield event
+
+
+class SingleHotelSimulationAgent(BaseSimulationAgent):
+  name: str = "single_hotel"
+  item_title: str = "Hotel"
+  full_itinerary: list[dict] = []
+
+  async def _run_async_impl(
+      self, ctx: InvocationContext
+  ) -> AsyncGenerator[Event, None]:
+    session = sessions[ctx.session.id]
+    title = self.item_title
+
+    prompt = f"""
+    You are a travel agent booking a hotel.
+    Generate a brief justification (1-2 sentences) for choosing the hotel '{title}' for the user.
+    Mention that you are booking it for the correct number of nights based on the dates (assume 3 nights if dates are missing).
+    Explain why you chose it (e.g., proximity to other locations in the itinerary, reviews, or user preferences).
+    Context: Full itinerary is {self.full_itinerary}
+    """
+    justification = await self._generate_text(prompt)
+
+    status_text = f"{justification} Please confirm reservation."
+    yield self._create_text_event(ctx, status_text, author=title)
+
+    # HITL Pause
+    pause_key = title
+    if pause_key not in session.pause_events:
+      session.pause_events[pause_key] = asyncio.Event()
+
+    await session.pause_events[pause_key].wait()
+
+    response = session.results.get(pause_key)
+    if response == "Confirmed":
+      confirmed_text = await self._generate_text(
+          "Generate a SINGLE realistic status line for confirming the hotel"
+          f" reservation for '{title}'. Do NOT include the hotel name in the"
+          " output, just the status (e.g., 'Reservation confirmed', 'Room"
+          " secured')."
+      )
+      yield self._create_text_event(ctx, confirmed_text, author=title)
     else:
-      await session.queue.put({
-          "updateComponents": {
-              "surfaceId": surface_id,
-              "components": components_dict,
-          }
-      })
-      return ""
+      yield self._create_text_event(
+          ctx, f"Reservation for '{title}' was not confirmed.", author=title
+      )
 
-  return update_ui
+    yield self._create_end_event(ctx, author=title)
+    await asyncio.sleep(1)
 
 
-async def run_flight_agent(title: str, session: SessionState, thread_id: str):
-  try:
-    print(f"AGENT [Flight - '{title}']: started")
-    await session.queue.put({
-        "createSurface": {
-            "surfaceId": title,
-            "catalogId": (
-                "https://example.com/catalogs/booking_assistant/v1/catalog.json"
-            ),
-        }
-    })
+class HotelSimulationAgent(BaseSimulationAgent):
+  name: str = "hotel"
+  items: list[dict] = []
+  full_itinerary: list[dict] = []
 
-    agent = Agent(
-        name=sanitize_agent_name(title),
-        model="gemini-2.5-flash",
-        instruction=(
-            f"Book a flight for: '{title}'. Use the update_ui tool to ask the"
-            " user to select flight time and seats. Finally use update_ui to"
-            " show booking confirmation status.\n\n"
-            + A2UI_SYSTEM_INSTRUCTION
+  async def _run_async_impl(
+      self, ctx: InvocationContext
+  ) -> AsyncGenerator[Event, None]:
+    if not self.items:
+      return
+
+    sub_agents = [
+        SingleHotelSimulationAgent(
+            name=f"single_hotel_{i}",
+            item_title=item.get("title", "Hotel"),
+            full_itinerary=self.full_itinerary,
+        )
+        for i, item in enumerate(self.items)
+    ]
+    parallel_agent = ParallelAgent(name="hotels_parallel", sub_agents=sub_agents)
+
+    async for event in parallel_agent.run_async(ctx):
+      yield event
+
+
+class SingleMuseumSimulationAgent(BaseSimulationAgent):
+  name: str = "single_museum"
+  item_title: str = "Museum"
+  full_itinerary: list[dict] = []
+
+  async def _run_async_impl(
+      self, ctx: InvocationContext
+  ) -> AsyncGenerator[Event, None]:
+    session = sessions[ctx.session.id]
+    title = self.item_title
+
+    prompt = f"""
+    You are a travel agent booking museum tickets.
+    Generate a brief justification (1-2 sentences) for reserving tickets for the museum '{title}'.
+    Propose a logical time slot for the visit (e.g., morning or afternoon) and ask user to confirm.
+    Explain why you chose it (e.g., proximity to other events in the itinerary, popularity, or specific exhibitions).
+    Context: Full itinerary is {self.full_itinerary}
+    """
+    justification = await self._generate_text(prompt)
+
+    status_text = f"{justification} Please confirm tickets."
+    yield self._create_text_event(ctx, status_text, author=title)
+
+    # HITL Pause
+    pause_key = title
+    if pause_key not in session.pause_events:
+      session.pause_events[pause_key] = asyncio.Event()
+
+    await session.pause_events[pause_key].wait()
+
+    response = session.results.get(pause_key)
+    if response == "Confirmed":
+      confirmed_text = await self._generate_text(
+          "Generate a SINGLE realistic status line for confirming tickets for"
+          f" '{title}'. Do NOT include the museum name in the output, just the"
+          " status (e.g., 'Tickets confirmed', 'Reservation secured')."
+      )
+      yield self._create_text_event(ctx, confirmed_text, author=title)
+    else:
+      yield self._create_text_event(
+          ctx, f"Tickets for '{title}' were not confirmed.", author=title
+      )
+
+    await asyncio.sleep(1)
+    yield self._create_end_event(ctx, author=title)
+
+
+class MuseumSimulationAgent(BaseSimulationAgent):
+  name: str = "museum"
+  items: list[dict] = []
+  full_itinerary: list[dict] = []
+
+  async def _run_async_impl(
+      self, ctx: InvocationContext
+  ) -> AsyncGenerator[Event, None]:
+    if not self.items:
+      return
+
+    sub_agents = [
+        SingleMuseumSimulationAgent(
+            name=f"single_museum_{i}",
+            item_title=item.get("title", "Museum"),
+            full_itinerary=self.full_itinerary,
+        )
+        for i, item in enumerate(self.items)
+    ]
+    parallel_agent = ParallelAgent(name="museums_parallel", sub_agents=sub_agents)
+
+    async for event in parallel_agent.run_async(ctx):
+      yield event
+
+    yield self._create_end_event(ctx, author=self.name)
+
+
+class SingleRestaurantSimulationAgent(BaseSimulationAgent):
+  name: str = "single_restaurant"
+  item_title: str = "Restaurant"
+  full_itinerary: list[dict] = []
+
+  async def _run_async_impl(
+      self, ctx: InvocationContext
+  ) -> AsyncGenerator[Event, None]:
+    session = sessions[ctx.session.id]
+    title = self.item_title
+
+    prompt = f"""
+    You are a travel agent booking a restaurant.
+    Generate a brief justification (1-2 sentences) for choosing the restaurant '{title}' for the user.
+    Explain why you chose it (e.g., proximity to other locations in the itinerary, cuisine, or reviews).
+    Context: Full itinerary is {self.full_itinerary}
+    """
+    justification = await self._generate_text(prompt)
+
+    # Ask for people count using options UI
+    yield self._create_options_event(
+        ctx,
+        title,
+        options=["1", "2", "3", "4+"],
+        message=(
+            f"{justification} Please select the number of people for the"
+            " reservation."
         ),
-        tools=[FunctionTool(make_update_ui(title, session))],
+        ui_type="ticket_selection",
     )
 
-    agent_session_id = f"{thread_id}_{sanitize_agent_name(title)}"
-    runner = InMemoryRunner(agent, app_name="BookingServer")
-    await runner.session_service.create_session(
-        app_name="BookingServer",
-        user_id=thread_id,
-        session_id=agent_session_id,
+    if title not in session.pause_events:
+      session.pause_events[title] = asyncio.Event()
+    else:
+      session.pause_events[title].clear()
+
+    await session.pause_events[title].wait()
+
+    people_count = session.results.get(title) or "Unknown"
+
+    confirmed_text = await self._generate_text(
+        "Generate a SINGLE realistic status line for confirming a table for"
+        f" {people_count} people at '{title}'. Do NOT include the restaurant"
+        " name in the output, just the status (e.g., 'Table reserved for"
+        f" {people_count}', 'Reservation secured')."
+    )
+    yield self._create_text_event(ctx, confirmed_text, author=title)
+    yield self._create_end_event(ctx, author=title)
+    await asyncio.sleep(1)
+
+
+class RestaurantSimulationAgent(BaseSimulationAgent):
+  name: str = "restaurant"
+  items: list[dict] = []
+  full_itinerary: list[dict] = []
+
+  async def _run_async_impl(
+      self, ctx: InvocationContext
+  ) -> AsyncGenerator[Event, None]:
+    if not self.items:
+      return
+
+    sub_agents = [
+        SingleRestaurantSimulationAgent(
+            name=f"single_restaurant_{i}",
+            item_title=item.get("title", "Restaurant"),
+            full_itinerary=self.full_itinerary,
+        )
+        for i, item in enumerate(self.items)
+    ]
+    parallel_agent = ParallelAgent(
+        name="restaurants_parallel", sub_agents=sub_agents
     )
 
-    async for _ in runner.run_async(
-        new_message=genai_types.Content(
-            parts=[genai_types.Part.from_text(text=f"Please book: '{title}'")]
-        ),
-        user_id=thread_id,
-        session_id=agent_session_id,
-    ):
-      pass
-  except Exception as e:
-    print(f"AGENT [Flight - '{title}'] Error: {e}")
-    traceback.print_exc()
+    async for event in parallel_agent.run_async(ctx):
+      yield event
 
 
-async def run_hotel_agent(title: str, session: SessionState, thread_id: str):
-  try:
-    print(f"AGENT [Hotel - '{title}']: started")
-    await session.queue.put({
-        "createSurface": {
-            "surfaceId": title,
-            "catalogId": (
-                "https://example.com/catalogs/booking_assistant/v1/catalog.json"
-            ),
-        }
-    })
+class ItineraryOrchestratorAgent(BaseSimulationAgent):
+  name: str = "booking"
 
-    agent = Agent(
-        name=sanitize_agent_name(title),
-        model="gemini-2.5-flash",
-        instruction=(
-            f"Book a hotel for: '{title}'. Use the update_ui tool to ask the"
-            " user to choose a lodging room. Finally use update_ui to show"
-            " booking confirmation status.\n\n"
-            + A2UI_SYSTEM_INSTRUCTION
-        ),
-        tools=[FunctionTool(make_update_ui(title, session))],
+  async def _run_async_impl(
+      self, ctx: InvocationContext
+  ) -> AsyncGenerator[Event, None]:
+    if ctx.session.id not in sessions:
+      sessions[ctx.session.id] = SessionState()
+
+    user_text = ""
+    if ctx.user_content and ctx.user_content.parts:
+      user_text = ctx.user_content.parts[0].text
+
+    try:
+      data = json.loads(user_text)
+      itinerary = data.get("itinerary", [])
+      print(f"DEBUG: Parsed itinerary: {itinerary}")
+    except json.JSONDecodeError:
+      yield self._create_text_event(
+          ctx, "Failed to parse itinerary. Running all agents as default."
+      )
+      itinerary = [
+          {"type": "TRANSPORTATION"},
+          {"type": "CULTURE"},
+          {"type": "FOOD_AND_DRINK"},
+      ]
+      print("DEBUG: Failed to parse itinerary, using default.")
+
+    sub_agents = []
+
+    # Handle Hotels group
+    hotel_items = [e for e in itinerary if e.get("type") == "ACCOMMODATION"]
+    if hotel_items:
+      sub_agents.append(HotelSimulationAgent(items=hotel_items, full_itinerary=itinerary))
+
+    # Handle Museums group
+    museum_items = [
+        e for e in itinerary if e.get("type") in ["CULTURE", "ACTIVITY"]
+    ]
+    if museum_items:
+      sub_agents.append(MuseumSimulationAgent(items=museum_items, full_itinerary=itinerary))
+
+    # Handle Restaurants group
+    restaurant_items = [
+        e for e in itinerary if e.get("type") == "FOOD_AND_DRINK"
+    ]
+    if restaurant_items:
+      sub_agents.append(RestaurantSimulationAgent(items=restaurant_items, full_itinerary=itinerary))
+
+    # Handle Flights group
+    flight_items = [e for e in itinerary if e.get("type") == "TRANSPORTATION"]
+    if flight_items:
+      sub_agents.append(FlightSimulationAgent(items=flight_items))
+
+    if not sub_agents:
+      yield self._create_text_event(
+          ctx, "No relevant agents found for itinerary."
+      )
+      return
+
+    parallel_agent = ParallelAgent(
+        name="parallel_orchestrator", sub_agents=sub_agents
     )
 
-    agent_session_id = f"{thread_id}_{sanitize_agent_name(title)}"
-    runner = InMemoryRunner(agent, app_name="BookingServer")
-    await runner.session_service.create_session(
-        app_name="BookingServer",
-        user_id=thread_id,
-        session_id=agent_session_id,
-    )
-
-    async for _ in runner.run_async(
-        new_message=genai_types.Content(
-            parts=[genai_types.Part.from_text(text=f"Please book: '{title}'")]
-        ),
-        user_id=thread_id,
-        session_id=agent_session_id,
-    ):
-      pass
-  except Exception as e:
-    print(f"AGENT [Hotel - '{title}'] Error: {e}")
-    traceback.print_exc()
+    async for event in parallel_agent.run_async(ctx):
+      yield event
 
 
-async def run_museum_agent(title: str, session: SessionState, thread_id: str):
-  try:
-    print(f"AGENT [Museum - '{title}']: started")
-    await session.queue.put({
-        "createSurface": {
-            "surfaceId": title,
-            "catalogId": (
-                "https://example.com/catalogs/booking_assistant/v1/catalog.json"
-            ),
-        }
-    })
+class BookingAgentLoader(BaseAgentLoader):
 
-    agent = Agent(
-        name=sanitize_agent_name(title),
-        model="gemini-2.5-flash",
-        instruction=(
-            f"Book museum tickets for: '{title}'. Use the update_ui tool to ask"
-            " the user to choose entry ticket options. Finally use update_ui to"
-            " show booking confirmation status.\n\n"
-            + A2UI_SYSTEM_INSTRUCTION
-        ),
-        tools=[FunctionTool(make_update_ui(title, session))],
-    )
+  def load_agent(self, agent_name: str) -> BaseAgent:
+    if agent_name == "booking":
+      return ItineraryOrchestratorAgent()
+    raise ValueError(f"Unknown agent: {agent_name}")
 
-    agent_session_id = f"{thread_id}_{sanitize_agent_name(title)}"
-    runner = InMemoryRunner(agent, app_name="BookingServer")
-    await runner.session_service.create_session(
-        app_name="BookingServer",
-        user_id=thread_id,
-        session_id=agent_session_id,
-    )
-
-    async for _ in runner.run_async(
-        new_message=genai_types.Content(
-            parts=[genai_types.Part.from_text(text=f"Please book: '{title}'")]
-        ),
-        user_id=thread_id,
-        session_id=agent_session_id,
-    ):
-      pass
-  except Exception as e:
-    print(f"AGENT [Museum - '{title}'] Error: {e}")
-    traceback.print_exc()
+  def list_agents(self) -> list[str]:
+    return ["booking"]
 
 
-async def run_restaurant_agent(
-    title: str, session: SessionState, thread_id: str
-):
-  try:
-    print(f"AGENT [Restaurant - '{title}']: started")
-    await session.queue.put({
-        "createSurface": {
-            "surfaceId": title,
-            "catalogId": (
-                "https://example.com/catalogs/booking_assistant/v1/catalog.json"
-            ),
-        }
-    })
-
-    agent = Agent(
-        name=sanitize_agent_name(title),
-        model="gemini-2.5-flash",
-        instruction=(
-            f"Book a table reservation for restaurant: '{title}'. Use the"
-            " update_ui tool to ask the user to choose a party size. Finally use"
-            " update_ui to show booking confirmation status.\n\n"
-            + A2UI_SYSTEM_INSTRUCTION
-        ),
-        tools=[FunctionTool(make_update_ui(title, session))],
-    )
-
-    agent_session_id = f"{thread_id}_{sanitize_agent_name(title)}"
-    runner = InMemoryRunner(agent, app_name="BookingServer")
-    await runner.session_service.create_session(
-        app_name="BookingServer",
-        user_id=thread_id,
-        session_id=agent_session_id,
-    )
-
-    async for _ in runner.run_async(
-        new_message=genai_types.Content(
-            parts=[genai_types.Part.from_text(text=f"Please book: '{title}'")]
-        ),
-        user_id=thread_id,
-        session_id=agent_session_id,
-    ):
-      pass
-  except Exception as e:
-    print(f"AGENT [Restaurant - '{title}'] Error: {e}")
-    traceback.print_exc()
+app = get_fast_api_app(
+    agents_dir=".",
+    agent_loader=BookingAgentLoader(),
+    web=False,
+    auto_create_session=True,
+)
 
 
-async def stream_booking_session(input_data: dict) -> StreamingResponse:
-  thread_id = (
-      input_data.get("session_id")
-      or input_data.get("threadId")
-      or str(uuid.uuid4())
-  )
-
-  if thread_id in sessions:
-    old_session = sessions[thread_id]
-    print(f"SERVER: Cleaning up old background tasks for sessionId={thread_id}")
-    for task in old_session.bg_tasks:
-      if not task.done():
-        task.cancel()
-
-  session = SessionState()
-  sessions[thread_id] = session
-
-  # Extract itinerary items
-  itinerary_items = []
-  if "itinerary" in input_data:
-    itinerary_items = input_data["itinerary"]
-  elif "new_message" in input_data:
-    parts = input_data.get("new_message", {}).get("parts", [])
-    for p in parts:
-      txt = p.get("text", "")
-      try:
-        data = json.loads(txt)
-        if "itinerary" in data:
-          itinerary_items = data["itinerary"]
-      except Exception:
-        pass
-  elif "messages" in input_data:
-    for msg in reversed(input_data.get("messages", [])):
-      content = msg.get("content")
-      if isinstance(content, str):
-        try:
-          data = json.loads(content)
-          itinerary_items = data.get("events", [])
-          if itinerary_items:
-            break
-        except Exception:
-          pass
-
-  async def event_generator():
-    print(f"SERVER [threadId={thread_id}]: Starting event generator stream")
-    tasks = []
-    for item in itinerary_items:
-      title = item.get("title", "Booking")
-      type_val = item.get("type", "")
-      if type_val in ["TRANSPORTATION", "Flight"]:
-        tasks.append(run_flight_agent(title, session, thread_id))
-      elif type_val in ["LODGING", "ACCOMMODATION", "Hotel"]:
-        tasks.append(run_hotel_agent(title, session, thread_id))
-      elif type_val in ["CULTURE", "ACTIVITY", "Activity"]:
-        tasks.append(run_museum_agent(title, session, thread_id))
-      elif type_val in ["FOOD_AND_DRINK", "Dining"]:
-        tasks.append(run_restaurant_agent(title, session, thread_id))
-
-    async def run_all_and_signal():
-      try:
-        if tasks:
-          await asyncio.gather(*tasks)
-        print(f"SERVER [threadId={thread_id}]: All sub-agent tasks completed")
-      except Exception:
-        traceback.print_exc()
-      finally:
-        await session.queue.put("__DONE__")
-
-    bg_task = asyncio.create_task(run_all_and_signal())
-    session.bg_tasks.append(bg_task)
-
-    while True:
-      try:
-        payload = await asyncio.wait_for(session.queue.get(), timeout=15.0)
-        if payload == "__DONE__":
-          break
-        yield f"data: {json.dumps(payload)}\n\n"
-      except asyncio.TimeoutError:
-        yield ": keep-alive\n\n"
-
-    print(f"SERVER [threadId={thread_id}]: Stream completed")
-
-  return StreamingResponse(event_generator(), media_type="text/event-stream")
-
-
-@app.post("/")
-async def root_post(input_data: dict):
-  return await stream_booking_session(input_data)
-
-
-@app.post("/run_sse")
-async def run_sse_post(input_data: dict):
-  return await stream_booking_session(input_data)
-
-
-class ResponseData(BaseModel):
-  seat: Optional[str] = None
-  time: Optional[str] = None
-  tickets: Optional[str] = None
-  people: Optional[str] = None
-  confirmed: Optional[bool] = None
+class ResponseData(pydantic.BaseModel):
+  seat: str | None = None
+  time: str | None = None
+  tickets: str | None = None
+  people: str | None = None
+  confirmed: bool | None = None
 
 
 @app.post("/respond")
-async def respond(
-    request: Request,
-    session_id: Optional[str] = Query(None),
-    sessionId: Optional[str] = Query(None),
-    agent_id: Optional[str] = Query(None),
-    agentId: Optional[str] = Query(None),
-    value: Optional[str] = Query(None),
-    data: Optional[ResponseData] = None,
-):
-  s_id = session_id or sessionId
-  a_id = agent_id or agentId
+async def respond(session_id: str, data: ResponseData, agent_id: str | None = None):
+  if session_id not in sessions:
+    raise fastapi.HTTPException(status_code=404, detail="Session not found")
 
-  if not s_id or s_id not in sessions:
-    raise HTTPException(status_code=404, detail="Session not found")
+  session = sessions[session_id]
+  
+  # For backward compatibility or default flight use flight_Flight
+  pause_key = agent_id or "flight_Flight"
+  
+  if data.seat:
+    session.results[pause_key] = data.seat
+  elif data.time:
+    session.results[pause_key] = data.time
+  elif data.tickets:
+    session.results[pause_key] = data.tickets
+  elif data.people:
+    session.results[pause_key] = data.people
+  elif data.confirmed:
+    session.results[pause_key] = "Confirmed"
 
-  session = sessions[s_id]
+  if pause_key in session.pause_events:
+    session.pause_events[pause_key].set()
+  else:
+    raise fastapi.HTTPException(status_code=404, detail=f"Pause for {pause_key} not active")
 
-  # Resolve value
-  resp_value = value
-  if not resp_value and data:
-    if data.seat:
-      resp_value = data.seat
-    elif data.time:
-      resp_value = data.time
-    elif data.tickets:
-      resp_value = data.tickets
-    elif data.people:
-      resp_value = data.people
-    elif data.confirmed:
-      resp_value = "Confirmed"
+  return {"status": "success", "message": "User response received"}
 
-  if not resp_value:
-    try:
-      body = await request.json()
-      resp_value = (
-          body.get("seat")
-          or body.get("time")
-          or body.get("tickets")
-          or body.get("selectedOption")
-          or body.get("value")
-          or ("Confirmed" if body.get("confirmed") else None)
-      )
-    except Exception:
-      pass
 
-  if not resp_value:
-    resp_value = "Confirmed"
-
-  # Find the paused future
-  fut = session.pause_events.get(a_id) if a_id else None
-  if not fut:
-    for k, v in session.pause_events.items():
-      if not v.done():
-        fut = v
-        break
-
-  if fut and not fut.done():
-    fut.set_result(resp_value)
-    return {"status": "success", "message": "User response delivered"}
-
-  return {"status": "accepted", "message": "No active pause found"}
+for route in app.routes:
+  path = getattr(route, "path", "N/A")
+  methods = getattr(route, "methods", "N/A")
+  print(f"DEBUG: Bound route: {path} methods: {methods}")
 
 
 @app.get("/stream")
 def get_stream_token(auth_only: bool = False):
-  """Returns an OIDC token or local endpoint for streaming access."""
-  audience = os.environ.get(
-      "CLOUD_RUN_AUDIENCE",
-      "https://jetpacker-server-254502043090.us-central1.run.app",
-  )
-  url = (
-      "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience="
-      + audience
-  )
+  """Returns an OIDC token for direct streaming access."""
+  audience = "https://jetpacker-server-254502043090.us-central1.run.app"
+  url = f"http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience={audience}"
 
   try:
     req = urllib.request.Request(url)
     req.add_header("Metadata-Flavor", "Google")
-    token = urllib.request.urlopen(req, timeout=2).read().decode("utf-8")
+    token = urllib.request.urlopen(req).read().decode("utf-8")
     return {"token": token, "url": f"{audience}/run_sse"}
-  except Exception:
-    return {"token": "local_dev_token", "url": "http://localhost:8000/run_sse"}
-
-
-@app.get("/health")
-def health():
-  return {"status": "healthy", "service": "jetpacker-a2ui-booking-server"}
+  except Exception as e:
+    raise fastapi.HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":
