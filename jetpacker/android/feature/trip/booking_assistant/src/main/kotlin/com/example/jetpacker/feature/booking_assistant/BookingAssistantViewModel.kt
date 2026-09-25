@@ -680,7 +680,13 @@ class BookingAssistantViewModel @Inject constructor(
 
   private suspend fun getFirebaseAuthToken(): String {
     log("getFirebaseAuthToken: getting FirebaseAuth instance")
-    val auth = FirebaseAuth.getInstance()
+    val auth = try {
+      FirebaseAuth.getInstance()
+    } catch (e: Exception) {
+      log("FirebaseAuth.getInstance failed: ${e.message}")
+      Log.e("BookingAssistant", "FirebaseAuth.getInstance failed", e)
+      return ""
+    }
     var user = auth.currentUser
     log("getFirebaseAuthToken: current user is ${user?.uid ?: "null"}")
     if (user == null) {
