@@ -39,7 +39,7 @@ class NanobananaViewModel @Inject constructor(private val nanobananaDataSource: 
                 val bitmap = nanobananaDataSource.generateImage(prompt)
                 _uiState.value = NanobananaUIState.ImageGenerated(bitmap, contentDescription = prompt)
             } catch (e: Exception) {
-                _uiState.value = NanobananaUIState.Error(e.toUserFacingAiErrorMessage())
+                _uiState.value = NanobananaUIState.Error(e.toUserFacingAiErrorMessage("Nanobanana"))
             }
         }
     }

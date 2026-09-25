@@ -39,7 +39,7 @@ class MagicSelfieViewModel @Inject constructor(private val magicSelfieRepository
                 val resultBitmap = magicSelfieRepository.generateMagicSelfie(bitmap, prompt)
                 _uiState.value = MagicSelfieUiState.Success(resultBitmap)
             } catch (e: Exception) {
-                _uiState.value = MagicSelfieUiState.Error(e.toUserFacingAiErrorMessage())
+                _uiState.value = MagicSelfieUiState.Error(e.toUserFacingAiErrorMessage("MagicSelfie"))
             }
         }
     }

@@ -15,12 +15,17 @@
  */
 package com.android.ai.uicomponent
 
+import android.util.Log
+
 /**
  * Maps Firebase AI Logic failures to actionable messages for sample UIs.
  *
  * Cloud samples currently surface [Throwable.message] directly, which is often a raw
  * 403 ("GenerateContent are blocked") or quota error. Those strings do not explain
  * API key restrictions or billing requirements.
+ *
+ * Use [toUserFacingAiErrorMessage] with a log tag from sample ViewModels so the raw
+ * exception remains in Logcat for developers.
  */
 object FirebaseAiErrorMessages {
     const val API_BLOCKED =
@@ -33,6 +38,11 @@ object FirebaseAiErrorMessages {
         "The model blocked this request. Try a different prompt or image. " +
             "If this keeps happening, review the safety settings for the sample."
     const val GENERIC = "Something went wrong, try again"
+}
+
+fun Throwable.toUserFacingAiErrorMessage(logTag: String): String {
+    Log.e(logTag, "Firebase AI request failed", this)
+    return toUserFacingAiErrorMessage()
 }
 
 fun Throwable.toUserFacingAiErrorMessage(): String {
