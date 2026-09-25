@@ -117,7 +117,7 @@ class GeminiImageChatViewModel @Inject constructor() : ViewModel() {
                 }
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(geminiMessageState = GeminiMessageState.Error(e.toUserFacingAiErrorMessage()))
+                    it.copy(geminiMessageState = GeminiMessageState.Error(e.toUserFacingAiErrorMessage("GeminiImageChat")))
                 }
             }
         }

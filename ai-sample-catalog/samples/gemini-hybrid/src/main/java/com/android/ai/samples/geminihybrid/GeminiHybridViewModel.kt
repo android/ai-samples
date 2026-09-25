@@ -207,9 +207,8 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
                     }
                 }
             } catch (e: Exception) {
-                Log.e("GeminiHybrid", "Inference failed", e)
                 _uiState.update {
-                    it.copy(status = GeminiStatus.Error(e.toUserFacingAiErrorMessage()))
+                    it.copy(status = GeminiStatus.Error(e.toUserFacingAiErrorMessage("GeminiHybrid")))
                 }
             }
         }
@@ -277,9 +276,8 @@ class GeminiHybridViewModel @Inject constructor() : ViewModel() {
                     }
                 }
             } catch (e: Exception) {
-                Log.e("GeminiHybrid", "Inference failed", e)
                 _uiState.update {
-                    it.copy(status = GeminiStatus.Error(e.toUserFacingAiErrorMessage()))
+                    it.copy(status = GeminiStatus.Error(e.toUserFacingAiErrorMessage("GeminiHybrid")))
                 }
             }
         }

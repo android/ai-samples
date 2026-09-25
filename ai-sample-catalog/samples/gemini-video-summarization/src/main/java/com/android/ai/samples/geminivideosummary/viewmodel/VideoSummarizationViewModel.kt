@@ -15,7 +15,6 @@
  */
 package com.android.ai.samples.geminivideosummary.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.ai.samples.geminivideosummary.util.VideoItem
@@ -94,10 +93,11 @@ class VideoSummarizationViewModel @Inject constructor() : ViewModel() {
             } catch (error: Exception) {
                 _uiState.update {
                     it.copy(
-                        summarizationState = SummarizationState.Error(error.toUserFacingAiErrorMessage()),
+                        summarizationState = SummarizationState.Error(
+                            error.toUserFacingAiErrorMessage(tag),
+                        ),
                     )
                 }
-                Log.e(tag, "Error processing prompt : $error")
             }
         }
     }

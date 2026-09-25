@@ -89,7 +89,7 @@ class VideoMetadataCreationViewModel @Inject constructor(private val application
                 _uiState.update {
                     it.copy(
                         metadataCreationState = MetadataCreationState.Error(
-                            e.toUserFacingAiErrorMessage(),
+                            e.toUserFacingAiErrorMessage("VideoMetadataCreation"),
                         ),
                     )
                 }
