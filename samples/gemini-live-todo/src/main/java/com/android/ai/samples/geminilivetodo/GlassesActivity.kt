@@ -7,8 +7,8 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,19 +23,18 @@ import androidx.xr.glimmer.GlimmerTheme
 import com.android.ai.samples.geminilivetodo.ui.AudioExperience
 import com.android.ai.samples.geminilivetodo.ui.GlimmerTodoScreen
 import com.android.ai.samples.geminilivetodo.ui.TodoScreenViewModel
+import androidx.xr.projected.ProjectedActivityCompat
 import androidx.xr.projected.ProjectedDeviceController
 import androidx.xr.projected.ProjectedDeviceController.Capability
 import androidx.xr.projected.ProjectedDisplayController
 import androidx.xr.projected.ProjectedDisplayController.PresentationMode
 import androidx.xr.projected.experimental.ExperimentalProjectedApi
-import androidx.xr.projected.permissions.ProjectedPermissionsRequestParams
-import androidx.xr.projected.permissions.ProjectedPermissionsResultContract
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-private const val TAG = "GlassesActivity"
-
 @AndroidEntryPoint
+@OptIn(ExperimentalProjectedApi::class)
 class GlassesActivity : ComponentActivity() {
 
     private val viewModel: TodoScreenViewModel by viewModels()
@@ -43,28 +42,16 @@ class GlassesActivity : ComponentActivity() {
     private var isDisplayCapable by mutableStateOf(false)
     private var areVisualsOn by mutableStateOf(false)
 
-    private val requiredPermissions = listOf(
-        Manifest.permission.RECORD_AUDIO
-    )
-
-    @OptIn(ExperimentalProjectedApi::class)
-    private val requestPermissionLauncher: ActivityResultLauncher<List<ProjectedPermissionsRequestParams>> =
-        registerForActivityResult(ProjectedPermissionsResultContract()) { results ->
-            val granted = requiredPermissions.all { permission ->
-                results[permission] == true
-            }
-            isPermissionsGranted = granted
-            setupContent()
-        }
-
-    @OptIn(ExperimentalProjectedApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         viewModel.initializeGeminiLive(this)
 
-        val allGranted = checkAllPermissionsGranted()
-        isPermissionsGranted = allGranted
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            checkAndRequestAudioPermission()
+        } else {
+            isPermissionsGranted = checkAudioPermissionGranted()
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             lifecycleScope.launch {
@@ -82,22 +69,6 @@ class GlassesActivity : ComponentActivity() {
             }
         }
 
-        setupContent()
-
-
-        if (!allGranted) {
-            requestPermissions()
-        }
-    }
-
-
-    private fun checkAllPermissionsGranted(): Boolean {
-        return requiredPermissions.all { permission ->
-            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
-        }
-    }
-
-    private fun setupContent() {
         setContent {
             GlimmerTheme {
                 RootScreen(
@@ -110,16 +81,61 @@ class GlassesActivity : ComponentActivity() {
         }
     }
 
-    @OptIn(ExperimentalProjectedApi::class)
-    private fun requestPermissions() {
-        requestPermissionLauncher.launch(
-            listOf(
-                ProjectedPermissionsRequestParams(
-                    permissions = requiredPermissions,
-                    rationale = getString(R.string.permission_rationale_mic_access)
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray,
+        deviceId: Int,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults, deviceId)
+        if (requestCode != RECORD_AUDIO_PERMISSION_REQUEST_CODE) return
+
+        val isAudioGranted =
+            grantResults.getOrNull(permissions.indexOf(Manifest.permission.RECORD_AUDIO)) ==
+                PackageManager.PERMISSION_GRANTED
+
+        isPermissionsGranted = isAudioGranted
+        Log.d(TAG, "Is Permissions Granted? $isPermissionsGranted")
+
+    }
+
+    private fun checkAudioPermissionGranted(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.RECORD_AUDIO,
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+    private fun checkAndRequestAudioPermission() {
+        val hasAudioPermission = checkAudioPermissionGranted()
+        isPermissionsGranted = hasAudioPermission
+
+        if (!hasAudioPermission) {
+            requestAudioPermission()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+    private fun requestAudioPermission() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                ProjectedActivityCompat.requestPermissions(
+                    this@GlassesActivity,
+                    arrayOf(Manifest.permission.RECORD_AUDIO),
+                    RECORD_AUDIO_PERMISSION_REQUEST_CODE,
                 )
-            )
-        )
+            } catch (e: IllegalStateException) {
+                // Thrown when the projected system service can't be bound.
+                Log.e(TAG, "Audio permission request failed: projected service unavailable.", e)
+            }
+        }
+    }
+
+    private companion object {
+        const val RECORD_AUDIO_PERMISSION_REQUEST_CODE = 1002
+        const val TAG = "GlassesActivity"
     }
 }
 
