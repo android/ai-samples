@@ -36,17 +36,24 @@ class JetPackerApplication : Application() {
     ComposeUiFlags.isMediaQueryIntegrationEnabled = true
     super.onCreate()
     FeatureFlags.initialize(this)
-    Firebase.initialize(context = this)
-    Firebase.appCheck.installAppCheckProviderFactory(
-      DebugAppCheckProviderFactory.getInstance(),
-    )
-    Firebase.auth.signInAnonymously()
-      .addOnCompleteListener { task ->
-        if (task.isSuccessful) {
-          Log.d("JetPackerApplication", "Anonymous auth successful")
-        } else {
-          Log.w("JetPackerApplication", "Anonymous auth failed", task.exception)
-        }
+    try {
+      if (Firebase.initialize(context = this) != null) {
+        Firebase.appCheck.installAppCheckProviderFactory(
+          DebugAppCheckProviderFactory.getInstance(),
+        )
+        Firebase.auth.signInAnonymously()
+          .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+              Log.d("JetPackerApplication", "Anonymous auth successful")
+            } else {
+              Log.w("JetPackerApplication", "Anonymous auth failed", task.exception)
+            }
+          }
+      } else {
+        Log.w("JetPackerApplication", "Firebase not initialized")
       }
+    } catch (e: Exception) {
+      Log.w("JetPackerApplication", "Firebase initialization error", e)
+    }
   }
 }
