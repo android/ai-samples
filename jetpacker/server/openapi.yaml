@@ -59,3 +59,44 @@ paths:
       responses:
         '200':
           description: OK
+  /v2/orchestrate:
+    post:
+      summary: Orchestrate V2
+      operationId: orchestrate_v2
+      x-google-backend:
+        address: https://jetpacker-server-v2-254502043090.us-central1.run.app/orchestrate
+        deadline: 300.0
+      responses:
+        '200':
+          description: OK
+  /v2/stream:
+    get:
+      summary: Stream V2
+      operationId: stream_v2
+      x-google-backend:
+        address: https://jetpacker-server-v2-254502043090.us-central1.run.app/stream
+        deadline: 300.0
+      responses:
+        '200':
+          description: OK
+  /v2/respond:
+    post:
+      summary: Respond V2
+      operationId: respond_v2
+      x-google-backend:
+        address: https://jetpacker-server-v2-254502043090.us-central1.run.app/respond
+        deadline: 300.0
+      responses:
+        '200':
+          description: OK
+  /v2/status_stream:
+    post:
+      summary: Status Stream V2
+      operationId: status_stream_v2
+      x-google-backend:
+        address: https://jetpacker-server-v2-254502043090.us-central1.run.app/status_stream
+        deadline: 300.0
+      responses:
+        '200':
+          description: OK
+

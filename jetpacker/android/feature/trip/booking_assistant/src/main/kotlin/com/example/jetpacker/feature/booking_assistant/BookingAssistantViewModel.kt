@@ -24,6 +24,9 @@ import androidx.a2ui.model.protocol.A2uiClientEventMessage
 import androidx.a2ui.model.protocol.A2uiComponentPayload
 import androidx.a2ui.model.protocol.A2uiCreateSurfaceMessage
 import androidx.a2ui.model.protocol.A2uiUpdateComponentsMessage
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -75,8 +78,32 @@ class BookingAssistantViewModel @Inject constructor(
   private var activeStreamJob: Job? = null
   private var streamIdleJob: Job? = null
 
-  // Set to true when testing against local server (http://localhost:8000)
-  val useLocalServer: Boolean = false
+  enum class BackendEndpoint {
+    LOCAL,
+    PARALLEL_STAGING,
+    PRODUCTION,
+  }
+
+  /**
+   * Active backend endpoint. Defaults to [BackendEndpoint.PARALLEL_STAGING] to connect to the
+   * side-by-side /v2 Cloud Run service without impacting production.
+   */
+  var backendEndpoint by mutableStateOf(BackendEndpoint.PARALLEL_STAGING)
+
+  // Backwards compatibility property
+  var useLocalServer: Boolean
+    get() = backendEndpoint == BackendEndpoint.LOCAL
+    set(value) {
+      backendEndpoint = if (value) BackendEndpoint.LOCAL else BackendEndpoint.PARALLEL_STAGING
+    }
+
+  val baseUrl: String
+    get() =
+      when (backendEndpoint) {
+        BackendEndpoint.LOCAL -> "http://localhost:8000"
+        BackendEndpoint.PARALLEL_STAGING -> "https://jetset-gateway-38wzy18y.uc.gateway.dev/v2"
+        BackendEndpoint.PRODUCTION -> "https://jetset-gateway-38wzy18y.uc.gateway.dev"
+      }
 
   private val client = OkHttpClient.Builder().readTimeout(0, TimeUnit.MILLISECONDS).build()
 
@@ -310,9 +337,9 @@ class BookingAssistantViewModel @Inject constructor(
       }
     }
 
-    log("Starting connectToStream with sId: $sId, useLocalServer: $useLocalServer")
+    log("Starting connectToStream with sId: $sId, backendEndpoint: $backendEndpoint")
 
-    if (useLocalServer) {
+    if (backendEndpoint == BackendEndpoint.LOCAL) {
       streamToken = "local_dev_token"
       streamUrl = "http://localhost:8000/run_sse"
     } else {
@@ -323,7 +350,7 @@ class BookingAssistantViewModel @Inject constructor(
         return
       }
 
-      val gatewayUrl = "https://jetset-gateway-38wzy18y.uc.gateway.dev/stream?auth_only=true"
+      val gatewayUrl = "$baseUrl/stream?auth_only=true"
       val tokenRequest = Request.Builder()
         .url(gatewayUrl)
         .addHeader("Authorization", "Bearer $fbToken")
@@ -656,7 +683,6 @@ class BookingAssistantViewModel @Inject constructor(
         }
 
         val token = getFirebaseAuthToken()
-        val baseUrl = if (useLocalServer) "http://localhost:8000" else "https://jetset-gateway-38wzy18y.uc.gateway.dev"
         val encodedSessionId = URLEncoder.encode(sId, "UTF-8")
         val encodedAgentId = URLEncoder.encode(agentId, "UTF-8")
         val request = Request.Builder()

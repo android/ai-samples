@@ -119,6 +119,69 @@ docker build -t jetpacker-server .
 docker run -p 8080:8080 jetpacker-server
 ```
 
+#### Deploying to Google Cloud Run (Production vs Parallel Staging)
+
+The booking server can be deployed to Cloud Run behind a Google Cloud API Gateway that validates Firebase Authentication tokens.
+
+We support side-by-side execution so you can run and test updates on a parallel staging backend without affecting the production service:
+- **Production Service (`jetpacker-server`)**: Backs `/` routes on API Gateway (`/stream`, `/respond`, etc.).
+- **Parallel Staging Service (`jetpacker-server-v2`)**: Backs `/v2/*` routes on API Gateway (`/v2/stream`, `/v2/respond`, etc.).
+
+##### Deploying to Parallel Staging (`jetpacker-server-v2`)
+1. **Build and submit the image**:
+   ```bash
+   gcloud builds submit --tag gcr.io/android-devrel-ci/jetpacker-server:v2 \
+       --project=android-devrel-ci server/
+   ```
+2. **Deploy to Cloud Run**:
+   ```bash
+   gcloud run deploy jetpacker-server-v2 \
+       --image gcr.io/android-devrel-ci/jetpacker-server:v2 \
+       --region us-central1 \
+       --project android-devrel-ci \
+       --set-env-vars CLOUD_RUN_AUDIENCE=https://jetpacker-server-v2-254502043090.us-central1.run.app \
+       --no-allow-unauthenticated
+   ```
+
+##### Deploying to Production (`jetpacker-server`)
+1. **Build and submit the image**:
+   ```bash
+   gcloud builds submit --tag gcr.io/android-devrel-ci/jetpacker-server:latest \
+       --project=android-devrel-ci server/
+   ```
+2. **Deploy to Cloud Run**:
+   ```bash
+   gcloud run deploy jetpacker-server \
+       --image gcr.io/android-devrel-ci/jetpacker-server:latest \
+       --region us-central1 \
+       --project android-devrel-ci \
+       --set-env-vars CLOUD_RUN_AUDIENCE=https://jetpacker-server-254502043090.us-central1.run.app \
+       --no-allow-unauthenticated
+   ```
+
+##### Updating the API Gateway Config
+To update API Gateway routes using `server/openapi.yaml`:
+```bash
+gcloud api-gateway api-configs create jetset-config-v<N> \
+    --api=jetset-api \
+    --openapi-spec=server/openapi.yaml \
+    --project=android-devrel-ci \
+    --backend-auth-service-account=api-gateway-invoker@android-devrel-ci.iam.gserviceaccount.com
+
+gcloud api-gateway gateways update jetset-gateway \
+    --api=jetset-api \
+    --api-config=jetset-config-v<N> \
+    --location=us-central1 \
+    --project=android-devrel-ci
+```
+
+##### Configuring the Android App Endpoint
+In `BookingAssistantViewModel.kt`, adjust `backendEndpoint`:
+- `BackendEndpoint.PARALLEL_STAGING` *(default)*: Connects to `/v2` on API Gateway (`jetpacker-server-v2`).
+- `BackendEndpoint.PRODUCTION`: Connects to `/` on API Gateway (`jetpacker-server`).
+- `BackendEndpoint.LOCAL`: Connects to `http://localhost:8000` (via `adb reverse tcp:8000 tcp:8000`).
+
+
 ## On-Device AI Features
 JetPacker integrates local on-device AI capabilities using ML Kit. These features run entirely on-device and can be toggled or customized in `android/core/flags/src/main/kotlin/com/example/jetpacker/core/flags/FeatureFlags.kt`:
 - **ENABLE_TRIP_SUMMARY_AND_TIPS**: Generates an on-device card summary of the current trip using ML Kit GenAI Prompt.

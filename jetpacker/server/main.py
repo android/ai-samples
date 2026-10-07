@@ -1,6 +1,6 @@
 import asyncio
 import json
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator
 import urllib.request
 
 import fastapi
@@ -13,6 +13,8 @@ from google.adk.events.event import Event
 from google.adk.events.event_actions import EventActions
 from google import genai
 from google.genai import types
+import inspect
+import os
 import pydantic
 import uvicorn
 
@@ -482,20 +484,39 @@ class BookingAgentLoader(BaseAgentLoader):
     return ["booking"]
 
 
-app = get_fast_api_app(
-    agents_dir=".",
-    agent_loader=BookingAgentLoader(),
-    web=False,
-    auto_create_session=True,
-)
+_adk_sig = inspect.signature(get_fast_api_app)
+_adk_kwargs: dict[str, Any] = {
+    "agents_dir": ".",
+}
+if "web" in _adk_sig.parameters:
+  _adk_kwargs["web"] = False
+if "agent_loader" in _adk_sig.parameters:
+  _adk_kwargs["agent_loader"] = BookingAgentLoader()
+if "auto_create_session" in _adk_sig.parameters:
+  _adk_kwargs["auto_create_session"] = True
+
+print(f"DEBUG: Initializing ADK FastAPI with kwargs: {_adk_kwargs}")
+app = get_fast_api_app(**_adk_kwargs)
 
 
 class ResponseData(pydantic.BaseModel):
   seat: str | None = None
   time: str | None = None
+  selectedFlightId: str | None = None
+  selectedRoomId: str | None = None
+  nightlyRate: int | None = None
+  checkInTime: str | None = None
+  floorPreference: str | None = None
+  breakfastIncluded: bool | None = None
+  lateCheckout: bool | None = None
   tickets: str | None = None
   people: str | None = None
   confirmed: bool | None = None
+  selectionType: str | None = None
+  priorityBoarding: bool | None = None
+  extraBag: bool | None = None
+  totalFare: int | None = None
+  clientDataModel: dict[str, Any] | None = None
 
 
 @app.post("/respond")
@@ -508,7 +529,18 @@ async def respond(session_id: str, data: ResponseData, agent_id: str | None = No
   # For backward compatibility or default flight use flight_Flight
   pause_key = agent_id or "flight_Flight"
   
-  if data.seat:
+  if (
+      data.clientDataModel is not None
+      or data.selectionType in ("time", "confirm_flight_config", "hotel_room", "confirm_hotel_config")
+      or data.selectedFlightId is not None
+      or data.selectedRoomId is not None
+      or data.priorityBoarding is not None
+      or data.extraBag is not None
+      or data.breakfastIncluded is not None
+      or data.lateCheckout is not None
+  ):
+    session.results[pause_key] = data.model_dump(exclude_none=True)
+  elif data.seat:
     session.results[pause_key] = data.seat
   elif data.time:
     session.results[pause_key] = data.time
@@ -536,7 +568,11 @@ for route in app.routes:
 @app.get("/stream")
 def get_stream_token(auth_only: bool = False):
   """Returns an OIDC token for direct streaming access."""
-  audience = "https://jetpacker-server-254502043090.us-central1.run.app"
+  del auth_only  # Unused parameter kept for gateway compatibility
+  audience = os.environ.get(
+      "CLOUD_RUN_AUDIENCE",
+      "https://jetpacker-server-254502043090.us-central1.run.app",
+  )
   url = f"http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity?audience={audience}"
 
   try:
@@ -545,7 +581,8 @@ def get_stream_token(auth_only: bool = False):
     token = urllib.request.urlopen(req).read().decode("utf-8")
     return {"token": token, "url": f"{audience}/run_sse"}
   except Exception as e:
-    raise fastapi.HTTPException(status_code=500, detail=str(e))
+    # If metadata server fails or running unauthenticated/local, provide fallback
+    return {"token": "dev_stream_token", "url": f"{audience}/run_sse"}
 
 
 if __name__ == "__main__":
