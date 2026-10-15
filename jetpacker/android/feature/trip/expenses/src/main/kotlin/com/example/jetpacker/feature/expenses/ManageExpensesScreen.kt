@@ -16,7 +16,6 @@
 
 package com.example.jetpacker.feature.expenses
 
-import com.example.jetpacker.core.ui.components.JetPackerFabConfig
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -24,6 +23,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -55,7 +55,6 @@ import androidx.compose.material.icons.rounded.DocumentScanner
 import androidx.compose.material.icons.rounded.Hotel
 import androidx.compose.material.icons.rounded.ModeOfTravel
 import androidx.compose.material.icons.rounded.Restaurant
-import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.ShoppingCart
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Button
@@ -115,6 +114,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.jetpacker.core.ui.EventColors
 import com.example.jetpacker.core.ui.SekuyaFontFamily
+import com.example.jetpacker.core.ui.components.JetPackerFabConfig
 import com.example.jetpacker.data.itinerary.Expense
 import com.example.jetpacker.data.trips.DummyData
 import kotlinx.coroutines.launch
@@ -166,6 +166,7 @@ fun ManageExpensesScreen(
   contentPadding: PaddingValues,
   onBack: () -> Unit = {},
   onFabConfigChange: (JetPackerFabConfig?) -> Unit = {},
+  isAssistantProcessingExpense: Boolean = false,
   viewModel: ManageExpensesViewModel = hiltViewModel(),
 ) {
   val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -190,6 +191,12 @@ fun ManageExpensesScreen(
   var expenseToDelete by remember { mutableStateOf<Expense?>(null) }
 
   val totalSpent = expenses.sumOf { CurrencyConverter.convertToUsd(it.amount, it.currency) }
+  val animatedTotalSpent by
+    animateFloatAsState(
+      targetValue = totalSpent.toFloat(),
+      animationSpec = tween(durationMillis = 600),
+      label = "total_spent_anim",
+    )
 
   val isProcessing = remember { mutableStateOf(false) }
 
@@ -231,19 +238,21 @@ fun ManageExpensesScreen(
       }
     }
 
+  val onScanReceiptClick: () -> Unit = {
+    coroutineScope.launch {
+      if (viewModel.isSupported()) {
+        cameraLauncher.launch(null)
+      } else {
+        Toast.makeText(context, "Feature not available", Toast.LENGTH_SHORT).show()
+      }
+    }
+  }
+
   LaunchedEffect(Unit) {
     onFabConfigChange(
       JetPackerFabConfig(
         icon = Icons.Rounded.DocumentScanner,
-        onClick = {
-          coroutineScope.launch {
-            if (viewModel.isSupported()) {
-              cameraLauncher.launch(null)
-            } else {
-              Toast.makeText(context, "Feature not available", Toast.LENGTH_SHORT).show()
-            }
-          }
-        },
+        onClick = onScanReceiptClick,
         contentDescription = "Add Expense",
       )
     )
@@ -272,10 +281,10 @@ fun ManageExpensesScreen(
           }
         },
         actions = {
-          IconButton(onClick = {}) {
+          IconButton(onClick = onScanReceiptClick) {
             Icon(
-              Icons.Rounded.Search,
-              contentDescription = "Search",
+              Icons.Rounded.DocumentScanner,
+              contentDescription = "Scan Receipt",
               tint = MaterialTheme.colorScheme.onSurface,
             )
           }
@@ -297,7 +306,7 @@ fun ManageExpensesScreen(
           modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          val totalText = "$${"%.2f".format(totalSpent)}"
+          val totalText = "$${"%.2f".format(animatedTotalSpent)}"
 
           Surface(shape = RoundedCornerShape(30.dp), color = MaterialTheme.colorScheme.surface) {
             Text(
@@ -342,18 +351,43 @@ fun ManageExpensesScreen(
           }
         }
 
-        Text(
-          text = "Recent expenses",
-          style = MaterialTheme.typography.titleMedium,
-          fontWeight = FontWeight.Medium,
-          color = MaterialTheme.colorScheme.onSurface,
-          modifier = Modifier.padding(vertical = 16.dp),
-        )
-
-        if (isProcessing.value) {
-          ShimmerExpenseItem()
-          Spacer(modifier = Modifier.height(12.dp))
+        Row(
+          modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Text(
+            text = "Recent expenses",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+          )
+          Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.secondary,
+            contentColor = MaterialTheme.colorScheme.onSecondary,
+            modifier = Modifier.clickable { onScanReceiptClick() },
+          ) {
+            Row(
+              modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+              Icon(
+                imageVector = Icons.Rounded.DocumentScanner,
+                contentDescription = "Scan receipt",
+                modifier = Modifier.size(18.dp),
+              )
+              Text(
+                text = "Scan receipt",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+              )
+            }
+          }
         }
+
+        val showShimmer = isProcessing.value || isAssistantProcessingExpense
 
         LazyColumn(
           modifier =
@@ -373,6 +407,9 @@ fun ManageExpensesScreen(
           verticalArrangement = Arrangement.spacedBy(12.dp),
           contentPadding = PaddingValues(bottom = 100.dp),
         ) {
+          if (showShimmer) {
+            item(key = "shimmer_placeholder") { ShimmerExpenseItem() }
+          }
           items(expenses, key = { it.id }) { expense ->
             ExpenseItem(
               expense = expense,
@@ -383,6 +420,7 @@ fun ManageExpensesScreen(
                 isDetailSheetVisible = true
               },
               onDelete = { expenseToDelete = expense },
+              modifier = Modifier.animateItem(),
             )
           }
         }
@@ -505,11 +543,20 @@ fun ExpenseItem(
 ) {
   val (icon, color) =
     when (expense.category.lowercase()) {
-      "travel" -> Icons.Rounded.ModeOfTravel to EventColors.Flight
-      "food" -> Icons.Rounded.Restaurant to EventColors.Food
+      "travel",
+      "transport",
+      "transportation",
+      "flight",
+      "train",
+      "transit" -> Icons.Rounded.ModeOfTravel to EventColors.Flight
+      "food",
+      "dining",
+      "restaurant" -> Icons.Rounded.Restaurant to EventColors.Food
       "shopping" -> Icons.Rounded.ShoppingCart to EventColors.Shopping
       "entertainment" -> Icons.Rounded.Star to EventColors.Entertainment
-      "hotel" -> Icons.Rounded.Hotel to EventColors.Hotel
+      "hotel",
+      "accommodation",
+      "lodging" -> Icons.Rounded.Hotel to EventColors.Hotel
       else -> Icons.Rounded.ConfirmationNumber to EventColors.Activity
     }
 
@@ -672,11 +719,8 @@ fun DeleteExpenseSheet(expense: Expense, onConfirm: () -> Unit, onDismiss: () ->
               .padding(horizontal = 8.dp, vertical = 12.dp),
           verticalAlignment = Alignment.CenterVertically,
         ) {
-          Checkbox(
-            checked = isConfirmChecked,
+          Checkbox(checked = isConfirmChecked, onCheckedChange = { isConfirmChecked = it })
 
-            onCheckedChange = { isConfirmChecked = it }
-          )
           Text(
             "I am sure I want to delete this expense.",
             style = MaterialTheme.typography.labelMedium,
@@ -688,9 +732,7 @@ fun DeleteExpenseSheet(expense: Expense, onConfirm: () -> Unit, onDismiss: () ->
       Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         TextButton(
           colors =
-            ButtonDefaults.textButtonColors(
-              contentColor = MaterialTheme.colorScheme.onSurface
-            ),
+            ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
           onClick = onDismiss,
           modifier = Modifier.weight(1f),
         ) {
