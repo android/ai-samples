@@ -190,13 +190,10 @@ fun ManageExpensesScreen(
 
   var expenseToDelete by remember { mutableStateOf<Expense?>(null) }
 
-  val totalSpent = expenses.sumOf { CurrencyConverter.convertToUsd(it.amount, it.currency) }
-  val animatedTotalSpent by
-    animateFloatAsState(
-      targetValue = totalSpent.toFloat(),
-      animationSpec = tween(durationMillis = 600),
-      label = "total_spent_anim",
-    )
+  val totalSpent =
+    remember(expenses) {
+      expenses.sumOf { CurrencyConverter.convertToUsd(it.amount, it.currency) }
+    }
 
   val isProcessing = remember { mutableStateOf(false) }
 
@@ -238,12 +235,16 @@ fun ManageExpensesScreen(
       }
     }
 
-  val onScanReceiptClick: () -> Unit = {
-    coroutineScope.launch {
-      if (viewModel.isSupported()) {
-        cameraLauncher.launch(null)
-      } else {
-        Toast.makeText(context, "Feature not available", Toast.LENGTH_SHORT).show()
+  val onScanReceiptClick: () -> Unit = remember {
+    {
+      if (!isProcessing.value) {
+        coroutineScope.launch {
+          if (viewModel.isSupported()) {
+            cameraLauncher.launch(null)
+          } else {
+            Toast.makeText(context, "Feature not available", Toast.LENGTH_SHORT).show()
+          }
+        }
       }
     }
   }
@@ -281,7 +282,7 @@ fun ManageExpensesScreen(
           }
         },
         actions = {
-          IconButton(onClick = onScanReceiptClick) {
+          IconButton(onClick = onScanReceiptClick, enabled = !isProcessing.value) {
             Icon(
               Icons.Rounded.DocumentScanner,
               contentDescription = "Scan Receipt",
@@ -302,54 +303,11 @@ fun ManageExpensesScreen(
       Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 16.dp)) {
 
         // Total spent and Budget display
-        Column(
-          modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-          horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-          val totalText = "$${"%.2f".format(animatedTotalSpent)}"
-
-          Surface(shape = RoundedCornerShape(30.dp), color = MaterialTheme.colorScheme.surface) {
-            Text(
-              text = totalText,
-              style =
-                MaterialTheme.typography.displayLarge.copy(
-                  fontSize = 84.sp,
-                  fontWeight = FontWeight.Black,
-                ),
-              color = MaterialTheme.colorScheme.onSurface,
-              maxLines = 1,
-              autoSize = TextAutoSize.StepBased(minFontSize = 24.sp, maxFontSize = 84.sp),
-              modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
-            )
-          }
-
-          Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 12.dp, end = 16.dp),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically,
-          ) {
-            Text(
-              text = "/",
-              style = MaterialTheme.typography.titleLarge,
-              fontWeight = FontWeight.Black,
-              color = MaterialTheme.colorScheme.secondary,
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Surface(
-              shape = RoundedCornerShape(30.dp),
-              color = MaterialTheme.colorScheme.onSurface,
-              modifier = Modifier.clickable { isBudgetSheetVisible = true },
-            ) {
-              Text(
-                text = "$${budget.toInt()}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.surface,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-              )
-            }
-          }
-        }
+        TotalSpentDisplay(
+          totalSpent = totalSpent,
+          budget = budget,
+          onBudgetClick = { isBudgetSheetVisible = true },
+        )
 
         Row(
           modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
@@ -363,10 +321,11 @@ fun ManageExpensesScreen(
             color = MaterialTheme.colorScheme.onSurface,
           )
           Surface(
+            onClick = onScanReceiptClick,
             shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.secondary,
             contentColor = MaterialTheme.colorScheme.onSecondary,
-            modifier = Modifier.clickable { onScanReceiptClick() },
+            enabled = !isProcessing.value,
           ) {
             Row(
               modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
@@ -375,7 +334,7 @@ fun ManageExpensesScreen(
             ) {
               Icon(
                 imageVector = Icons.Rounded.DocumentScanner,
-                contentDescription = "Scan receipt",
+                contentDescription = null,
                 modifier = Modifier.size(18.dp),
               )
               Text(
@@ -408,7 +367,9 @@ fun ManageExpensesScreen(
           contentPadding = PaddingValues(bottom = 100.dp),
         ) {
           if (showShimmer) {
-            item(key = "shimmer_placeholder") { ShimmerExpenseItem() }
+            item(key = "shimmer_placeholder") {
+              ShimmerExpenseItem(modifier = Modifier.animateItem())
+            }
           }
           items(expenses, key = { it.id }) { expense ->
             ExpenseItem(
@@ -461,7 +422,70 @@ fun ManageExpensesScreen(
 }
 
 @Composable
-fun ShimmerExpenseItem() {
+private fun TotalSpentDisplay(
+  totalSpent: Double,
+  budget: Double,
+  onBudgetClick: () -> Unit,
+  modifier: Modifier = Modifier,
+) {
+  val animatedTotalSpent by
+    animateFloatAsState(
+      targetValue = totalSpent.toFloat(),
+      animationSpec = tween(durationMillis = 600),
+      label = "total_spent_anim",
+    )
+  val totalText = "$${"%.2f".format(animatedTotalSpent)}"
+
+  Column(
+    modifier = modifier.fillMaxWidth().padding(vertical = 16.dp),
+    horizontalAlignment = Alignment.CenterHorizontally,
+  ) {
+    Surface(shape = RoundedCornerShape(30.dp), color = MaterialTheme.colorScheme.surface) {
+      Text(
+        text = totalText,
+        style =
+          MaterialTheme.typography.displayLarge.copy(
+            fontSize = 84.sp,
+            fontWeight = FontWeight.Black,
+          ),
+        color = MaterialTheme.colorScheme.onSurface,
+        maxLines = 1,
+        autoSize = TextAutoSize.StepBased(minFontSize = 24.sp, maxFontSize = 84.sp),
+        modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+      )
+    }
+
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(top = 12.dp, end = 16.dp),
+      horizontalArrangement = Arrangement.End,
+      verticalAlignment = Alignment.CenterVertically,
+    ) {
+      Text(
+        text = "/",
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Black,
+        color = MaterialTheme.colorScheme.secondary,
+      )
+      Spacer(modifier = Modifier.width(8.dp))
+      Surface(
+        shape = RoundedCornerShape(30.dp),
+        color = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier.clickable { onBudgetClick() },
+      ) {
+        Text(
+          text = "$${budget.toInt()}",
+          style = MaterialTheme.typography.titleMedium,
+          fontWeight = FontWeight.Black,
+          color = MaterialTheme.colorScheme.surface,
+          modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+      }
+    }
+  }
+}
+
+@Composable
+fun ShimmerExpenseItem(modifier: Modifier = Modifier) {
   val shimmerColors =
     listOf(
       Color.LightGray.copy(alpha = 0.6f),
@@ -490,7 +514,7 @@ fun ShimmerExpenseItem() {
     )
 
   Card(
-    modifier = Modifier.fillMaxWidth(),
+    modifier = modifier.fillMaxWidth(),
     shape = RoundedCornerShape(12.dp),
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
   ) {
@@ -542,7 +566,7 @@ fun ExpenseItem(
   modifier: Modifier = Modifier,
 ) {
   val (icon, color) =
-    when (expense.category.lowercase()) {
+    when (expense.category.trim().lowercase()) {
       "travel",
       "transport",
       "transportation",
@@ -824,7 +848,7 @@ fun ExpenseDetailSheet(
       Button(
         onClick = {
           val newAmount = amountText.toDoubleOrNull() ?: expense.amount
-          onSave(expense.copy(title = title, amount = newAmount, category = category.lowercase()))
+          onSave(expense.copy(title = title, amount = newAmount, category = category.trim().lowercase()))
         },
         modifier = Modifier.fillMaxWidth().height(56.dp),
       ) {
