@@ -6,8 +6,13 @@ from typing import Any
 
 def __getattr__(name: str) -> Any:
   if name == "root_agent":
-    if "main" in sys.modules:
-      return sys.modules["main"].ItineraryOrchestratorAgent()
+    main_mod = sys.modules.get("main") or (
+        sys.modules.get("__main__")
+        if hasattr(sys.modules.get("__main__"), "ItineraryOrchestratorAgent")
+        else None
+    )
+    if main_mod is not None:
+      return main_mod.ItineraryOrchestratorAgent()
     import main
 
     return main.ItineraryOrchestratorAgent()

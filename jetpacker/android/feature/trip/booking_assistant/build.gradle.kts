@@ -23,7 +23,12 @@ plugins {
 
 android {
   namespace = "com.example.jetpacker.feature.booking_assistant"
-  compileSdk = libs.versions.compileSdk.get().toInt()
+  compileSdk {
+    version =
+      release(libs.versions.compileSdk.get().toInt()) {
+        minorApiLevel = libs.versions.compileSdkMinor.get().toInt()
+      }
+  }
   defaultConfig { minSdk = libs.versions.minSdk.get().toInt() }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -63,6 +68,11 @@ dependencies {
   implementation(platform(libs.firebase.bom))
   implementation(libs.firebase.auth.ktx)
   implementation(libs.kotlinx.coroutines.play.services)
+
+  testImplementation(libs.junit)
+  testImplementation(libs.google.truth)
+  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation("org.json:json:20240303")
 }
 
 kotlin { jvmToolchain(17) }
