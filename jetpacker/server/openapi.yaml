@@ -11,9 +11,9 @@ securityDefinitions:
     authorizationUrl: ""
     flow: "implicit"
     type: "oauth2"
-    x-google-issuer: "https://securetoken.google.com/android-devrel-ci"
+    x-google-issuer: "https://securetoken.google.com/YOUR_FIREBASE_PROJECT_ID"
     x-google-jwks_uri: "https://www.googleapis.com/service_accounts/v1/metadata/x509/securetoken@system.gserviceaccount.com"
-    x-google-audiences: "android-devrel-ci"
+    x-google-audiences: "YOUR_FIREBASE_PROJECT_ID"
 
 security:
   - firebase: []
@@ -24,7 +24,7 @@ paths:
       summary: Orchestrate
       operationId: orchestrate
       x-google-backend:
-        address: https://jetpacker-server-254502043090.us-central1.run.app/orchestrate
+        address: https://YOUR_CLOUD_RUN_SERVICE_URL/orchestrate
         deadline: 300.0
       responses:
         '200':
@@ -34,7 +34,7 @@ paths:
       summary: Stream
       operationId: stream
       x-google-backend:
-        address: https://jetpacker-server-254502043090.us-central1.run.app/stream
+        address: https://YOUR_CLOUD_RUN_SERVICE_URL/stream
         deadline: 300.0
       responses:
         '200':
@@ -44,7 +44,7 @@ paths:
       summary: Respond
       operationId: respond
       x-google-backend:
-        address: https://jetpacker-server-254502043090.us-central1.run.app/respond
+        address: https://YOUR_CLOUD_RUN_SERVICE_URL/respond
         deadline: 300.0
       responses:
         '200':
@@ -54,7 +54,7 @@ paths:
       summary: Status Stream
       operationId: status_stream
       x-google-backend:
-        address: https://jetpacker-server-254502043090.us-central1.run.app/status_stream
+        address: https://YOUR_CLOUD_RUN_SERVICE_URL/status_stream
         deadline: 300.0
       responses:
         '200':
@@ -64,7 +64,7 @@ paths:
       summary: Orchestrate V2
       operationId: orchestrate_v2
       x-google-backend:
-        address: https://jetpacker-server-v2-254502043090.us-central1.run.app/orchestrate
+        address: https://YOUR_CLOUD_RUN_SERVICE_URL/v2/orchestrate
         deadline: 300.0
       responses:
         '200':
@@ -74,7 +74,7 @@ paths:
       summary: Stream V2
       operationId: stream_v2
       x-google-backend:
-        address: https://jetpacker-server-v2-254502043090.us-central1.run.app/stream
+        address: https://YOUR_CLOUD_RUN_SERVICE_URL/v2/stream
         deadline: 300.0
       responses:
         '200':
@@ -84,7 +84,7 @@ paths:
       summary: Respond V2
       operationId: respond_v2
       x-google-backend:
-        address: https://jetpacker-server-v2-254502043090.us-central1.run.app/respond
+        address: https://YOUR_CLOUD_RUN_SERVICE_URL/v2/respond
         deadline: 300.0
       responses:
         '200':
@@ -94,7 +94,7 @@ paths:
       summary: Status Stream V2
       operationId: status_stream_v2
       x-google-backend:
-        address: https://jetpacker-server-v2-254502043090.us-central1.run.app/status_stream
+        address: https://YOUR_CLOUD_RUN_SERVICE_URL/v2/status_stream
         deadline: 300.0
       responses:
         '200':
