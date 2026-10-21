@@ -235,14 +235,22 @@ fun ManageExpensesScreen(
       }
     }
 
+  var isLaunchingCamera by remember { mutableStateOf(false) }
+  val isScanDisabled = isProcessing.value || isLaunchingCamera
+
   val onScanReceiptClick: () -> Unit = remember {
     {
-      if (!isProcessing.value) {
+      if (!isProcessing.value && !isLaunchingCamera) {
+        isLaunchingCamera = true
         coroutineScope.launch {
-          if (viewModel.isSupported()) {
-            cameraLauncher.launch(null)
-          } else {
-            Toast.makeText(context, "Feature not available", Toast.LENGTH_SHORT).show()
+          try {
+            if (viewModel.isSupported()) {
+              cameraLauncher.launch(null)
+            } else {
+              Toast.makeText(context, "Feature not available", Toast.LENGTH_SHORT).show()
+            }
+          } finally {
+            isLaunchingCamera = false
           }
         }
       }
@@ -282,16 +290,15 @@ fun ManageExpensesScreen(
           }
         },
         actions = {
-          IconButton(onClick = onScanReceiptClick, enabled = !isProcessing.value) {
+          IconButton(onClick = onScanReceiptClick, enabled = !isScanDisabled) {
             Icon(
               Icons.Rounded.DocumentScanner,
               contentDescription = "Scan Receipt",
-              tint = MaterialTheme.colorScheme.onSurface,
             )
           }
         },
         colors =
-          TopAppBarDefaults.centerAlignedTopAppBarColors(
+          TopAppBarDefaults.topAppBarColors(
             containerColor = Color.Transparent,
             scrolledContainerColor = Color.Transparent,
           ),
@@ -323,9 +330,13 @@ fun ManageExpensesScreen(
           Surface(
             onClick = onScanReceiptClick,
             shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.secondary,
-            contentColor = MaterialTheme.colorScheme.onSecondary,
-            enabled = !isProcessing.value,
+            color =
+              if (!isScanDisabled) MaterialTheme.colorScheme.secondary
+              else MaterialTheme.colorScheme.secondary.copy(alpha = 0.38f),
+            contentColor =
+              if (!isScanDisabled) MaterialTheme.colorScheme.onSecondary
+              else MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.38f),
+            enabled = !isScanDisabled,
           ) {
             Row(
               modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
@@ -351,17 +362,20 @@ fun ManageExpensesScreen(
         LazyColumn(
           modifier =
             Modifier.graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
-              .drawWithContent {
-                drawContent()
-                drawRect(
-                  brush =
-                    Brush.verticalGradient(
-                      0f to Color.Black,
-                      0.8f to Color.Black,
-                      1f to Color.Transparent,
-                    ),
-                  blendMode = BlendMode.DstIn,
-                )
+              .drawWithCache {
+                val brush =
+                  Brush.verticalGradient(
+                    0f to Color.Black,
+                    0.8f to Color.Black,
+                    1f to Color.Transparent,
+                  )
+                onDrawWithContent {
+                  drawContent()
+                  drawRect(
+                    brush = brush,
+                    blendMode = BlendMode.DstIn,
+                  )
+                }
               },
           verticalArrangement = Arrangement.spacedBy(12.dp),
           contentPadding = PaddingValues(bottom = 100.dp),
