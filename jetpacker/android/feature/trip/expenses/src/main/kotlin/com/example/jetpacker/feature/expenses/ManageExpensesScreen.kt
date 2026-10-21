@@ -137,12 +137,12 @@ object CurrencyConverter {
     )
 
   fun convertToUsd(amount: Double, currency: String): Double {
-    val rate = rates[currency.uppercase()] ?: 1.0
+    val rate = rates[currency.trim().uppercase()] ?: 1.0
     return amount * rate
   }
 
   fun getSymbol(currency: String): String {
-    return when (currency.uppercase()) {
+    return when (currency.trim().uppercase()) {
       "USD" -> "$"
       "INR" -> "₹"
       "EUR" -> "€"
@@ -236,11 +236,11 @@ fun ManageExpensesScreen(
     }
 
   var isLaunchingCamera by remember { mutableStateOf(false) }
-  val isScanDisabled = isProcessing.value || isLaunchingCamera
+  val isScanDisabled = isProcessing.value || isLaunchingCamera || isAssistantProcessingExpense
 
   val onScanReceiptClick: () -> Unit = remember {
     {
-      if (!isProcessing.value && !isLaunchingCamera) {
+      if (!isScanDisabled) {
         isLaunchingCamera = true
         coroutineScope.launch {
           try {
@@ -802,11 +802,11 @@ fun ExpenseDetailSheet(
   onDismiss: () -> Unit,
   onSave: (Expense) -> Unit,
 ) {
-  var title by remember { mutableStateOf(expense.title) }
-  var amountText by remember {
+  var title by remember(expense.id) { mutableStateOf(expense.title) }
+  var amountText by remember(expense.id) {
     mutableStateOf(if (expense.amount == 0.0) "" else expense.amount.toString())
   }
-  var category by remember { mutableStateOf(expense.category) }
+  var category by remember(expense.id) { mutableStateOf(expense.category) }
 
   val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 

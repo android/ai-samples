@@ -42,6 +42,12 @@ class CurrencyConverterTest {
   }
 
   @Test
+  fun convertToUsd_trimsWhitespace() {
+    assertEquals(108.0, CurrencyConverter.convertToUsd(100.0, "  EUR  "), 0.0001)
+    assertEquals(127.0, CurrencyConverter.convertToUsd(100.0, "\tGBP\n"), 0.0001)
+  }
+
+  @Test
   fun convertToUsd_unknownCurrency_defaultsToOneToOneRate() {
     assertEquals(42.0, CurrencyConverter.convertToUsd(42.0, "XYZ"), 0.0001)
   }
@@ -64,6 +70,12 @@ class CurrencyConverterTest {
   fun getSymbol_isCaseInsensitive() {
     assertEquals("€", CurrencyConverter.getSymbol("eur"))
     assertEquals("£", CurrencyConverter.getSymbol("Gbp"))
+  }
+
+  @Test
+  fun getSymbol_trimsWhitespace() {
+    assertEquals("€", CurrencyConverter.getSymbol("  EUR  "))
+    assertEquals("£", CurrencyConverter.getSymbol("\tGBP\n"))
   }
 
   @Test
