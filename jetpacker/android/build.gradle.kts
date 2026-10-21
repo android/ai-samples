@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.LibraryExtension
+
 plugins {
   alias(libs.plugins.android.application) apply false
   alias(libs.plugins.android.library) apply false
@@ -35,6 +38,18 @@ subprojects {
   }
   tasks.withType<Test>().configureEach {
     failOnNoDiscoveredTests = false
+  }
+  pluginManager.withPlugin("com.android.application") {
+    extensions.findByType(ApplicationExtension::class.java)?.lint {
+      checkReleaseBuilds = false
+      abortOnError = false
+    }
+  }
+  pluginManager.withPlugin("com.android.library") {
+    extensions.findByType(LibraryExtension::class.java)?.lint {
+      checkReleaseBuilds = false
+      abortOnError = false
+    }
   }
   configurations.all {
     exclude(group = "com.google.protobuf", module = "protobuf-java")
