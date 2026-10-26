@@ -257,15 +257,7 @@ fun ManageExpensesScreen(
     }
   }
 
-  LaunchedEffect(Unit) {
-    onFabConfigChange(
-      JetPackerFabConfig(
-        icon = Icons.Rounded.DocumentScanner,
-        onClick = onScanReceiptClick,
-        contentDescription = "Add Expense",
-      )
-    )
-  }
+  LaunchedEffect(Unit) { onFabConfigChange(null) }
 
   Scaffold(
     modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
