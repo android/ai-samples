@@ -11,9 +11,56 @@
 
 set -euo pipefail
 
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+normalize_path() {
+  local path="$1"
+  if [[ "${path}" == "~" ]]; then
+    path="${HOME}"
+  elif [[ "${path}" == "~/"* ]]; then
+    path="${HOME}/${path#"~/"}"
+  fi
+
+  if [[ "${path}" != /* ]]; then
+    path="$(pwd)/${path}"
+  fi
+
+  local cur="${path}" suffix=""
+  while [[ ! -d "${cur}" && "${cur}" != "/" && "${cur}" != "." ]]; do
+    suffix="/$(basename -- "${cur}")${suffix}"
+    cur="$(dirname -- "${cur}")"
+  done
+
+  local resolved_dir
+  resolved_dir="$(cd -P -- "${cur}" 2>/dev/null && pwd || echo "${cur}")"
+  local full="${resolved_dir}${suffix}"
+
+  local -a parts=()
+  IFS='/' read -r -a parts <<< "${full}"
+
+  local -a stack=()
+  local part
+  for part in "${parts[@]}"; do
+    if [[ -z "${part}" || "${part}" == "." ]]; then
+      continue
+    elif [[ "${part}" == ".." ]]; then
+      if ((${#stack[@]} > 0)); then
+        unset 'stack[${#stack[@]}-1]'
+      fi
+    else
+      stack+=("${part}")
+    fi
+  done
+
+  local result=""
+  for part in "${stack[@]}"; do
+    result+="/${part}"
+  done
+  echo "${result:-/}"
+}
+
 raw_keystore="${1:-${HOME}/keys/jetpacker-upload.jks}"
-[[ "${raw_keystore}" == "~/"* ]] && raw_keystore="${HOME}/${raw_keystore#"~/"}"
-keystore="$(realpath -m -- "${raw_keystore}")"
+keystore="$(normalize_path "${raw_keystore}")"
 readonly keystore
 readonly key_alias="${2:-upload}"
 
@@ -30,12 +77,26 @@ else
 fi
 readonly keytool="${KEYTOOL_BIN}"
 
-git_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
-if [[ -n "${git_root}" && ( "${keystore}" == "${git_root}" || "${keystore}" == "${git_root}/"* ) ]]; then
-  echo "Error: refusing to create a keystore inside a source tree:" \
-    "${keystore}" >&2
-  exit 1
-fi
+is_inside_tree() {
+  local file_path="$1" root_path="$2"
+  [[ -n "${root_path}" && ( "${file_path}" == "${root_path}" || "${file_path}" == "${root_path}/"* ) ]]
+}
+
+script_git_root="$(git -C "${script_dir}" rev-parse --show-toplevel 2>/dev/null || true)"
+pwd_git_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+target_ancestor="$(dirname -- "${keystore}")"
+while [[ ! -d "${target_ancestor}" && "${target_ancestor}" != "/" ]]; do
+  target_ancestor="$(dirname -- "${target_ancestor}")"
+done
+target_git_root="$(git -C "${target_ancestor}" rev-parse --show-toplevel 2>/dev/null || true)"
+
+for root in "${script_git_root}" "${pwd_git_root}" "${target_git_root}"; do
+  if is_inside_tree "${keystore}" "${root}"; then
+    echo "Error: refusing to create a keystore inside a source tree:" \
+      "${keystore}" >&2
+    exit 1
+  fi
+done
 
 if [[ -e "${keystore}" ]]; then
   echo "Error: ${keystore} already exists. Pick another path or reuse it." >&2

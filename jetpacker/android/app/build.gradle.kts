@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import com.google.gms.googleservices.GoogleServicesTask
+
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.compose)
@@ -34,11 +36,23 @@ android {
   }
 
   defaultConfig {
-    applicationId = "com.example.jetpacker"
+    applicationId =
+      providers.gradleProperty("applicationId").getOrElse("com.example.jetpacker")
     minSdk = libs.versions.minSdk.get().toInt()
     targetSdk = libs.versions.targetSdk.get().toInt()
-    versionCode = libs.versions.versionCode.get().toInt()
+    versionCode =
+      providers
+        .gradleProperty("versionCode")
+        .map { it.toInt() }
+        .getOrElse(libs.versions.versionCode.get().toInt())
     versionName = libs.versions.versionName.get()
+
+    val abisProperty = providers.gradleProperty("abis").orNull
+    if (!abisProperty.isNullOrBlank()) {
+      ndk {
+        abiFilters += abisProperty.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+      }
+    }
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -163,3 +177,38 @@ dependencies {
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
 }
+
+val customAppId = providers.gradleProperty("applicationId").orNull
+if (!customAppId.isNullOrBlank() && customAppId != "com.example.jetpacker") {
+  val generateCustomGoogleServices =
+    tasks.register("generateCustomGoogleServices") {
+      val srcFile = file("google-services.json")
+      val outFile = layout.buildDirectory.file("generated/google-services-custom/google-services.json")
+      inputs.file(srcFile)
+      inputs.property("applicationId", customAppId)
+      outputs.file(outFile)
+      doLast {
+        val text = srcFile.readText()
+        val updated =
+          text.replace(
+            "\"package_name\": \"com.example.jetpacker\"",
+            "\"package_name\": \"$customAppId\""
+          )
+        val out = outFile.get().asFile
+        out.parentFile.mkdirs()
+        out.writeText(updated)
+      }
+    }
+
+  androidComponents {
+    onVariants { variant ->
+      val taskName = "process${variant.name.replaceFirstChar { it.uppercase() }}GoogleServices"
+      tasks.named(taskName, GoogleServicesTask::class.java).configure {
+        dependsOn(generateCustomGoogleServices)
+        val customFile = layout.buildDirectory.file("generated/google-services-custom/google-services.json").get().asFile
+        googleServicesJsonFiles.set(listOf(customFile))
+      }
+    }
+  }
+}
+

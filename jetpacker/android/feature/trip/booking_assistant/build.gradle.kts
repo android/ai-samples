@@ -23,7 +23,12 @@ plugins {
 
 android {
   namespace = "com.example.jetpacker.feature.booking_assistant"
-  compileSdk = libs.versions.compileSdk.get().toInt()
+  compileSdk {
+    version =
+      release(libs.versions.compileSdk.get().toInt()) {
+        minorApiLevel = libs.versions.compileSdkMinor.get().toInt()
+      }
+  }
   defaultConfig { minSdk = libs.versions.minSdk.get().toInt() }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17

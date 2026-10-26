@@ -10,6 +10,9 @@ To run the complete demo flow, see [DEMO.md](DEMO.md).
 - A Google Play developer account with Internal App Sharing or Internal Testing access.
 - Test device running Android 16 or later (API 36+).
 - Default store listing images and metadata (located in `store_listing/`).
+- `bundletool` (optional): Required only if using `--universal-apk`. Provide `bundletool` on `PATH` or set `BUNDLETOOL_JAR` to your `bundletool-all.jar`.
+
+> **Important**: Test devices must have the exact same package name (`applicationId`), `versionCode`, and signing certificate as the bundle uploaded to Google Play Console.
 
 ## Quick Start
 
@@ -50,7 +53,7 @@ Or pass flags directly:
     --universal-apk ~/jetpacker-play.apk
 ```
 
-The script builds `:app:bundleRelease` with Gradle, signs it with your upload key, and verifies the AppFunctions metadata assets.
+By default, output bundles are written to `~/jetpacker-play-v<versionCode>.aab`. The script builds `:app:bundleRelease` with Gradle, signs it with your upload key, and verifies the AppFunctions metadata assets (`base/root/assets/jetpacker_app_function_service.xml`).
 
 ## Profile Configuration Format
 
@@ -60,7 +63,7 @@ Profiles in `profiles/*.conf` allow storing repeatable build settings:
 | :--- | :--- |
 | `APPLICATION_ID` | Package name (e.g., `com.yourname.jetpacker`). |
 | `KEYSTORE` | Path to upload keystore (starts with `/` or `~/`). |
-| `UNIVERSAL_APK` | Optional path to output a universal test APK. |
+| `UNIVERSAL_APK` | Optional path to output a universal test APK (requires `bundletool`). |
 | `PLAY_CONSOLE` | Google Play Console URL (`https://play.google.com/console`). |
 | `DEVELOPER_ID` | Numerical developer account ID. |
 

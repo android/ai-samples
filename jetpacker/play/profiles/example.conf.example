@@ -8,4 +8,4 @@ PLAY_CONSOLE=https://play.google.com/console
 DEVELOPER_ID=1234567890123456789
 APPLICATION_ID=com.example.jetpacker
 KEYSTORE=~/keys/jetpacker-upload.jks
-UNIVERSAL_APK=~/jetpacker-play.apk
+# UNIVERSAL_APK=~/jetpacker-play.apk # Requires BUNDLETOOL_JAR or bundletool on PATH

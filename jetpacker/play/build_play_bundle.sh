@@ -38,7 +38,7 @@ readonly KEYTOOL="${JDK_BIN:+${JDK_BIN}/}keytool"
 readonly JAVA="${JDK_BIN:+${JDK_BIN}/}java"
 readonly SIGALG="${JARSIGNER_SIGALG:-SHA256withRSA}"
 
-readonly APPFUNCTIONS_ASSET="base/assets/jetpacker_app_function_service.xml"
+readonly APPFUNCTIONS_ASSET="base/root/assets/jetpacker_app_function_service.xml"
 readonly BUNDLETOOL_JAR="${BUNDLETOOL_JAR:-}"
 
 # Keys a profile can set. README.md describes them.
@@ -130,7 +130,58 @@ profile_names() {
   echo "${names:-none}"
 }
 
-declare -A profile_values=()
+normalize_path() {
+  local path="$1"
+  if [[ "${path}" == "~" ]]; then
+    path="${HOME}"
+  elif [[ "${path}" == "~/"* ]]; then
+    path="${HOME}/${path#"~/"}"
+  fi
+
+  if [[ "${path}" != /* ]]; then
+    path="$(pwd)/${path}"
+  fi
+
+  local cur="${path}" suffix=""
+  while [[ ! -d "${cur}" && "${cur}" != "/" && "${cur}" != "." ]]; do
+    suffix="/$(basename -- "${cur}")${suffix}"
+    cur="$(dirname -- "${cur}")"
+  done
+
+  local resolved_dir
+  resolved_dir="$(cd -P -- "${cur}" 2>/dev/null && pwd || echo "${cur}")"
+  local full="${resolved_dir}${suffix}"
+
+  local -a parts=()
+  IFS='/' read -r -a parts <<< "${full}"
+
+  local -a stack=()
+  local part
+  for part in "${parts[@]}"; do
+    if [[ -z "${part}" || "${part}" == "." ]]; then
+      continue
+    elif [[ "${part}" == ".." ]]; then
+      if ((${#stack[@]} > 0)); then
+        unset 'stack[${#stack[@]}-1]'
+      fi
+    else
+      stack+=("${part}")
+    fi
+  done
+
+  local result=""
+  for part in "${stack[@]}"; do
+    result+="/${part}"
+  done
+  echo "${result:-/}"
+}
+
+profile_APPLICATION_ID=""
+profile_KEYSTORE=""
+profile_UNIVERSAL_APK=""
+profile_PLAY_CONSOLE=""
+profile_DEVELOPER_ID=""
+
 load_profile() {
   local file="$1" line key value line_number=0
   local skip_re='^[[:space:]]*(#|$)'
@@ -145,29 +196,34 @@ load_profile() {
     value="${BASH_REMATCH[2]}"
     value="${value#"${value%%[![:space:]]*}"}"
     value="${value%"${value##*[![:space:]]}"}"
-    [[ " ${PROFILE_KEYS[*]} " == *" ${key} "* ]] ||
-      die "${file}:${line_number}: unknown key ${key}. Valid keys: ${PROFILE_KEYS[*]}."
+    if [[ "${value}" == '"'*'"' && "${#value}" -ge 2 ]]; then
+      value="${value:1:${#value}-2}"
+    fi
     case "${key}" in
-      KEYSTORE | UNIVERSAL_APK)
+      APPLICATION_ID) profile_APPLICATION_ID="${value}" ;;
+      KEYSTORE)
         [[ "${value}" != "~/"* ]] || value="${HOME}/${value#"~/"}"
         [[ -z "${value}" || "${value}" == /* ]] ||
-          die "${file}:${line_number}: ${key} must start with / or ~/."
+          die "${file}:${line_number}: KEYSTORE must start with / or ~/."
+        profile_KEYSTORE="${value}"
         ;;
+      UNIVERSAL_APK)
+        [[ "${value}" != "~/"* ]] || value="${HOME}/${value#"~/"}"
+        [[ -z "${value}" || "${value}" == /* ]] ||
+          die "${file}:${line_number}: UNIVERSAL_APK must start with / or ~/."
+        profile_UNIVERSAL_APK="${value}"
+        ;;
+      PLAY_CONSOLE) profile_PLAY_CONSOLE="${value}" ;;
+      DEVELOPER_ID) profile_DEVELOPER_ID="${value}" ;;
+      *) die "${file}:${line_number}: unknown key ${key}. Valid keys: ${PROFILE_KEYS[*]}." ;;
     esac
-    profile_values["${key}"]="${value}"
   done <"${file}"
-}
-
-expand_tilde() {
-  local p="$1"
-  [[ "${p}" == "~/"* ]] && p="${HOME}/${p#"~/"}"
-  echo "${p}"
 }
 
 profile_file=""
 if [[ -n "${profile}" ]]; then
   if [[ "${profile}" == */* ]]; then
-    profile_file="$(realpath -m -- "$(expand_tilde "${profile}")")"
+    profile_file="$(normalize_path "${profile}")"
   elif [[ -f "${script_dir}/profiles/${profile}.conf" ]]; then
     profile_file="${script_dir}/profiles/${profile}.conf"
   elif [[ -f "${script_dir}/profiles/${profile}.conf.example" ]]; then
@@ -180,12 +236,12 @@ if [[ -n "${profile}" ]]; then
   load_profile "${profile_file}"
 fi
 
-keystore="${keystore:-${profile_values[KEYSTORE]:-}}"
-expected_package="${expected_package:-${profile_values[APPLICATION_ID]:-com.example.jetpacker}}"
-universal_apk="${universal_apk:-${profile_values[UNIVERSAL_APK]:-}}"
-play_console="${profile_values[PLAY_CONSOLE]:-https://play.google.com/console}"
+keystore="${keystore:-${profile_KEYSTORE:-}}"
+expected_package="${expected_package:-${profile_APPLICATION_ID:-com.example.jetpacker}}"
+universal_apk="${universal_apk:-${profile_UNIVERSAL_APK:-}}"
+play_console="${profile_PLAY_CONSOLE:-https://play.google.com/console}"
 play_console="${play_console%/}"
-developer_id="${profile_values[DEVELOPER_ID]:-}"
+developer_id="${developer_id:-${profile_DEVELOPER_ID:-}}"
 
 url_re='^https://[^[:space:]]+$'
 [[ -z "${play_console}" || "${play_console}" =~ ${url_re} ]] ||
@@ -193,22 +249,45 @@ url_re='^https://[^[:space:]]+$'
 [[ -z "${developer_id}" || "${developer_id}" =~ ^[0-9]+$ ]] ||
   die "DEVELOPER_ID must contain only digits, not '${developer_id}'."
 
+if [[ -n "${expected_version}" ]]; then
+  [[ "${expected_version}" =~ ^[1-9][0-9]*$ ]] ||
+    die "--version-code must be a positive integer, not '${expected_version}'."
+fi
+
 [[ -n "${keystore}" ]] ||
   die "Pass --keystore, or a --profile that sets KEYSTORE. Create a keystore with create_upload_key.sh."
 
-keystore="$(expand_tilde "${keystore}")"
-keystore="$(realpath -m -- "${keystore}")"
+keystore="$(normalize_path "${keystore}")"
 [[ -r "${keystore}" ]] ||
   die "Can't read ${keystore}. Create it with create_upload_key.sh."
 
 if [[ -n "${out}" ]]; then
-  out="$(expand_tilde "${out}")"
-  out="$(realpath -m -- "${out}")"
+  out="$(normalize_path "${out}")"
+else
+  resolved_version="${expected_version:-}"
+  if [[ -z "${resolved_version}" && -f "${ANDROID_DIR}/gradle/libs.versions.toml" ]]; then
+    resolved_version="$(sed -n 's/^[[:space:]]*versionCode[[:space:]]*=[[:space:]]*"\([0-9]*\)".*/\1/p' "${ANDROID_DIR}/gradle/libs.versions.toml" | head -n 1)"
+  fi
+  resolved_version="${resolved_version:-1}"
+  out="${HOME}/jetpacker-play-v${resolved_version}.aab"
 fi
+
+bundletool_cmd=()
 if [[ -n "${universal_apk}" ]]; then
-  universal_apk="$(expand_tilde "${universal_apk}")"
-  universal_apk="$(realpath -m -- "${universal_apk}")"
+  universal_apk="$(normalize_path "${universal_apk}")"
+  if [[ -n "${BUNDLETOOL_JAR}" && -f "${BUNDLETOOL_JAR}" ]]; then
+    bundletool_cmd=("${JAVA}" -jar "${BUNDLETOOL_JAR}")
+  elif command -v bundletool >/dev/null 2>&1; then
+    bundletool_cmd=("$(command -v bundletool)")
+  else
+    die "Universal APK requested, but bundletool was not found. Install bundletool on PATH or set BUNDLETOOL_JAR=/path/to/bundletool.jar."
+  fi
 fi
+
+command -v "${KEYTOOL}" >/dev/null 2>&1 ||
+  die "keytool binary not found at '${KEYTOOL}'. Set JDK_BIN or ensure keytool is in PATH."
+command -v "${JARSIGNER}" >/dev/null 2>&1 ||
+  die "jarsigner binary not found at '${JARSIGNER}'. Set JDK_BIN or ensure jarsigner is in PATH."
 
 [[ -x "${GRADLEW}" ]] ||
   die "Cannot find gradlew executable at ${GRADLEW}."
@@ -221,9 +300,10 @@ else
   ks_pass="${KS_PASS}"
 fi
 
-KS_PASS="${ks_pass}" "${KEYTOOL}" -list -keystore "${keystore}" \
-  -alias "${key_alias}" -storepass:env KS_PASS >/dev/null 2>&1 ||
-  die "Wrong password, or alias '${key_alias}' isn't in ${keystore}."
+kt_err="$(KS_PASS="${ks_pass}" "${KEYTOOL}" -list -keystore "${keystore}" \
+  -alias "${key_alias}" -storepass:env KS_PASS 2>&1)" || {
+  die "keytool failed for keystore '${keystore}' (alias: '${key_alias}'): ${kt_err:-unknown error}"
+}
 
 echo "Building :app:bundleRelease with Gradle in ${ANDROID_DIR}..." >&2
 
@@ -233,6 +313,9 @@ if [[ -n "${expected_version}" ]]; then
 fi
 if [[ -n "${expected_package}" && "${expected_package}" != "com.example.jetpacker" ]]; then
   gradle_args+=("-PapplicationId=${expected_package}")
+fi
+if [[ -n "${abis}" ]]; then
+  gradle_args+=("-Pabis=${abis}")
 fi
 
 (cd "${ANDROID_DIR}" && "${GRADLEW}" "${gradle_args[@]}")
@@ -266,24 +349,19 @@ if [[ "${contents}" != *"${APPFUNCTIONS_ASSET}"* ]]; then
   echo "Warning: bundle does not contain ${APPFUNCTIONS_ASSET}." >&2
 fi
 
-out="${out:-${HOME}/jetpacker-play-release.aab}"
 mkdir -p -- "$(dirname -- "${out}")"
 cp -- "${signed}" "${out}"
 
-# If bundletool is provided and universal apk is requested, generate it
+# If universal apk is requested, generate it
 if [[ -n "${universal_apk}" ]]; then
-  if [[ -n "${BUNDLETOOL_JAR}" && -f "${BUNDLETOOL_JAR}" ]]; then
-    (umask 077 && printf '%s' "${ks_pass}" >"${work}/ks_pass")
-    "${JAVA}" -jar "${BUNDLETOOL_JAR}" build-apks --mode=universal \
-      --bundle="${signed}" --output="${work}/universal.apks" \
-      --ks="${keystore}" --ks-key-alias="${key_alias}" \
-      --ks-pass="file:${work}/ks_pass"
-    mkdir -p -- "$(dirname -- "${universal_apk}")"
-    unzip -p "${work}/universal.apks" universal.apk >"${universal_apk}"
-    echo "Universal APK generated at: ${universal_apk}"
-  else
-    echo "Notice: universal APK requested, but BUNDLETOOL_JAR is not set. Skipped universal APK generation." >&2
-  fi
+  (umask 077 && printf '%s' "${ks_pass}" >"${work}/ks_pass")
+  "${bundletool_cmd[@]}" build-apks --mode=universal \
+    --bundle="${signed}" --output="${work}/universal.apks" \
+    --ks="${keystore}" --ks-key-alias="${key_alias}" \
+    --ks-pass="file:${work}/ks_pass"
+  mkdir -p -- "$(dirname -- "${universal_apk}")"
+  unzip -p "${work}/universal.apks" universal.apk >"${universal_apk}"
+  echo "Universal APK generated at: ${universal_apk}"
 fi
 
 cert_sha256="$(KS_PASS="${ks_pass}" "${KEYTOOL}" -list \
