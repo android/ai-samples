@@ -368,6 +368,21 @@ constructor(
     activeStreamCall?.cancel()
     activeStreamJob =
       viewModelScope.launch(Dispatchers.IO) {
+        val serverBase = su.removeSuffix("/run_sse")
+        runCatching {
+          val createSessionReq =
+            Request.Builder()
+              .url("$serverBase/apps/booking/users/user_id/sessions/$sId")
+              .apply {
+                if (st.isNotEmpty()) addHeader("Authorization", "Bearer $st")
+              }
+              .post("{}".toRequestBody("application/json".toMediaType()))
+              .build()
+          client.newCall(createSessionReq).execute().close()
+        }.onFailure {
+          log("Create session error: ${it.message}")
+        }
+
         val call = client.newCall(sseRequest)
         activeStreamCall = call
         try {
@@ -452,8 +467,20 @@ constructor(
           }
 
           val directives = extractA2uiDirectives(text)
-          for (directive in directives) {
-            messageProcessor.processInput(a2uiParser, directive)
+          if (directives.isNotEmpty()) {
+            for (directive in directives) {
+              messageProcessor.processInput(a2uiParser, directive)
+            }
+          } else if (author != "__assistant__" && !text.contains("\"chatMessage\"") && text.isNotEmpty()) {
+            val msgId =
+              "assistant_${System.currentTimeMillis()}_${_uiState.value.chatMessages.size}"
+            _uiState.update { state ->
+              state.copy(
+                chatMessages =
+                  state.chatMessages +
+                    BookingChatMessage(id = msgId, isUser = false, text = text),
+              )
+            }
           }
         }
       } else {

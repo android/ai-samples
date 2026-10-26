@@ -8,25 +8,38 @@ import androidx.a2ui.compose.runtime.A2uiComponentScope
 
 /**
  * Dispatches an action merging context parameters with explicit payload values.
+ * Wraps the payload in an A2UI 'event' schema matching [A2uiUserActionParser].
  */
 internal fun A2uiComponentScope.dispatchMergedAction(
   action: Map<String, Any?>?,
   defaultEventName: String,
   extraContext: Map<String, Any>,
 ) {
-  val eventPayload = HashMap<String, Any>(extraContext)
+  val mergedContext = HashMap<String, Any>(extraContext)
+  val eventName: String
   if (action != null) {
     val eventMap = (action["event"] as? Map<*, *>) ?: action
     val contextMap = (eventMap["context"] as? Map<*, *>) ?: (action["context"] as? Map<*, *>)
     contextMap?.forEach { (k, v) ->
-      if (k is String && v != null) eventPayload[k] = v
+      if (k is String && v != null) mergedContext[k] = v
     }
-    val eventName = (eventMap["name"] as? String)
+    eventName = (eventMap["name"] as? String)
+      ?: (action["name"] as? String)
       ?: (action["eventName"] as? String)
       ?: defaultEventName
-    eventPayload["eventName"] = eventName
   } else {
-    eventPayload["eventName"] = defaultEventName
+    eventName = defaultEventName
   }
-  dispatchAction(eventPayload)
+
+  // Preserve event name in context map as well for compatibility with consumers
+  mergedContext["name"] = eventName
+  mergedContext["eventName"] = eventName
+
+  val actionPayload = mapOf(
+    "event" to mapOf(
+      "name" to eventName,
+      "context" to mergedContext,
+    )
+  )
+  dispatchAction(actionPayload)
 }
