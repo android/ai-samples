@@ -60,7 +60,7 @@ targetSdk = "37"
 truth = "1.4.2"
 versionCode = "1"
 versionName = "1.0"
-appfunctions = "1.0.0-alpha10"
+appfunctions = "1.0.0-alpha13"
 
 [libraries]
 androidx-a2ui-model = { group = "androidx.a2ui", name = "a2ui-model", version.ref = "a2ui" }

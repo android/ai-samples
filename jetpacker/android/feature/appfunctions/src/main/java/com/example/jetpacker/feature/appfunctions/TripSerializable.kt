@@ -186,3 +186,57 @@ data class EventDetailsSerializable(
   /** Summary description of the event details. */
   val description: String? = null,
 )
+
+/** Represents a saved travel document (passport, visa, ticket, booking confirmation, or note). */
+@AppFunctionSerializable(isDescribedByKDoc = true)
+data class TravelDocumentSerializable(
+  /** The document's unique identifier. */
+  val id: String,
+  /** The title or name of the document (e.g. 'US Passport', 'SFMOMA Admission Ticket'). */
+  val title: String,
+  /** The category or type of the document (e.g. 'PASSPORT', 'VISA', 'TICKET', 'HOTEL', 'OTHER'). */
+  val documentType: String,
+  /** The issuing country or authority if applicable. */
+  val issuingCountry: String? = null,
+  /** The masked document number or confirmation reference if applicable. */
+  val documentNumberMasked: String? = null,
+  /** The expiration date formatted as YYYY-MM-DD, or null if none. */
+  val expiryDateFormatted: String? = null,
+  /** Notes, booking codes, Wi-Fi passwords, or important details. */
+  val notes: String? = null,
+  /** The trip ID this document belongs to, or null if general. */
+  val tripId: String? = null,
+  /** Validity status ('VALID', 'EXPIRING_SOON', 'EXPIRED', 'NO_EXPIRY'). */
+  val validityStatus: String? = "VALID",
+  /** Status of the tool execution. */
+  val status: String? = "SUCCESS",
+  /** User-friendly completion message. */
+  val message: String? = null,
+)
+
+/** Represents detailed content and text extracted from a travel document. */
+@AppFunctionSerializable(isDescribedByKDoc = true)
+data class TravelDocumentDetailsSerializable(
+  /** The document's unique identifier. */
+  val id: String,
+  /** The title of the document. */
+  val title: String,
+  /** The category or type of the document. */
+  val documentType: String,
+  /** The issuing country if applicable. */
+  val issuingCountry: String? = null,
+  /** The masked document number or confirmation code. */
+  val documentNumberMasked: String? = null,
+  /** The expiration date formatted as YYYY-MM-DD. */
+  val expiryDateFormatted: String? = null,
+  /** Notes or extra information stored with the document. */
+  val notes: String? = null,
+  /** Full textual content or extracted document text. */
+  val content: String? = null,
+  /** Validity status ('VALID', 'EXPIRING_SOON', 'EXPIRED', 'NO_EXPIRY'). */
+  val validityStatus: String? = "VALID",
+  /** Status of the tool execution. */
+  val status: String? = "SUCCESS",
+  /** User-friendly completion message. */
+  val message: String? = null,
+)

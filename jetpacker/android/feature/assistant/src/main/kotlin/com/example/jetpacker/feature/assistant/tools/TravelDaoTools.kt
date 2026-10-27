@@ -16,6 +16,7 @@
 
 package com.example.jetpacker.feature.assistant.tools
 
+import android.graphics.BitmapFactory
 import android.util.Log
 import com.example.jetpacker.data.itinerary.EventDao
 import com.example.jetpacker.data.itinerary.EventType
@@ -24,16 +25,21 @@ import com.example.jetpacker.data.itinerary.ExpenseDao
 import com.example.jetpacker.data.itinerary.FlightDetail
 import com.example.jetpacker.data.itinerary.TimelineEvent
 import com.example.jetpacker.data.itinerary.TourDetailDao
+import com.example.jetpacker.data.itinerary.TravelDocument
+import com.example.jetpacker.data.itinerary.TravelDocumentDao
+import com.example.jetpacker.data.itinerary.TravelDocumentManager
 import com.example.jetpacker.data.itinerary.VoiceNoteEntity
 import com.example.jetpacker.data.trips.DummyData
 import com.example.jetpacker.data.trips.Trip
 import com.example.jetpacker.data.trips.TripDao
+import com.example.jetpacker.feature.assistant.documents.DocumentSemanticSearch
 import com.google.mlkit.genai.prompt.Generation
 import com.google.mlkit.genai.prompt.ImagePart
 import com.google.mlkit.genai.prompt.TextPart
 import com.google.mlkit.genai.prompt.generateContentRequest
 import com.google.mlkit.genai.schema.tools.FunctionSchema
 import com.google.mlkit.genai.schema.tools.FunctionType
+import java.io.File
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -51,8 +57,7 @@ class GetFlightItineraryTool(
   private val activeTripIdProvider: () -> String? = { null },
 ) {
   val name = "get_flight_itinerary"
-  val description =
-    "Retrieves flight itinerary details including flight number, airline, airports, departure and arrival times, terminal, gate, and status for a trip or flight number."
+  val description = "Retrieves flight itinerary details including flight number, airline, airports, departure and arrival times, terminal, gate, and status for a trip or flight number."
   val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
@@ -131,6 +136,491 @@ class GetFlightItineraryTool(
   }
 }
 
+/** Tool to retrieve stored travel documents (passports, visas, IDs) from the Room database. */
+class GetTravelDocumentTool(
+  private val travelDocumentDao: TravelDocumentDao,
+  private val documentSemanticSearch: DocumentSemanticSearch? = null,
+) {
+  val name = "get_travel_document"
+  val description = "Retrieves stored travel documents, hotel welcome cards, Wi-Fi networks and passwords, flight vouchers, tickets, IDs, driver's licenses, baggage claim tags, parking signs, and travel notes. Call this whenever the user asks about Wi-Fi passwords, lodging details, reservations, tickets, or travel documents."
+  val parametersSchema =
+    FunctionSchema(
+      type = FunctionType.OBJECT,
+      properties =
+        mapOf(
+          "documentType" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description =
+                "Optional document type filter: 'WIFI', 'HOTEL', 'PASSPORT', 'VISA', 'TICKET', 'DRIVER_LICENSE', 'BAGGAGE', 'PARKING', 'TRANSIT', 'MUSEUM', 'NOTE', or 'OTHER'.",
+            ),
+          "query" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description =
+                "Natural language search query to locate relevant documents, Wi-Fi cards, hotel info, tickets, or notes (e.g. 'wifi password', 'hotel', 'passport', 'parking', 'baggage').",
+            ),
+          "documentId" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description = "Optional unique identifier of a specific document.",
+            ),
+          "tripId" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description = "Optional trip ID to filter documents for a specific trip.",
+            ),
+          "eventId" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description =
+                "Optional timeline event ID to filter documents linked to a specific event.",
+            ),
+        ),
+    )
+
+  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+    val documentId = args["documentId"]?.toString()
+    val documentType = args["documentType"]?.toString()
+    val query = args["query"]?.toString()
+    val tripId = args["tripId"]?.toString()
+    val eventId = args["eventId"]?.toString()
+
+    val documents: List<TravelDocument> =
+      if (!documentId.isNullOrBlank()) {
+        val doc = travelDocumentDao.getDocumentById(documentId)
+        if (doc != null) listOf(doc) else emptyList()
+      } else if (!query.isNullOrBlank() && documentSemanticSearch != null) {
+        documentSemanticSearch.findRelevantDocuments(query = query, tripId = tripId)
+      } else if (!eventId.isNullOrBlank()) {
+        travelDocumentDao.getDocumentsForEvent(eventId).first()
+      } else if (!tripId.isNullOrBlank()) {
+        travelDocumentDao.getDocumentsForTrip(tripId).first()
+      } else if (!documentType.isNullOrBlank()) {
+        travelDocumentDao.getDocumentsByType(documentType).first().ifEmpty {
+          travelDocumentDao.getDocumentsByType(documentType.uppercase()).first()
+        }
+      } else {
+        travelDocumentDao.getAllDocuments().first()
+      }
+
+    val docList = documents.map { doc ->
+      val expiryDateString =
+        if (doc.expiryDate > 0L) {
+          try {
+            Instant.ofEpochMilli(doc.expiryDate)
+              .atZone(ZoneId.systemDefault())
+              .toLocalDate()
+              .format(DateTimeFormatter.ISO_LOCAL_DATE)
+          } catch (e: Exception) {
+            ""
+          }
+        } else {
+          ""
+        }
+      mapOf(
+        "id" to doc.id,
+        "documentId" to doc.documentId,
+        "title" to doc.title,
+        "documentType" to doc.documentType,
+        "issuingCountry" to doc.issuingCountry,
+        "expiryDate" to expiryDateString,
+        "expiryDateLong" to doc.expiryDate,
+        "documentNumberMasked" to doc.documentNumberMasked,
+        "notes" to doc.notes,
+        "tripId" to (doc.tripId ?: ""),
+        "eventId" to (doc.eventId ?: ""),
+        "hasFile" to doc.filePath.isNotBlank(),
+      )
+    }
+
+    return mapOf("documents" to docList, "count" to docList.size)
+  }
+}
+
+/** Tool to check passport or visa validity for travel against the 6-month validity rule. */
+class CheckDocumentValidityTool(
+  private val travelDocumentDao: TravelDocumentDao,
+  private val tripDao: TripDao,
+) {
+  val name = "check_document_validity"
+  val description = "Checks whether a travel document (e.g., passport or visa) is valid for travel relative to departure dates, enforcing the 6-month validity rule."
+  val parametersSchema =
+    FunctionSchema(
+      type = FunctionType.OBJECT,
+      properties =
+        mapOf(
+          "documentType" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description = "The document type to check: 'passport' (default) or 'visa'.",
+            ),
+          "travelStartDate" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description = "Optional travel start date in ISO YYYY-MM-DD format.",
+            ),
+          "tripId" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description = "Optional trip identifier to look up travel dates from.",
+            ),
+        ),
+    )
+
+  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+    val docType = args["documentType"]?.toString()?.takeIf { it.isNotBlank() } ?: "passport"
+    val travelDateStr = args["travelStartDate"]?.toString()
+    val tripId = args["tripId"]?.toString()
+
+    val referenceDate: LocalDate =
+      if (!travelDateStr.isNullOrBlank()) {
+        try {
+          LocalDate.parse(travelDateStr, DateTimeFormatter.ISO_LOCAL_DATE)
+        } catch (e: Exception) {
+          LocalDate.now()
+        }
+      } else if (!tripId.isNullOrBlank()) {
+        val trip = tripDao.getTripById(tripId).first()
+        if (trip != null && trip.startDate > 0L) {
+          try {
+            Instant.ofEpochMilli(trip.startDate).atZone(ZoneId.systemDefault()).toLocalDate()
+          } catch (e: Exception) {
+            LocalDate.now()
+          }
+        } else {
+          LocalDate.now()
+        }
+      } else {
+        val allTrips = tripDao.getAllTrips().first()
+        val now = System.currentTimeMillis()
+        val upcoming =
+          allTrips.filter { it.startDate >= now }.minByOrNull { it.startDate }
+            ?: allTrips.firstOrNull()
+        if (upcoming != null && upcoming.startDate > 0L) {
+          try {
+            Instant.ofEpochMilli(upcoming.startDate).atZone(ZoneId.systemDefault()).toLocalDate()
+          } catch (e: Exception) {
+            LocalDate.now()
+          }
+        } else {
+          LocalDate.now()
+        }
+      }
+
+    val docs =
+      travelDocumentDao.getDocumentsByType(docType).first().ifEmpty {
+        travelDocumentDao.getDocumentsByType(docType.uppercase()).first()
+      }
+    if (docs.isEmpty()) {
+      return mapOf(
+        "status" to "NOT_FOUND",
+        "documentType" to docType,
+        "validForTravel" to false,
+        "explanation" to "No $docType document found in your records. Please add your $docType.",
+      )
+    }
+
+    val primaryDoc = docs.first()
+    val expiryDate: LocalDate =
+      if (primaryDoc.expiryDate > 0L) {
+        try {
+          Instant.ofEpochMilli(primaryDoc.expiryDate).atZone(ZoneId.systemDefault()).toLocalDate()
+        } catch (e: Exception) {
+          return mapOf(
+            "status" to "UNKNOWN",
+            "documentType" to docType,
+            "validForTravel" to false,
+            "explanation" to
+              "Could not parse document expiry date timestamp: ${primaryDoc.expiryDate}",
+          )
+        }
+      } else {
+        return mapOf(
+          "status" to "UNKNOWN",
+          "documentType" to docType,
+          "validForTravel" to false,
+          "explanation" to "Document expiry date is missing or invalid.",
+        )
+      }
+
+    val expiryDateStr = expiryDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
+    val daysUntilExpiry = ChronoUnit.DAYS.between(referenceDate, expiryDate)
+    val monthsUntilExpiry = ChronoUnit.MONTHS.between(referenceDate, expiryDate)
+
+    val (status, explanation, validForTravel) =
+      when {
+        daysUntilExpiry < 0 -> {
+          Triple(
+            "EXPIRED",
+            "Your $docType expired on $expiryDateStr and cannot be used for travel.",
+            false,
+          )
+        }
+        daysUntilExpiry < 180 -> {
+          Triple(
+            "EXPIRING_SOON",
+            "Your $docType expires on $expiryDateStr ($monthsUntilExpiry months / $daysUntilExpiry days from travel date). Most countries require at least 6 months validity from entry date. Renewal is strongly recommended.",
+            false,
+          )
+        }
+        else -> {
+          Triple(
+            "VALID",
+            "Your $docType is valid until $expiryDateStr ($monthsUntilExpiry months remaining). It meets international travel validity requirements.",
+            true,
+          )
+        }
+      }
+
+    return mapOf(
+      "status" to status,
+      "documentType" to primaryDoc.documentType,
+      "documentId" to primaryDoc.documentId,
+      "issuingCountry" to primaryDoc.issuingCountry,
+      "expiryDate" to expiryDateStr,
+      "expiryDateLong" to primaryDoc.expiryDate,
+      "documentNumberMasked" to primaryDoc.documentNumberMasked,
+      "validForTravel" to validForTravel,
+      "daysUntilExpiry" to daysUntilExpiry,
+      "explanation" to explanation,
+    )
+  }
+}
+
+/**
+ * Tool to read full text content of an attached travel document (flight voucher, ticket, passport
+ * scan).
+ */
+class ReadDocumentContentTool(
+  private val travelDocumentManager: TravelDocumentManager,
+  private val travelDocumentDao: TravelDocumentDao,
+  private val documentSemanticSearch: DocumentSemanticSearch? = null,
+) {
+  val name = "read_document_content"
+  val description = "Reads the full text, Wi-Fi details, or notes of a saved travel document, hotel welcome card, ticket, or voucher from the on-device document store."
+  val parametersSchema =
+    FunctionSchema(
+      type = FunctionType.OBJECT,
+      properties =
+        mapOf(
+          "documentId" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description = "Unique ID of the document to read (e.g., from get_travel_document).",
+            ),
+          "query" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description =
+                "Keyword to search for in document title or notes (e.g., 'flight', 'passport', 'esta').",
+            ),
+          "tripId" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description = "Optional trip ID to scope document search to a specific trip.",
+            ),
+        ),
+    )
+
+  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+    val docId = args["documentId"]?.toString()
+    val query = args["query"]?.toString()
+    val tripId = args["tripId"]?.toString()
+
+    val allDocs = travelDocumentDao.getAllDocuments().first()
+    val targetDoc =
+      if (!docId.isNullOrBlank()) {
+        allDocs.find { it.documentId == docId || it.id == docId }
+      } else if (!query.isNullOrBlank() && documentSemanticSearch != null) {
+        val matches =
+          documentSemanticSearch.findRelevantDocuments(
+            query = query,
+            tripId = tripId,
+            maxResults = 1,
+          )
+        matches.firstOrNull()
+          ?: allDocs.find {
+            it.title.contains(query, ignoreCase = true) ||
+              it.documentType.contains(query, ignoreCase = true) ||
+              it.notes.contains(query, ignoreCase = true)
+          }
+      } else if (!query.isNullOrBlank()) {
+        allDocs.find {
+          it.title.contains(query, ignoreCase = true) ||
+            it.documentType.contains(query, ignoreCase = true) ||
+            it.notes.contains(query, ignoreCase = true)
+        }
+      } else {
+        allDocs.firstOrNull()
+      }
+
+    if (targetDoc == null) {
+      return mapOf("error" to "Document not found", "status" to "NOT_FOUND")
+    }
+
+    val isImage =
+      targetDoc.filePath.isNotBlank() &&
+        targetDoc.filePath.substringAfterLast('.', "").lowercase() in
+          listOf("png", "jpg", "jpeg", "webp")
+    val extractedText =
+      if (isImage && targetDoc.notes.isBlank()) {
+        val extracted = extractTextFromImage(targetDoc.filePath)
+        if (extracted != null) {
+          try {
+            travelDocumentDao.insertDocument(targetDoc.copy(notes = extracted))
+          } catch (e: Exception) {
+            Log.w("ReadDocContentTool", "Could not cache extracted text in document", e)
+          }
+        }
+        extracted
+      } else {
+        null
+      }
+
+    val content = travelDocumentManager.readDocumentContent(targetDoc)
+    val finalContent =
+      if (!extractedText.isNullOrBlank()) {
+        "$content\n\nExtracted Image Text:\n$extractedText"
+      } else {
+        content
+      }
+
+    return mapOf(
+      "documentId" to targetDoc.documentId,
+      "title" to targetDoc.title,
+      "documentType" to targetDoc.documentType,
+      "content" to finalContent,
+      "status" to "SUCCESS",
+    )
+  }
+
+  private suspend fun extractTextFromImage(filePath: String): String? =
+    withContext(Dispatchers.IO) {
+      try {
+        val file = File(filePath)
+        if (!file.exists() || !file.isFile) return@withContext null
+        val bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return@withContext null
+        val generativeModel = Generation.getClient()
+        val prompt =
+          "You are an on-device document extractor. Extract all key text, names, dates (expiration, departure, arrival), document numbers, country, and travel details from this image. Format concisely as structured bullet points."
+        val request = generateContentRequest(ImagePart(bitmap), TextPart(prompt)) {}
+        val response = generativeModel.generateContent(request)
+        response.candidates.firstOrNull()?.text?.takeIf { it.isNotBlank() }
+      } catch (e: Exception) {
+        Log.w("ReadDocContentTool", "Could not extract text from document image", e)
+        null
+      }
+    }
+}
+
+/** Tool to save a new travel document or note into the on-device document store. */
+class AddTravelDocumentTool(private val travelDocumentManager: TravelDocumentManager) {
+  val name = "add_travel_document"
+  val description = "Saves a new travel document, passport details, visa waiver, or travel voucher into the user's travel documents store."
+  val parametersSchema =
+    FunctionSchema(
+      type = FunctionType.OBJECT,
+      properties =
+        mapOf(
+          "title" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description =
+                "Title or description of the document (e.g. 'Dutch Passport', 'Flight Voucher').",
+            ),
+          "documentType" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description =
+                "Document type: 'PASSPORT', 'VISA', 'TICKET', 'NATIONAL_ID', or 'OTHER'.",
+            ),
+          "issuingCountry" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description =
+                "Country that issued the document (e.g. 'Netherlands', 'United States').",
+            ),
+          "expiryDate" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description = "Expiration date in ISO YYYY-MM-DD format (if applicable).",
+            ),
+          "documentNumberMasked" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description = "Masked number (e.g. '••••4821').",
+            ),
+          "notes" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description = "Additional travel notes, restrictions, or instructions.",
+            ),
+          "content" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description = "Full text body or itinerary notes to save.",
+            ),
+          "tripId" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description = "Optional trip ID to link this document to a specific trip.",
+            ),
+          "eventId" to
+            FunctionSchema(
+              type = FunctionType.STRING,
+              description =
+                "Optional timeline event ID to link this document to a specific event (e.g., flight confirmation).",
+            ),
+        ),
+      required = listOf("title"),
+    )
+
+  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+    val title = args["title"]?.toString() ?: "Untitled Document"
+    val docType = args["documentType"]?.toString()?.uppercase() ?: "OTHER"
+    val country = args["issuingCountry"]?.toString() ?: ""
+    val expiryStr = args["expiryDate"]?.toString()
+    val maskedNum = args["documentNumberMasked"]?.toString() ?: ""
+    val notes = args["notes"]?.toString() ?: ""
+    val content = args["content"]?.toString() ?: notes
+    val tripId = args["tripId"]?.toString()
+    val eventId = args["eventId"]?.toString()
+
+    val expiryEpoch =
+      if (!expiryStr.isNullOrBlank()) {
+        try {
+          val date = LocalDate.parse(expiryStr, DateTimeFormatter.ISO_LOCAL_DATE)
+          date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        } catch (e: Exception) {
+          0L
+        }
+      } else {
+        0L
+      }
+
+    val savedDoc =
+      travelDocumentManager.createTextDocument(
+        title = title,
+        content = content,
+        documentType = docType,
+        issuingCountry = country,
+        expiryDate = expiryEpoch,
+        documentNumberMasked = maskedNum,
+        notes = notes,
+        tripId = tripId,
+        eventId = eventId,
+      )
+
+    return mapOf(
+      "status" to "SUCCESS",
+      "documentId" to savedDoc.documentId,
+      "title" to savedDoc.title,
+      "message" to "Saved $title successfully to travel documents.",
+    )
+  }
+}
+
 /** Tool to add an expense to a trip directly in the Room database. */
 class AddExpenseTool(
   private val expenseDao: ExpenseDao,
@@ -138,8 +628,7 @@ class AddExpenseTool(
   private val activeTripIdProvider: () -> String? = { null },
 ) {
   val name = "addExpense"
-  val description =
-    "Adds an expense to a trip. Call this when the user asks to add or log an expense (e.g., train ticket, meal, taxi) for a trip."
+  val description = "Adds an expense to a trip. Call this when the user asks to add or log an expense (e.g., train ticket, meal, taxi) for a trip."
   val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
@@ -370,8 +859,7 @@ class AddItineraryEventTool(
   private val activeTripIdProvider: () -> String? = { null },
 ) {
   val name = "addItineraryEvent"
-  val description =
-    "Adds a reminder or event to a trip's itinerary. Call this when the user asks to add an itinerary item, task, or reminder (e.g., 'remind me to pick up pocket wifi')."
+  val description = "Adds a reminder or event to a trip's itinerary. Call this when the user asks to add an itinerary item, task, or reminder (e.g., 'remind me to pick up pocket wifi')."
   val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
@@ -566,8 +1054,7 @@ class AddVoiceNoteTool(
   private val activeTripIdProvider: () -> String? = { null },
 ) {
   val name = "addVoiceNote"
-  val description =
-    "Adds a voice note or reminder to a trip and links it to matching itinerary events (e.g. airport flight or museum visit). Call this when the user asks to save a voice note, visitor tips, or reminder (e.g., 'Please remind me to buy a sim card when I get to the airport' or 'Save the museum visitor tips as a voice note')."
+  val description = "Adds a voice note or reminder to a trip and links it to matching itinerary events (e.g. airport flight or museum visit). Call this when the user asks to save a voice note, visitor tips, or reminder (e.g., 'Please remind me to buy a sim card when I get to the airport' or 'Save the museum visitor tips as a voice note')."
   val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
@@ -717,8 +1204,7 @@ class AddVoiceNoteTool(
 /** Tool to search for trips by destination, title, or ID. */
 class SearchTripTool(private val tripDao: TripDao) {
   val name = "searchTrip"
-  val description =
-    "Searches for trips matching a title, destination location, or ID. Call this first when the user refers to a trip by city or name and you need its tripId."
+  val description = "Searches for trips matching a title, destination location, or ID. Call this first when the user refers to a trip by city or name and you need its tripId."
   val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
@@ -863,8 +1349,7 @@ class GetItineraryTool(
   private val activeTripIdProvider: () -> String? = { null },
 ) {
   val name = "getItinerary"
-  val description =
-    "Retrieves the list of itinerary events (with their eventId, title, type, and location) for a specific trip. Note: getItinerary returns event summaries only; call getEventDetails(eventId) with a specific event's ID to retrieve ticket prices, hotel rates, baggage allowance, or visitor tips."
+  val description = "Retrieves the list of itinerary events (with their eventId, title, type, and location) for a specific trip. Note: getItinerary returns event summaries only; call getEventDetails(eventId) with a specific event's ID to retrieve ticket prices, hotel rates, baggage allowance, or visitor tips."
   val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
@@ -923,8 +1408,7 @@ class GetEventDetailsTool(
   private val tourDetailDao: TourDetailDao? = null,
 ) {
   val name = "getEventDetails"
-  val description =
-    "Retrieves rich subtype details for a specific itinerary event by its eventId, including museum admission ticket price and opening hours, hotel nightly rate and confirmation number, flight terminal/gate/baggage allowance, dining reservation info, and visitor tips. Call this after getItinerary(tripId) when you need the price, rate, baggage allowance, or visitor tips of a specific event."
+  val description = "Retrieves rich subtype details for a specific itinerary event by its eventId, including museum admission ticket price and opening hours, hotel nightly rate and confirmation number, flight terminal/gate/baggage allowance, dining reservation info, and visitor tips. Call this after getItinerary(tripId) when you need the price, rate, baggage allowance, or visitor tips of a specific event."
   val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
@@ -1061,6 +1545,10 @@ class GetEventDetailsTool(
 /** Aggregates Room-backed travel tools for injection into the Agent. */
 class TravelDaoTools(
   val getFlightItinerary: GetFlightItineraryTool,
+  val getTravelDocument: GetTravelDocumentTool,
+  val checkDocumentValidity: CheckDocumentValidityTool,
+  val readDocumentContent: ReadDocumentContentTool? = null,
+  val addTravelDocument: AddTravelDocumentTool? = null,
   val addExpense: AddExpenseTool? = null,
   val addItineraryEvent: AddItineraryEventTool? = null,
   val addVoiceNote: AddVoiceNoteTool? = null,
@@ -1072,11 +1560,21 @@ class TravelDaoTools(
   constructor(
     eventDao: EventDao,
     tripDao: TripDao,
+    travelDocumentDao: TravelDocumentDao,
     expenseDao: ExpenseDao? = null,
+    travelDocumentManager: TravelDocumentManager? = null,
+    documentSemanticSearch: DocumentSemanticSearch? = null,
     tourDetailDao: TourDetailDao? = null,
     activeTripIdProvider: () -> String? = { null },
   ) : this(
     getFlightItinerary = GetFlightItineraryTool(eventDao, tripDao, activeTripIdProvider),
+    getTravelDocument = GetTravelDocumentTool(travelDocumentDao, documentSemanticSearch),
+    checkDocumentValidity = CheckDocumentValidityTool(travelDocumentDao, tripDao),
+    readDocumentContent =
+      travelDocumentManager?.let {
+        ReadDocumentContentTool(it, travelDocumentDao, documentSemanticSearch)
+      },
+    addTravelDocument = travelDocumentManager?.let { AddTravelDocumentTool(it) },
     addExpense = expenseDao?.let { AddExpenseTool(it, tripDao, activeTripIdProvider) },
     addItineraryEvent = AddItineraryEventTool(eventDao, tripDao, activeTripIdProvider),
     addVoiceNote = AddVoiceNoteTool(eventDao, tripDao, activeTripIdProvider),
@@ -1088,6 +1586,10 @@ class TravelDaoTools(
 
   fun asList(): List<Any> = buildList {
     add(getFlightItinerary)
+    add(getTravelDocument)
+    add(checkDocumentValidity)
+    readDocumentContent?.let { add(it) }
+    addTravelDocument?.let { add(it) }
     addExpense?.let { add(it) }
     addItineraryEvent?.let { add(it) }
     addVoiceNote?.let { add(it) }

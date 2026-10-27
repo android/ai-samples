@@ -19,22 +19,32 @@
 package com.example.jetpacker.feature.appfunctions
 
 import androidx.annotation.RequiresApi
-import androidx.appfunctions.AppFunction
+import androidx.appfunctions.AppFunctionAccessLevel
+import androidx.appfunctions.AppFunctionDeclaration
 import androidx.appfunctions.AppFunctionService
 import androidx.appfunctions.AppFunctionServiceEntryPoint
+import androidx.appfunctions.ExperimentalAppFunctionsApi
+import androidx.appfunctions.metadata.AppFunctionMetadata
 import com.example.jetpacker.data.itinerary.DayTheme
 import com.example.jetpacker.data.itinerary.DayThemeDao
+import com.example.jetpacker.data.itinerary.DocumentSemanticSearchProvider
 import com.example.jetpacker.data.itinerary.EventDao
 import com.example.jetpacker.data.itinerary.EventType
 import com.example.jetpacker.data.itinerary.Expense
 import com.example.jetpacker.data.itinerary.ExpenseDao
 import com.example.jetpacker.data.itinerary.TimelineEvent
 import com.example.jetpacker.data.itinerary.TourDetailDao
+import com.example.jetpacker.data.itinerary.TravelDocument
+import com.example.jetpacker.data.itinerary.TravelDocumentDao
+import com.example.jetpacker.data.itinerary.TravelDocumentManager
 import com.example.jetpacker.data.itinerary.VoiceNoteEntity
 import com.example.jetpacker.data.trips.DummyData
 import com.example.jetpacker.data.trips.Trip
 import com.example.jetpacker.data.trips.TripDao
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
@@ -54,6 +64,9 @@ abstract class BaseJetPackerAppFunctionService : Hilt_BaseJetPackerAppFunctionSe
   @Inject internal lateinit var eventDao: EventDao
   @Inject internal lateinit var tourDetailDao: TourDetailDao
   @Inject internal lateinit var dayThemeDao: DayThemeDao
+  @Inject internal lateinit var travelDocumentDao: TravelDocumentDao
+  @Inject internal lateinit var travelDocumentManager: TravelDocumentManager
+  @Inject internal lateinit var semanticSearchProvider: DocumentSemanticSearchProvider
 
   /**
    * Searches for trips based on optional filters like query, id, title (name), location, and dates.
@@ -68,7 +81,7 @@ abstract class BaseJetPackerAppFunctionService : Hilt_BaseJetPackerAppFunctionSe
    * @param endDate The maximum end date in milliseconds.
    * @return A list of trips matching the filters.
    */
-  @AppFunction(isDescribedByKDoc = true)
+  @AppFunctionDeclaration(isDescribedByKDoc = true)
   suspend fun searchTrip(
     query: String? = null,
     id: String? = null,
@@ -109,7 +122,7 @@ abstract class BaseJetPackerAppFunctionService : Hilt_BaseJetPackerAppFunctionSe
    * @param endDate The end date in milliseconds.
    * @return The created trip.
    */
-  @AppFunction(isDescribedByKDoc = true)
+  @AppFunctionDeclaration(isDescribedByKDoc = true)
   suspend fun createTrip(
     title: String,
     location: String,
@@ -148,7 +161,7 @@ abstract class BaseJetPackerAppFunctionService : Hilt_BaseJetPackerAppFunctionSe
    *   'Activity'). Inferred from title if omitted.
    * @return The added expense.
    */
-  @AppFunction(isDescribedByKDoc = true)
+  @AppFunctionDeclaration(isDescribedByKDoc = true)
   suspend fun addExpense(
     title: String,
     amount: Double,
@@ -364,7 +377,7 @@ abstract class BaseJetPackerAppFunctionService : Hilt_BaseJetPackerAppFunctionSe
    * @param tripId Optional ID of the trip (e.g., '2026-1'). Defaults to the active trip if omitted.
    * @return A list of expenses and budget summary for the trip.
    */
-  @AppFunction(isDescribedByKDoc = true)
+  @AppFunctionDeclaration(isDescribedByKDoc = true)
   suspend fun getExpenses(tripId: String? = null): List<ExpenseSerializable> {
     return withContext(Dispatchers.IO) {
       val trip = resolveTrip(tripId = tripId)
@@ -455,7 +468,7 @@ abstract class BaseJetPackerAppFunctionService : Hilt_BaseJetPackerAppFunctionSe
    * @param tripId Optional ID of the trip (e.g., '2026-1'). Defaults to the active trip if omitted.
    * @return A list of events in the itinerary.
    */
-  @AppFunction(isDescribedByKDoc = true)
+  @AppFunctionDeclaration(isDescribedByKDoc = true)
   suspend fun getItinerary(tripId: String? = null): List<TimelineEventSerializable> {
     return withContext(Dispatchers.IO) {
       val trip = resolveTrip(tripId = tripId)
@@ -486,7 +499,7 @@ abstract class BaseJetPackerAppFunctionService : Hilt_BaseJetPackerAppFunctionSe
    *   "par_3").
    * @return The detailed event information.
    */
-  @AppFunction(isDescribedByKDoc = true)
+  @AppFunctionDeclaration(isDescribedByKDoc = true)
   suspend fun getEventDetails(eventId: String): EventDetailsSerializable {
     return withContext(Dispatchers.IO) {
       val event =
@@ -553,7 +566,7 @@ abstract class BaseJetPackerAppFunctionService : Hilt_BaseJetPackerAppFunctionSe
    * @param description An optional description of the event.
    * @return The added event.
    */
-  @AppFunction(isDescribedByKDoc = true)
+  @AppFunctionDeclaration(isDescribedByKDoc = true)
   suspend fun addItineraryEvent(
     title: String,
     tripId: String? = null,
@@ -655,7 +668,7 @@ abstract class BaseJetPackerAppFunctionService : Hilt_BaseJetPackerAppFunctionSe
    * @param tripId Optional ID of the trip. Defaults to the active trip if omitted.
    * @return A list of voice notes.
    */
-  @AppFunction(isDescribedByKDoc = true)
+  @AppFunctionDeclaration(isDescribedByKDoc = true)
   suspend fun getVoiceNotes(tripId: String? = null): List<VoiceNoteSerializable> {
     return withContext(Dispatchers.IO) {
       val trip = resolveTrip(tripId = tripId)
@@ -680,7 +693,7 @@ abstract class BaseJetPackerAppFunctionService : Hilt_BaseJetPackerAppFunctionSe
    *   'io_6', 'tok_3').
    * @return The added voice note.
    */
-  @AppFunction(isDescribedByKDoc = true)
+  @AppFunctionDeclaration(isDescribedByKDoc = true)
   suspend fun addVoiceNote(
     title: String,
     transcription: String? = null,
@@ -780,7 +793,7 @@ abstract class BaseJetPackerAppFunctionService : Hilt_BaseJetPackerAppFunctionSe
    * @param tripId Optional ID of the trip. Defaults to the active trip if omitted.
    * @return A list of day themes.
    */
-  @AppFunction(isDescribedByKDoc = true)
+  @AppFunctionDeclaration(isDescribedByKDoc = true)
   suspend fun getDayThemes(tripId: String? = null): List<DayThemeSerializable> {
     return withContext(Dispatchers.IO) {
       val trip = resolveTrip(tripId = tripId)
@@ -798,13 +811,244 @@ abstract class BaseJetPackerAppFunctionService : Hilt_BaseJetPackerAppFunctionSe
    * @param theme The theme text.
    * @return The updated or added day theme.
    */
-  @AppFunction(isDescribedByKDoc = true)
+  @AppFunctionDeclaration(isDescribedByKDoc = true)
   suspend fun setDayTheme(tripId: String, date: String, theme: String): DayThemeSerializable {
     val dayTheme =
       DayTheme(id = UUID.randomUUID().toString(), tripId = tripId, date = date, theme = theme)
     return withContext(Dispatchers.IO) {
       dayThemeDao.insertTheme(dayTheme)
       dayTheme.toSerializable()
+    }
+  }
+
+  /**
+   * Searches for saved travel documents, passports, visas, boarding passes, museum tickets,
+   * hotel reservations, Wi-Fi passwords, and travel notes. Restricted to scope SELF.
+   * Call this when the user asks about their travel documents, ticket confirmation numbers,
+   * passport expiry, hotel check-in details, or notes for their trip.
+   *
+   * @param query Optional search keywords to match document title, notes, or issuing country
+   *   (e.g. 'passport', 'SFMOMA', 'hotel', 'wifi', 'visa').
+   * @param documentType Optional filter for document type ('PASSPORT', 'VISA', 'TICKET', 'HOTEL', 'OTHER').
+   * @param tripId Optional ID of the trip. Defaults to the active trip if omitted.
+   * @return A list of matching travel documents.
+   */
+  @OptIn(ExperimentalAppFunctionsApi::class)
+  @AppFunctionDeclaration(isDescribedByKDoc = true)
+  @AppFunctionAccessLevel(
+    level = AppFunctionMetadata.ACCESS_LEVEL_SELF,
+    isCompatEnforcementEnabled = true,
+  )
+  suspend fun searchTravelDocuments(
+    query: String? = null,
+    documentType: String? = null,
+    tripId: String? = null,
+  ): List<TravelDocumentSerializable> {
+    return withContext(Dispatchers.IO) {
+      var allDocs = travelDocumentDao.getAllDocuments().first()
+      if (allDocs.isEmpty()) {
+        travelDocumentManager.seedDefaultDocumentsIfEmpty()
+        allDocs = travelDocumentDao.getAllDocuments().first()
+      }
+      val trip = resolveTrip(tripId = tripId, textHint = query)
+      val targetTripId = trip?.id ?: ActiveTripSession.activeTripId ?: tripId?.takeIf { it.isNotBlank() }
+
+      // 1. Natural language semantic search using on-device Embedding Gemma v2 and AppSearch
+      // (same engine as the DocumentsScreen vault search)
+      val semanticDocs = if (!query.isNullOrBlank()) {
+        try {
+          val searcher =
+            if (::semanticSearchProvider.isInitialized) semanticSearchProvider
+            else travelDocumentManager.semanticSearchProvider
+          searcher?.findRelevantDocuments(query = query, tripId = targetTripId, maxResults = 10)
+            ?: travelDocumentManager.searchDocumentsSemantically(query = query, tripId = targetTripId, maxResults = 10)
+        } catch (_: Exception) {
+          emptyList()
+        }
+      } else {
+        emptyList()
+      }
+
+      val candidateDocs = if (semanticDocs.isNotEmpty()) {
+        semanticDocs
+      } else {
+        allDocs
+      }
+
+      val queryWords =
+        query
+          ?.lowercase()
+          ?.split(Regex("[\\s,;.]+"))
+          ?.filter { it.length > 2 && it !in setOf("the", "for", "our", "and", "this", "validity") }
+          ?: emptyList()
+
+      val filtered = candidateDocs.filter { doc ->
+        val matchesTrip = targetTripId == null || doc.tripId == null || doc.tripId == targetTripId
+        val matchesType = documentType.isNullOrBlank() ||
+          doc.documentType.equals(documentType, ignoreCase = true) ||
+          (documentType.equals("TICKET", ignoreCase = true) && doc.documentType.contains("TICKET", ignoreCase = true)) ||
+          (documentType.equals("HOTEL", ignoreCase = true) && doc.documentType.contains("HOTEL", ignoreCase = true))
+
+        if (semanticDocs.isNotEmpty()) {
+          matchesTrip && matchesType
+        } else {
+          val content = if (query != null) travelDocumentManager.readDocumentContent(doc) else ""
+          val matchesQuery = query.isNullOrBlank() ||
+            doc.title.contains(query, ignoreCase = true) ||
+            doc.notes.contains(query, ignoreCase = true) ||
+            doc.issuingCountry.contains(query, ignoreCase = true) ||
+            doc.documentType.contains(query, ignoreCase = true) ||
+            doc.documentNumberMasked.contains(query, ignoreCase = true) ||
+            content.contains(query, ignoreCase = true) ||
+            queryWords.any { word ->
+              doc.title.contains(word, ignoreCase = true) ||
+              doc.notes.contains(word, ignoreCase = true) ||
+              doc.documentType.contains(word, ignoreCase = true) ||
+              doc.issuingCountry.contains(word, ignoreCase = true) ||
+              content.contains(word, ignoreCase = true)
+            }
+
+          matchesTrip && matchesType && matchesQuery
+        }
+      }
+
+      filtered.map { it.toSerializable() }
+    }
+  }
+
+  /**
+   * Retrieves the full details, extracted content, notes, and metadata of a specific travel document
+   * by its title, keyword, or document ID. Restricted to scope SELF. Call this when the user needs
+   * specific information from a document, such as the full notes, passport number, Wi-Fi password,
+   * or booking confirmation details.
+   *
+   * @param titleOrId The title, keyword, or ID of the document (e.g. 'US Passport', 'SFMOMA Pass', 'Hotel Confirmation').
+   * @param tripId Optional ID of the trip. Defaults to the active trip if omitted.
+   * @return The detailed document information including extracted content and notes.
+   */
+  @OptIn(ExperimentalAppFunctionsApi::class)
+  @AppFunctionDeclaration(isDescribedByKDoc = true)
+  @AppFunctionAccessLevel(
+    level = AppFunctionMetadata.ACCESS_LEVEL_SELF,
+    isCompatEnforcementEnabled = true,
+  )
+  suspend fun getTravelDocumentDetails(
+    titleOrId: String,
+    tripId: String? = null,
+  ): TravelDocumentDetailsSerializable {
+    return withContext(Dispatchers.IO) {
+      var allDocs = travelDocumentDao.getAllDocuments().first()
+      if (allDocs.isEmpty()) {
+        travelDocumentManager.seedDefaultDocumentsIfEmpty()
+        allDocs = travelDocumentDao.getAllDocuments().first()
+      }
+      val trip = resolveTrip(tripId = tripId, textHint = titleOrId)
+      val targetTripId = trip?.id ?: ActiveTripSession.activeTripId ?: tripId?.takeIf { it.isNotBlank() }
+
+      val titleWords =
+        titleOrId
+          .lowercase()
+          .split(Regex("[\\s,;.]+"))
+          .filter { it.length > 2 && it !in setOf("the", "for", "our", "and", "this") }
+
+      var doc = allDocs.find {
+        it.documentId.equals(titleOrId, ignoreCase = true) || it.id.equals(titleOrId, ignoreCase = true)
+      } ?: allDocs.find {
+        it.title.equals(titleOrId, ignoreCase = true) && (targetTripId == null || it.tripId == null || it.tripId == targetTripId)
+      } ?: allDocs.find {
+        it.title.contains(titleOrId, ignoreCase = true) && (targetTripId == null || it.tripId == null || it.tripId == targetTripId)
+      } ?: allDocs.find {
+        it.title.contains(titleOrId, ignoreCase = true)
+      } ?: allDocs.find { candidate ->
+        (targetTripId == null || candidate.tripId == null || candidate.tripId == targetTripId) &&
+          titleWords.any { word ->
+            candidate.title.contains(word, ignoreCase = true) ||
+            candidate.documentType.contains(word, ignoreCase = true) ||
+            candidate.notes.contains(word, ignoreCase = true)
+          }
+      }
+
+      if (doc == null && titleOrId.isNotBlank()) {
+        try {
+          val searcher =
+            if (::semanticSearchProvider.isInitialized) semanticSearchProvider
+            else travelDocumentManager.semanticSearchProvider
+          val matches =
+            searcher?.findRelevantDocuments(query = titleOrId, tripId = targetTripId, maxResults = 1)
+              ?: travelDocumentManager.searchDocumentsSemantically(query = titleOrId, tripId = targetTripId, maxResults = 1)
+          doc = matches.firstOrNull()
+        } catch (_: Exception) {}
+      }
+
+      if (doc == null) {
+        return@withContext TravelDocumentDetailsSerializable(
+          id = "not_found",
+          title = titleOrId,
+          documentType = "OTHER",
+          status = "NOT_FOUND",
+          message = "No travel document found matching '$titleOrId'.",
+        )
+      }
+
+      val content = travelDocumentManager.readDocumentContent(doc)
+      val (validity, expiryFormatted) = getDocumentValidity(doc.expiryDate, doc.documentType, doc.title)
+
+      TravelDocumentDetailsSerializable(
+        id = doc.documentId.ifBlank { doc.id },
+        title = doc.title,
+        documentType = doc.documentType,
+        issuingCountry = doc.issuingCountry.takeIf { it.isNotBlank() },
+        documentNumberMasked = doc.documentNumberMasked.takeIf { it.isNotBlank() },
+        expiryDateFormatted = expiryFormatted,
+        notes = doc.notes.takeIf { it.isNotBlank() },
+        content = content,
+        validityStatus = validity,
+        status = "SUCCESS",
+        message = "Found document '${doc.title}'. ${if (doc.notes.isNotBlank()) "Notes: ${doc.notes}." else ""}",
+      )
+    }
+  }
+
+  /**
+   * Saves a new travel note, reservation detail, Wi-Fi code, or document text into the traveler's
+   * document storage. Restricted to scope SELF. Call this when the user asks to save important
+   * trip notes, Wi-Fi codes, door access codes, or document text into their documents (e.g., 'Save our
+   * Airbnb door code 4829 to my documents' or 'Add a note to my documents with the conference Wi-Fi password').
+   *
+   * @param title Title of the document or note (e.g., 'Airbnb Door Code', 'Conference Wi-Fi').
+   * @param content Full content or details to store in the document.
+   * @param documentType Optional document type (e.g. 'OTHER', 'NOTE', 'HOTEL', 'TICKET'). Defaults to 'OTHER'.
+   * @param tripId Optional ID of the trip. Defaults to the active trip if omitted.
+   * @return The created travel document.
+   */
+  @OptIn(ExperimentalAppFunctionsApi::class)
+  @AppFunctionDeclaration(isDescribedByKDoc = true)
+  @AppFunctionAccessLevel(
+    level = AppFunctionMetadata.ACCESS_LEVEL_SELF,
+    isCompatEnforcementEnabled = true,
+  )
+  suspend fun saveTravelNoteDocument(
+    title: String,
+    content: String,
+    documentType: String? = null,
+    tripId: String? = null,
+  ): TravelDocumentSerializable {
+    return withContext(Dispatchers.IO) {
+      val trip = resolveTrip(tripId = tripId, textHint = "$title $content")
+      val targetTripId = trip?.id ?: ActiveTripSession.activeTripId ?: tripId?.takeIf { it.isNotBlank() } ?: "2026-1"
+      val resolvedType = (documentType?.takeIf { it.isNotBlank() } ?: "OTHER").uppercase()
+
+      val createdDoc = travelDocumentManager.createTextDocument(
+        title = title,
+        content = content,
+        documentType = resolvedType,
+        notes = content,
+        tripId = targetTripId,
+      )
+
+      createdDoc.toSerializable(
+        message = "Successfully saved '$title' to your travel documents in ${trip?.title ?: "your trip"}.",
+      )
     }
   }
 
@@ -1083,4 +1327,48 @@ abstract class BaseJetPackerAppFunctionService : Hilt_BaseJetPackerAppFunctionSe
 
   private fun DayTheme.toSerializable() =
     DayThemeSerializable(id = id, tripId = tripId, date = date, theme = theme)
+
+  private fun getDocumentValidity(
+    expiryMillis: Long,
+    docType: String,
+    title: String,
+  ): Pair<String, String?> {
+    if (expiryMillis <= 0L) return Pair("NO_EXPIRY", null)
+    val now = System.currentTimeMillis()
+    val formatted =
+      try {
+        Instant.ofEpochMilli(expiryMillis)
+          .atZone(ZoneId.systemDefault())
+          .toLocalDate()
+          .format(DateTimeFormatter.ISO_LOCAL_DATE)
+      } catch (_: Exception) {
+        null
+      }
+    val combined = (docType + " " + title).uppercase()
+    val isIdentity = combined.contains("PASSPORT") || combined.contains("VISA") || combined.contains("LICENSE")
+    val validity =
+      when {
+        expiryMillis < now -> "EXPIRED"
+        isIdentity && (expiryMillis - now < 180L * 24 * 60 * 60 * 1000) -> "EXPIRING_SOON"
+        else -> "VALID"
+      }
+    return Pair(validity, formatted)
+  }
+
+  private fun TravelDocument.toSerializable(message: String? = null): TravelDocumentSerializable {
+    val (validity, expiryFormatted) = getDocumentValidity(expiryDate, documentType, title)
+    return TravelDocumentSerializable(
+      id = documentId.ifBlank { id },
+      title = title,
+      documentType = documentType,
+      issuingCountry = issuingCountry.takeIf { it.isNotBlank() },
+      documentNumberMasked = documentNumberMasked.takeIf { it.isNotBlank() },
+      expiryDateFormatted = expiryFormatted,
+      notes = notes.takeIf { it.isNotBlank() },
+      tripId = tripId,
+      validityStatus = validity,
+      status = "SUCCESS",
+      message = message ?: "Found document '$title' ($documentType).",
+    )
+  }
 }

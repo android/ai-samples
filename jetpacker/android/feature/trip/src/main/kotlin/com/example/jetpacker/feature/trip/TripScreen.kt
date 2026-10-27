@@ -46,6 +46,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Chat
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.ConfirmationNumber
+import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.Event
 import androidx.compose.material.icons.rounded.Wallet
 import androidx.compose.material3.MaterialTheme
@@ -73,6 +74,7 @@ import com.example.jetpacker.core.ui.components.JetPackerToolbar
 import com.example.jetpacker.core.ui.components.JetPackerToolbarAction
 import com.example.jetpacker.data.itinerary.EventType
 import com.example.jetpacker.feature.assistant.TravelAssistantViewModel
+import com.example.jetpacker.feature.assistant.documents.DocumentsScreen
 import com.example.jetpacker.feature.assistant.history.ChatHistoryScreen
 import com.example.jetpacker.feature.assistant.model.AssistantOverlayState
 import com.example.jetpacker.feature.assistant.ui.AmbientTripAssistantSheet
@@ -83,6 +85,7 @@ import com.example.jetpacker.feature.voice_notes.VoiceNotesScreen
 
 enum class TripTab {
   ITINERARY,
+  DOCUMENTS,
   EXPENSES,
   VOICE_NOTES,
   BOOKING,
@@ -183,6 +186,15 @@ fun TripScreen(
           )
         }
 
+        TripTab.DOCUMENTS -> {
+          DocumentsScreen(
+            tripId = tripId,
+            contentPadding = innerPadding,
+            onBack = { selectedTab = TripTab.ITINERARY },
+            onFabConfigChange = { fabConfigs[TripTab.DOCUMENTS] = it },
+          )
+        }
+
         TripTab.EXPENSES -> {
           ManageExpensesScreen(
             tripId = tripId,
@@ -264,12 +276,14 @@ fun JetPackerBottomBar(
   fabConfig: JetPackerFabConfig?,
   modifier: Modifier = Modifier,
 ) {
+  val showDocuments = FeatureFlags.ENABLE_DOCUMENTS
   val showExpenses = FeatureFlags.ENABLE_EXPENSE_MANAGEMENT
   val showVoiceNotes = FeatureFlags.ENABLE_VOICE_NOTES
   val showBooking = FeatureFlags.ENABLE_BOOKING_ASSISTANT
   val showChatHistory = FeatureFlags.ENABLE_TRAVEL_ASSISTANT
   val visibleTabCount =
     1 +
+      (if (showDocuments) 1 else 0) +
       (if (showExpenses) 1 else 0) +
       (if (showVoiceNotes) 1 else 0) +
       (if (showBooking) 1 else 0) +
@@ -305,6 +319,14 @@ fun JetPackerBottomBar(
           selected = selectedTab == TripTab.ITINERARY,
           contentDescription = "Itinerary",
         )
+        if (showDocuments) {
+          JetPackerToolbarAction(
+            icon = Icons.Rounded.Description,
+            onClick = { onTabSelected(TripTab.DOCUMENTS) },
+            selected = selectedTab == TripTab.DOCUMENTS,
+            contentDescription = "Documents",
+          )
+        }
         if (showExpenses) {
           JetPackerToolbarAction(
             icon = Icons.Rounded.Wallet,

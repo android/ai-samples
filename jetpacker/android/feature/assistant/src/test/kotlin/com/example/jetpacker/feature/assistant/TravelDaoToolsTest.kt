@@ -26,6 +26,8 @@ import com.example.jetpacker.data.itinerary.FlightDetail
 import com.example.jetpacker.data.itinerary.HotelDetail
 import com.example.jetpacker.data.itinerary.MuseumDetail
 import com.example.jetpacker.data.itinerary.TimelineEvent
+import com.example.jetpacker.data.itinerary.TravelDocument
+import com.example.jetpacker.data.itinerary.TravelDocumentDao
 import com.example.jetpacker.data.itinerary.TripSessionIdentifier
 import com.example.jetpacker.data.itinerary.VoiceNoteEntity
 import com.example.jetpacker.data.trips.Trip
@@ -33,8 +35,10 @@ import com.example.jetpacker.data.trips.TripDao
 import com.example.jetpacker.feature.assistant.tools.AddExpenseTool
 import com.example.jetpacker.feature.assistant.tools.AddItineraryEventTool
 import com.example.jetpacker.feature.assistant.tools.AddVoiceNoteTool
+import com.example.jetpacker.feature.assistant.tools.CheckDocumentValidityTool
 import com.example.jetpacker.feature.assistant.tools.GetEventDetailsTool
 import com.example.jetpacker.feature.assistant.tools.GetFlightItineraryTool
+import com.example.jetpacker.feature.assistant.tools.GetTravelDocumentTool
 import com.example.jetpacker.feature.assistant.tools.SearchTripTool
 import com.google.common.truth.Truth.assertThat
 import java.time.LocalDate
@@ -49,9 +53,12 @@ class TravelDaoToolsTest {
 
   private lateinit var fakeEventDao: FakeEventDao
   private lateinit var fakeTripDao: FakeTripDao
+  private lateinit var fakeDocumentDao: FakeTravelDocumentDao
   private lateinit var fakeExpenseDao: FakeExpenseDao
 
   private lateinit var flightTool: GetFlightItineraryTool
+  private lateinit var documentTool: GetTravelDocumentTool
+  private lateinit var validityTool: CheckDocumentValidityTool
   private lateinit var expenseTool: AddExpenseTool
   private lateinit var eventTool: AddItineraryEventTool
   private lateinit var eventDetailsTool: GetEventDetailsTool
@@ -62,9 +69,12 @@ class TravelDaoToolsTest {
   fun setUp() {
     fakeEventDao = FakeEventDao()
     fakeTripDao = FakeTripDao()
+    fakeDocumentDao = FakeTravelDocumentDao()
     fakeExpenseDao = FakeExpenseDao()
 
     flightTool = GetFlightItineraryTool(fakeEventDao, fakeTripDao)
+    documentTool = GetTravelDocumentTool(fakeDocumentDao)
+    validityTool = CheckDocumentValidityTool(fakeDocumentDao, fakeTripDao)
     expenseTool = AddExpenseTool(fakeExpenseDao, fakeTripDao)
     eventTool = AddItineraryEventTool(fakeEventDao, fakeTripDao)
     eventDetailsTool = GetEventDetailsTool(fakeEventDao)
@@ -115,6 +125,97 @@ class TravelDaoToolsTest {
     assertThat(first["flightNumber"]).isEqualTo("JL005")
     assertThat(first["airline"]).isEqualTo("Japan Airlines")
     assertThat(first["gate"]).isEqualTo("A4")
+  }
+
+  @Test
+  fun getTravelDocument_returnsDocumentByType() = runTest {
+    val doc =
+      TravelDocument(
+        documentId = "pass-1",
+        documentType = "passport",
+        issuingCountry = "United States",
+        expiryDate = 1899849600000L,
+        documentNumberMasked = "•••• 4321",
+      )
+    fakeDocumentDao.documents.add(doc)
+
+    val result = documentTool.execute(mapOf("documentType" to "passport"))
+
+    assertThat(result["count"]).isEqualTo(1)
+    val docs = result["documents"] as List<*>
+    val firstDoc = docs.first() as Map<*, *>
+    assertThat(firstDoc["documentId"]).isEqualTo("pass-1")
+    assertThat(firstDoc["issuingCountry"]).isEqualTo("United States")
+    assertThat(firstDoc["documentNumberMasked"]).isEqualTo("•••• 4321")
+  }
+
+  @Test
+  fun checkDocumentValidity_validWhenOverSixMonths() = runTest {
+    val futureExpiry =
+      LocalDate.now().plusMonths(12).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val doc =
+      TravelDocument(
+        documentId = "pass-valid",
+        documentType = "passport",
+        issuingCountry = "Netherlands",
+        expiryDate = futureExpiry,
+        documentNumberMasked = "•••• 9999",
+      )
+    fakeDocumentDao.documents.add(doc)
+
+    val result = validityTool.execute(mapOf("documentType" to "passport"))
+
+    assertThat(result["status"]).isEqualTo("VALID")
+    assertThat(result["validForTravel"]).isEqualTo(true)
+    assertThat(result["issuingCountry"]).isEqualTo("Netherlands")
+  }
+
+  @Test
+  fun checkDocumentValidity_expiringSoonWhenUnderSixMonths() = runTest {
+    val soonExpiry =
+      LocalDate.now().plusMonths(3).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val doc =
+      TravelDocument(
+        documentId = "pass-soon",
+        documentType = "passport",
+        issuingCountry = "United States",
+        expiryDate = soonExpiry,
+        documentNumberMasked = "•••• 1111",
+      )
+    fakeDocumentDao.documents.add(doc)
+
+    val result = validityTool.execute(mapOf("documentType" to "passport"))
+
+    assertThat(result["status"]).isEqualTo("EXPIRING_SOON")
+    assertThat(result["validForTravel"]).isEqualTo(false)
+  }
+
+  @Test
+  fun checkDocumentValidity_expiredWhenPastDate() = runTest {
+    val pastExpiry =
+      LocalDate.now().minusMonths(2).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val doc =
+      TravelDocument(
+        documentId = "pass-expired",
+        documentType = "passport",
+        issuingCountry = "United States",
+        expiryDate = pastExpiry,
+        documentNumberMasked = "•••• 0000",
+      )
+    fakeDocumentDao.documents.add(doc)
+
+    val result = validityTool.execute(mapOf("documentType" to "passport"))
+
+    assertThat(result["status"]).isEqualTo("EXPIRED")
+    assertThat(result["validForTravel"]).isEqualTo(false)
+  }
+
+  @Test
+  fun checkDocumentValidity_notFoundWhenMissing() = runTest {
+    val result = validityTool.execute(mapOf("documentType" to "visa"))
+
+    assertThat(result["status"]).isEqualTo("NOT_FOUND")
+    assertThat(result["validForTravel"]).isEqualTo(false)
   }
 
   @Test
@@ -311,6 +412,57 @@ private class FakeTripDao : TripDao {
 
   override suspend fun deleteAllTrips() {
     trips.clear()
+  }
+}
+
+private class FakeTravelDocumentDao : TravelDocumentDao {
+  val documents = mutableListOf<TravelDocument>()
+
+  override fun getAllDocuments(): Flow<List<TravelDocument>> = flowOf(documents.toList())
+
+  override fun getDocumentsByType(documentType: String): Flow<List<TravelDocument>> =
+    flowOf(documents.filter { it.documentType.equals(documentType, ignoreCase = true) })
+
+  override fun getDocumentsForTrip(tripId: String): Flow<List<TravelDocument>> =
+    flowOf(documents.filter { it.tripId == tripId })
+
+  override fun getDocumentsForEvent(eventId: String): Flow<List<TravelDocument>> =
+    flowOf(documents.filter { it.eventId == eventId })
+
+  override suspend fun getDocumentById(documentId: String): TravelDocument? = documents.find {
+    it.documentId == documentId || it.id == documentId
+  }
+
+  override suspend fun insertDocument(document: TravelDocument) {
+    documents.add(document)
+  }
+
+  override suspend fun linkDocumentToEvent(documentId: String, eventId: String?, tripId: String?) {
+    val idx = documents.indexOfFirst { it.documentId == documentId || it.id == documentId }
+    if (idx != -1) {
+      val existing = documents[idx]
+      documents[idx] = existing.copy(eventId = eventId, tripId = tripId ?: existing.tripId)
+    }
+  }
+
+  override suspend fun linkDocumentToTrip(documentId: String, tripId: String?) {
+    val idx = documents.indexOfFirst { it.documentId == documentId || it.id == documentId }
+    if (idx != -1) {
+      val existing = documents[idx]
+      documents[idx] = existing.copy(tripId = tripId)
+    }
+  }
+
+  override suspend fun deleteDocument(document: TravelDocument) {
+    documents.remove(document)
+  }
+
+  override suspend fun deleteDocumentById(id: String) {
+    documents.removeAll { it.id == id }
+  }
+
+  override suspend fun deleteAllDocuments() {
+    documents.clear()
   }
 }
 
