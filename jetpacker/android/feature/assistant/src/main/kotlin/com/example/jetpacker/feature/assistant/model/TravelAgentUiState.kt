@@ -16,6 +16,7 @@
 
 package com.example.jetpacker.feature.assistant.model
 
+import com.example.jetpacker.data.itinerary.TravelDocument
 import java.util.UUID
 
 /** Record of a single tool execution during an agent turn. */
@@ -31,6 +32,13 @@ data class ToolExecutionRecord(
  * alongside the assistant's answer.
  */
 sealed interface HighlightedEntity {
+  /** Represents a travel document (e.g. passport or visa) with its checked validity status. */
+  data class TravelDocumentHighlight(
+    val document: TravelDocument,
+    val validityStatus: String,
+    val validityExplanation: String,
+  ) : HighlightedEntity
+
   /** Represents flight details highlighted from the traveler's itinerary. */
   data class FlightDetailHighlight(
     val flightNumber: String,

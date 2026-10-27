@@ -33,6 +33,8 @@ import com.example.jetpacker.data.itinerary.MuseumDetail
 import com.example.jetpacker.data.itinerary.TimelineEvent
 import com.example.jetpacker.data.itinerary.TourDetail
 import com.example.jetpacker.data.itinerary.TourDetailDao
+import com.example.jetpacker.data.itinerary.TravelDocument
+import com.example.jetpacker.data.itinerary.TravelDocumentDao
 import com.example.jetpacker.data.itinerary.VoiceNoteEntity
 import com.example.jetpacker.data.trips.Trip
 import com.example.jetpacker.data.trips.TripDao
@@ -51,6 +53,7 @@ import com.example.jetpacker.data.trips.TripDao
       MuseumDetail::class,
       Expense::class,
       VoiceNoteEntity::class,
+      TravelDocument::class,
       AssistantConversation::class,
     ],
   version = 4,
@@ -66,6 +69,8 @@ abstract class JetPackerDatabase : RoomDatabase() {
   abstract fun dayThemeDao(): DayThemeDao
 
   abstract fun expenseDao(): ExpenseDao
+
+  abstract fun travelDocumentDao(): TravelDocumentDao
 
   abstract fun assistantConversationDao(): AssistantConversationDao
 }

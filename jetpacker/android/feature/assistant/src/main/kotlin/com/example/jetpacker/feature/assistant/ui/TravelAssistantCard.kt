@@ -108,6 +108,7 @@ import com.example.jetpacker.feature.assistant.model.HighlightedEntity.ExpenseHi
 import com.example.jetpacker.feature.assistant.model.HighlightedEntity.FlightDetailHighlight
 import com.example.jetpacker.feature.assistant.model.HighlightedEntity.ItineraryEventHighlight
 import com.example.jetpacker.feature.assistant.model.HighlightedEntity.MultiActionHighlight
+import com.example.jetpacker.feature.assistant.model.HighlightedEntity.TravelDocumentHighlight
 import com.example.jetpacker.feature.assistant.model.HighlightedEntity.VoiceNoteHighlight
 import com.example.jetpacker.feature.assistant.model.ToolExecutionRecord
 import com.example.jetpacker.feature.assistant.model.TravelAgentUiState.Error
@@ -384,6 +385,10 @@ fun TravelAssistantCard(
 @Composable
 private fun HighlightedEntitySection(highlight: HighlightedEntity?) {
   when (highlight) {
+    is TravelDocumentHighlight -> {
+      DocumentHighlightCard(highlight = highlight)
+      Spacer(modifier = Modifier.height(8.dp))
+    }
     is FlightDetailHighlight -> {
       FlightHighlightCard(highlight = highlight)
       Spacer(modifier = Modifier.height(8.dp))
@@ -405,6 +410,99 @@ private fun HighlightedEntitySection(highlight: HighlightedEntity?) {
       Spacer(modifier = Modifier.height(8.dp))
     }
     null -> Unit
+  }
+}
+
+/** Structured highlight card displaying travel document validity details. */
+@Composable
+private fun DocumentHighlightCard(
+  highlight: TravelDocumentHighlight,
+  modifier: Modifier = Modifier,
+) {
+  val (badgeColor, textColor, icon) =
+    when (highlight.validityStatus) {
+      "VALID" -> Triple(Color(0xFF01AF57), Color(0xFF061B0E), Icons.Default.CheckCircle)
+      "EXPIRING_SOON" -> Triple(Color(0xFFE65100), Color.White, Icons.Default.Warning)
+      "EXPIRED" -> Triple(MaterialTheme.colorScheme.error, Color.White, Icons.Default.ErrorOutline)
+      else ->
+        Triple(
+          MaterialTheme.colorScheme.surfaceVariant,
+          MaterialTheme.colorScheme.onSurfaceVariant,
+          Icons.Default.Warning,
+        )
+    }
+
+  Card(
+    modifier = modifier.fillMaxWidth(),
+    colors =
+      CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+    shape = MaterialTheme.shapes.medium,
+  ) {
+    Column(modifier = Modifier.padding(12.dp)) {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
+        Text(
+          text =
+            "${highlight.document.issuingCountry} ${highlight.document.documentType.replaceFirstChar { it.uppercase() }}",
+          style = MaterialTheme.typography.titleSmall,
+          fontWeight = FontWeight.Bold,
+        )
+        Surface(shape = MaterialTheme.shapes.small, color = badgeColor) {
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+          ) {
+            Icon(
+              imageVector = icon,
+              contentDescription = null,
+              tint = textColor,
+              modifier = Modifier.size(14.dp),
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+              text = highlight.validityStatus.replace('_', ' '),
+              style = MaterialTheme.typography.labelSmall,
+              fontWeight = FontWeight.Bold,
+              color = textColor,
+            )
+          }
+        }
+      }
+
+      Spacer(modifier = Modifier.height(4.dp))
+
+      val formattedExpiry =
+        if (highlight.document.expiryDate > 0L) {
+          try {
+            Instant.ofEpochMilli(highlight.document.expiryDate)
+              .atZone(ZoneId.systemDefault())
+              .toLocalDate()
+              .toString()
+          } catch (e: Exception) {
+            highlight.document.expiryDate.toString()
+          }
+        } else {
+          "Unknown"
+        }
+
+      Text(
+        text = "Number: ${highlight.document.documentNumberMasked}  •  Expires: $formattedExpiry",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+
+      if (highlight.validityExplanation.isNotBlank()) {
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+          text = highlight.validityExplanation,
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurface,
+        )
+      }
+    }
   }
 }
 
@@ -794,7 +892,7 @@ private fun AgentEventStepper(
             Icon(
               imageVector = Icons.Default.Check,
               contentDescription = "Completed",
-              tint = Color(0xFF2E7D32),
+              tint = Color(0xFF01AF57),
               modifier = Modifier.size(14.dp),
             )
           }
@@ -811,6 +909,15 @@ private fun getHumanizedToolInfo(
   val cleanName =
     toolName.removePrefix("BaseJetPackerAppFunctionService_").substringAfterLast('.').substringAfterLast('#')
   return when (cleanName) {
+    "get_travel_document" ->
+      (if (isCompleted) "Checked travel documents" else "Checking travel documents…") to
+        Icons.Default.Search
+    "read_document_content" ->
+      (if (isCompleted) "Read document details" else "Reading document details…") to
+        Icons.Default.DocumentScanner
+    "check_document_validity" ->
+      (if (isCompleted) "Verified document expiry" else "Verifying document expiry…") to
+        Icons.Default.Verified
     "get_flight_itinerary" ->
       (if (isCompleted) "Checked flight schedule" else "Checking flight schedule…") to
         Icons.Default.Flight
@@ -1154,7 +1261,7 @@ private fun ActionProgressFeed(
         Icon(
           imageVector = if (isCompleted) Icons.Default.CheckCircle else Icons.Default.AutoAwesome,
           contentDescription = null,
-          tint = if (isCompleted) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary,
+          tint = if (isCompleted) Color(0xFF01AF57) else MaterialTheme.colorScheme.primary,
           modifier = Modifier.size(18.dp),
         )
         Spacer(modifier = Modifier.width(8.dp))
@@ -1173,7 +1280,7 @@ private fun ActionProgressFeed(
           Surface(
             shape = RoundedCornerShape(12.dp),
             color =
-              if (isCompleted) Color(0xFF2E7D32).copy(alpha = 0.14f)
+              if (isCompleted) Color(0xFF01AF57).copy(alpha = 0.14f)
               else MaterialTheme.colorScheme.primaryContainer,
           ) {
             Text(
@@ -1183,7 +1290,7 @@ private fun ActionProgressFeed(
               style = MaterialTheme.typography.labelSmall,
               fontWeight = FontWeight.Bold,
               color =
-                if (isCompleted) Color(0xFF2E7D32)
+                if (isCompleted) Color(0xFF01AF57)
                 else MaterialTheme.colorScheme.onPrimaryContainer,
               modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
             )
@@ -1299,7 +1406,7 @@ private fun UserActionStepRow(step: UserActionStep, stepNumber: Int? = null) {
           Icon(
             imageVector = Icons.Default.CheckCircle,
             contentDescription = "Done",
-            tint = Color(0xFF2E7D32),
+            tint = Color(0xFF01AF57),
             modifier = Modifier.size(20.dp),
           )
         }

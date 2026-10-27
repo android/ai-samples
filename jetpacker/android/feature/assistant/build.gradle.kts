@@ -84,4 +84,8 @@ dependencies {
   testImplementation("org.json:json:20240303")
 }
 
+tasks.withType<Test>().configureEach {
+  jvmArgs("-Xverify:none")
+}
+
 kotlin { jvmToolchain(17) }

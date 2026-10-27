@@ -23,6 +23,8 @@ import com.example.jetpacker.data.itinerary.DayThemeDao
 import com.example.jetpacker.data.itinerary.EventDao
 import com.example.jetpacker.data.itinerary.ExpenseDao
 import com.example.jetpacker.data.itinerary.TourDetailDao
+import com.example.jetpacker.data.itinerary.TravelDocumentDao
+import com.example.jetpacker.data.itinerary.TravelDocumentManager
 import com.example.jetpacker.data.trips.TripDao
 import dagger.Module
 import dagger.Provides
@@ -69,7 +71,21 @@ object DatabaseModule {
   }
 
   @Provides
+  fun provideTravelDocumentDao(db: JetPackerDatabase): TravelDocumentDao {
+    return db.travelDocumentDao()
+  }
+
+  @Provides
   fun provideAssistantConversationDao(db: JetPackerDatabase): AssistantConversationDao {
     return db.assistantConversationDao()
+  }
+
+  @Provides
+  @Singleton
+  fun provideTravelDocumentManager(
+    @ApplicationContext context: Context,
+    travelDocumentDao: TravelDocumentDao,
+  ): TravelDocumentManager {
+    return TravelDocumentManager(context, travelDocumentDao)
   }
 }
