@@ -253,7 +253,11 @@ fun UserMessageRowFixed(message: SupportChatMessage) {
             .background(UserBubble)
             .padding(16.dp)
       ) {
-        Text(text = message.text, color = Color.White, style = MaterialTheme.typography.bodyMedium)
+        Text(
+          text = message.text,
+          color = Color(0xFF061B0E),
+          style = MaterialTheme.typography.bodyMedium,
+        )
       }
       Spacer(modifier = Modifier.width(8.dp))
       Icon(
@@ -276,9 +280,9 @@ fun BotMessageRowFixed(
       Icon(
         Icons.Filled.Face,
         contentDescription = "Other",
-        tint = TextSecondary,
+        tint = Color(0xFF131314),
         modifier =
-          Modifier.size(32.dp).clip(CircleShape).background(Color(0xFFE2E8F0)).padding(4.dp),
+          Modifier.size(32.dp).clip(CircleShape).background(Color(0xFFEEEEEE)).padding(4.dp),
       )
       Spacer(modifier = Modifier.width(8.dp))
       Text(
@@ -316,11 +320,11 @@ fun BotMessageRowFixed(
   }
 }
 
-val PrimaryBlue = Color(0xFF0F172A)
-val UserBubble = Color(0xFF0F172A)
-val BotBubble = Color(0xFFF1F5F9)
-val TextPrimary = Color(0xFF1E293B)
-val TextSecondary = Color(0xFF64748B)
+val PrimaryBlue = Color(0xFF01AF57)
+val UserBubble = Color(0xFF01AF57)
+val BotBubble = Color(0xFF1E2024)
+val TextPrimary = Color(0xFFF1F3F4)
+val TextSecondary = Color(0xFF9AA0A6)
 
 @Composable
 fun InputBar(
@@ -334,7 +338,7 @@ fun InputBar(
       modifier =
         Modifier.padding(16.dp)
           .clip(RoundedCornerShape(32.dp))
-          .background(Color(0xFFF1F5F9))
+          .background(Color(0xFF1E2024))
           .padding(horizontal = 8.dp),
       verticalAlignment = Alignment.CenterVertically,
     ) {

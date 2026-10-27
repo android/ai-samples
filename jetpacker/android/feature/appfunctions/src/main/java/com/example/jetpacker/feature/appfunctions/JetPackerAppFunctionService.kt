@@ -145,11 +145,11 @@ abstract class BaseJetPackerAppFunctionService : Hilt_BaseJetPackerAppFunctionSe
 
   /**
    * Adds an expense to a trip. Call this ONLY when the user explicitly asks to add, log, or record
-   * an expense (e.g., 'Please add 45 dollars for the airport Uber to Mountain View' or in a
+   * an expense (e.g., 'Please add 45 dollars for the airport taxi to Mountain View' or in a
    * follow-up turn 'Great, I just bought it, can you add that to my expenses?'). Do NOT call this
    * when the user is only asking how much budget they have left or whether they can afford an item.
    *
-   * @param title The title or description of the expense (e.g., 'Airport Uber to Mountain View',
+   * @param title The title or description of the expense (e.g., 'Airport taxi to Mountain View',
    *   'SFMOMA Museum Ticket', 'Mechanical Keyboard').
    * @param amount The numeric amount of the expense (e.g., 45.0, 25.0, 180.0).
    * @param currency The currency code of the expense (e.g., 'USD', 'EUR', 'JPY', 'GBP'). Extract

@@ -144,6 +144,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.jetpacker.core.ui.AdsBorderBrush
+import com.example.jetpacker.core.ui.AdsIconBadgeDark
+import com.example.jetpacker.core.ui.AdsIconBadgeLight
 import com.example.jetpacker.core.ui.components.JetPackerFabConfig
 import com.example.jetpacker.data.itinerary.TimelineEvent
 import com.example.jetpacker.data.itinerary.TravelDocument
@@ -1050,7 +1053,7 @@ private fun DocumentCard(
     shape = RoundedCornerShape(20.dp),
     colors =
       CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+    border = BorderStroke(1.dp, AdsBorderBrush),
   ) {
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
       // Top header row: Icon + Title/Subtitle + Overflow Menu
@@ -1061,16 +1064,16 @@ private fun DocumentCard(
       ) {
         Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
           Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.secondaryContainer,
-            modifier = Modifier.size(44.dp),
+            shape = CircleShape,
+            color = AdsIconBadgeLight,
+            modifier = Modifier.size(40.dp),
           ) {
             Box(contentAlignment = Alignment.Center) {
               Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                modifier = Modifier.size(24.dp),
+                tint = AdsIconBadgeDark,
+                modifier = Modifier.size(22.dp),
               )
             }
           }
@@ -1232,7 +1235,7 @@ private fun DocumentCard(
             DocumentValidity.EXPIRING_SOON -> {
               Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.tertiaryContainer,
+                color = Color(0xFF3B2A08),
               ) {
                 Row(
                   modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
@@ -1241,14 +1244,14 @@ private fun DocumentCard(
                   Icon(
                     imageVector = Icons.Default.Warning,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                    tint = Color(0xFFFFD54F),
                     modifier = Modifier.size(13.dp),
                   )
                   Spacer(modifier = Modifier.width(4.dp))
                   Text(
                     text = "Expires soon (${formatExpiryDate(document.expiryDate)})",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    color = Color(0xFFFFD54F),
                     fontWeight = FontWeight.SemiBold,
                   )
                 }
@@ -1257,7 +1260,7 @@ private fun DocumentCard(
             DocumentValidity.EXPIRED -> {
               Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.errorContainer,
+                color = Color(0xFF421114),
               ) {
                 Row(
                   modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
@@ -1266,25 +1269,43 @@ private fun DocumentCard(
                   Icon(
                     imageVector = Icons.Default.Warning,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                    tint = Color(0xFFFFB4AB),
                     modifier = Modifier.size(13.dp),
                   )
                   Spacer(modifier = Modifier.width(4.dp))
                   Text(
                     text = "Expired (${formatExpiryDate(document.expiryDate)})",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    color = Color(0xFFFFB4AB),
                     fontWeight = FontWeight.SemiBold,
                   )
                 }
               }
             }
             DocumentValidity.VALID -> {
-              Text(
-                text = "Valid · ${formatExpiryDate(document.expiryDate)}",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-              )
+              Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = Color(0xFF063E20),
+              ) {
+                Row(
+                  modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                  verticalAlignment = Alignment.CenterVertically,
+                ) {
+                  Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = Color(0xFF6DD58C),
+                    modifier = Modifier.size(13.dp),
+                  )
+                  Spacer(modifier = Modifier.width(4.dp))
+                  Text(
+                    text = "Valid (${formatExpiryDate(document.expiryDate)})",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color(0xFF6DD58C),
+                    fontWeight = FontWeight.SemiBold,
+                  )
+                }
+              }
             }
             DocumentValidity.NONE -> {}
           }

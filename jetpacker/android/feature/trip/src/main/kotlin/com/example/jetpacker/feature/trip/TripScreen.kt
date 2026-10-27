@@ -137,8 +137,8 @@ fun TripScreen(
         )
       },
       contentDescription = "Trip Assistant",
-      containerColor = MaterialTheme.colorScheme.secondary,
-      contentColor = MaterialTheme.colorScheme.onSecondary,
+      containerColor = MaterialTheme.colorScheme.primary,
+      contentColor = MaterialTheme.colorScheme.onPrimary,
     )
 
   val assistantEnabled = FeatureFlags.ENABLE_TRAVEL_ASSISTANT
@@ -152,7 +152,7 @@ fun TripScreen(
     tabFabConfig ?: if (assistantAvailableOnTab) assistantFabConfig else null
 
   Scaffold(
-    containerColor = MaterialTheme.colorScheme.primary,
+    containerColor = MaterialTheme.colorScheme.background,
     bottomBar = {
       TripBottomBarContainer(
         showAssistantOverlay = showAssistantOverlay,
@@ -381,8 +381,8 @@ fun JetPackerBottomBar(
               onClick = displayFab.onClick,
               icon = displayFab.icon,
               contentDescription = displayFab.contentDescription,
-              containerColor = displayFab.containerColor ?: MaterialTheme.colorScheme.tertiary,
-              contentColor = displayFab.contentColor ?: MaterialTheme.colorScheme.onTertiary,
+              containerColor = displayFab.containerColor ?: MaterialTheme.colorScheme.primary,
+              contentColor = displayFab.contentColor ?: MaterialTheme.colorScheme.onPrimary,
             )
           }
         }

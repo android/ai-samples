@@ -28,6 +28,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -113,6 +114,10 @@ import androidx.compose.ui.unit.sp
 import androidx.graphics.shapes.toPath
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.jetpacker.core.ui.AdsBorderBrush
+import com.example.jetpacker.core.ui.AdsIconBadgeDark
+import com.example.jetpacker.core.ui.AdsIconBadgeLight
+import com.example.jetpacker.core.ui.AdsLoadingBorderBrush
 import com.example.jetpacker.core.ui.EventColors
 import com.example.jetpacker.core.ui.SekuyaFontFamily
 import com.example.jetpacker.data.itinerary.Expense
@@ -241,7 +246,7 @@ fun ManageExpensesScreen(
         title = {
           Text(
             "Expenses",
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleLarge.copy(fontSize = 17.sp),
             color = MaterialTheme.colorScheme.onSurface,
             fontFamily = SekuyaFontFamily,
           )
@@ -283,7 +288,16 @@ fun ManageExpensesScreen(
         ) {
           val totalText = "$${"%.2f".format(totalSpent)}"
 
-          Surface(shape = RoundedCornerShape(30.dp), color = MaterialTheme.colorScheme.surface) {
+          Surface(
+            shape = RoundedCornerShape(30.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            modifier =
+              Modifier.border(
+                1.5.dp,
+                if (isProcessing.value) AdsLoadingBorderBrush else AdsBorderBrush,
+                RoundedCornerShape(30.dp),
+              ),
+          ) {
             Text(
               text = totalText,
               style =
@@ -312,14 +326,14 @@ fun ManageExpensesScreen(
             Spacer(modifier = Modifier.width(8.dp))
             Surface(
               shape = RoundedCornerShape(30.dp),
-              color = MaterialTheme.colorScheme.onSurface,
+              color = MaterialTheme.colorScheme.primary,
               modifier = Modifier.clickable { isBudgetSheetVisible = true },
             ) {
               Text(
                 text = "$${budget.toInt()}",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.surface,
+                color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
               )
             }
@@ -407,7 +421,7 @@ fun ManageExpensesScreen(
 }
 
 @Composable
-fun ShimmerExpenseItem() {
+fun ShimmerExpenseItem(modifier: Modifier = Modifier) {
   val shimmerColors =
     listOf(
       Color.LightGray.copy(alpha = 0.6f),
@@ -436,7 +450,8 @@ fun ShimmerExpenseItem() {
     )
 
   Card(
-    modifier = Modifier.fillMaxWidth(),
+    modifier =
+      modifier.fillMaxWidth().border(1.5.dp, AdsLoadingBorderBrush, RoundedCornerShape(12.dp)),
     shape = RoundedCornerShape(12.dp),
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
   ) {
@@ -541,29 +556,21 @@ fun ExpenseItem(
     },
   ) {
     Card(
-      modifier = Modifier.fillMaxWidth(),
+      modifier = Modifier.fillMaxWidth().border(1.dp, AdsBorderBrush, RoundedCornerShape(12.dp)),
       shape = RoundedCornerShape(12.dp),
       onClick = onClick,
       colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
       Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.size(50.dp), contentAlignment = Alignment.Center) {
-          val shape = MaterialShapes.SoftBoom
-          Box(
-            modifier =
-              Modifier.fillMaxSize().drawWithCache {
-                val path = shape.toPath().asComposePath()
-                val matrix = Matrix()
-                matrix.scale(size.width, size.height)
-                path.transform(matrix)
-                onDrawBehind { drawPath(path, color = color.content) }
-              }
-          )
+        Box(
+          modifier = Modifier.size(48.dp).background(AdsIconBadgeLight, CircleShape),
+          contentAlignment = Alignment.Center,
+        ) {
           Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.size(16.dp),
+            tint = AdsIconBadgeDark,
+            modifier = Modifier.size(22.dp),
           )
         }
 

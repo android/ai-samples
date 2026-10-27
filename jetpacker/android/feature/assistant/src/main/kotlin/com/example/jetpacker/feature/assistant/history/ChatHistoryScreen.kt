@@ -155,7 +155,7 @@ fun ChatHistoryScreen(
             style =
               MaterialTheme.typography.titleLarge.copy(
                 fontFamily = SekuyaFontFamily,
-                fontSize = 22.sp,
+                fontSize = 17.sp,
               ),
             color = MaterialTheme.colorScheme.onSurface,
           )
@@ -553,7 +553,7 @@ private fun ActionStepPill(step: UserActionStep) {
       Icon(
         imageVector = Icons.Rounded.CheckCircle,
         contentDescription = "Completed",
-        tint = Color(0xFF2E7D32),
+        tint = MaterialTheme.colorScheme.primary,
         modifier = Modifier.size(16.dp),
       )
     }
@@ -613,10 +613,10 @@ private fun EmptyChatHistoryView(
       onClick = onStartChat,
       colors =
         ButtonDefaults.buttonColors(
-          containerColor = MaterialTheme.colorScheme.secondary,
-          contentColor = MaterialTheme.colorScheme.onSecondary,
+          containerColor = MaterialTheme.colorScheme.primary,
+          contentColor = MaterialTheme.colorScheme.onPrimary,
         ),
-      shape = RoundedCornerShape(16.dp),
+      shape = RoundedCornerShape(24.dp),
       contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
     ) {
       Icon(

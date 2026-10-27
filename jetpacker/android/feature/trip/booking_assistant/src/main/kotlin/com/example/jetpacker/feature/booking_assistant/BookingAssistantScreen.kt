@@ -105,9 +105,9 @@ fun BookingAssistantScreen(
 
   Scaffold(
     modifier = modifier.fillMaxSize(),
-    containerColor = MaterialTheme.colorScheme.primary,
+    containerColor = MaterialTheme.colorScheme.background,
     topBar = {
-      Column(modifier = Modifier.background(MaterialTheme.colorScheme.primary)) {
+      Column(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
         TopAppBar(
           title = {
             Text(
@@ -115,10 +115,9 @@ fun BookingAssistantScreen(
               style =
                 MaterialTheme.typography.titleLarge.copy(
                   fontFamily = SekuyaFontFamily,
-                  fontSize = 24.sp,
-                  letterSpacing = 0.5.sp,
+                  fontSize = 17.sp,
                 ),
-              color = Color(0xFF1E293B),
+              color = MaterialTheme.colorScheme.onSurface,
             )
           },
           navigationIcon = {
@@ -126,7 +125,7 @@ fun BookingAssistantScreen(
               Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                 contentDescription = "Back",
-                tint = Color(0xFF1E293B),
+                tint = MaterialTheme.colorScheme.onSurface,
               )
             }
           },
@@ -135,19 +134,19 @@ fun BookingAssistantScreen(
               Icon(
                 imageVector = Icons.Rounded.Refresh,
                 contentDescription = "Reset Bookings",
-                tint = Color(0xFF1E293B).copy(alpha = 0.4f),
+                tint = MaterialTheme.colorScheme.onSurface,
               )
             }
           },
           colors =
             TopAppBarDefaults.topAppBarColors(
-              containerColor = MaterialTheme.colorScheme.primary,
+              containerColor = MaterialTheme.colorScheme.background,
             ),
         )
         if (isStreaming) {
           LinearProgressIndicator(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.fillMaxWidth().height(3.dp),
+            color = MaterialTheme.colorScheme.primary,
             trackColor = Color.Transparent,
           )
         }

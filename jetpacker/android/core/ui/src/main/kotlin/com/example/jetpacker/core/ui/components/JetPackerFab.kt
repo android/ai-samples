@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.jetpacker.core.ui.AdsToolbarBorderBrush
 import com.example.jetpacker.core.ui.JetPackerTheme
 
 @Composable
@@ -51,22 +52,22 @@ fun JetPackerFab(
     icon: ImageVector,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    containerColor: Color = MaterialTheme.colorScheme.tertiary,
-    contentColor: Color = MaterialTheme.colorScheme.onTertiary,
+    containerColor: Color = MaterialTheme.colorScheme.primary,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimary,
 ) {
     val shape = RoundedCornerShape(16.dp)
 
     Box(
         modifier = modifier
             .sizeIn(minWidth = 56.dp, minHeight = 56.dp)
-            .border(1.dp, MaterialTheme.colorScheme.onSurface, shape = shape)
             .dropShadow(shape = shape) {
-                radius = 0f
+                radius = 12.dp.toPx()
                 spread = 0f
-                offset = Offset(x = 2.dp.toPx(), y = 3.dp.toPx())
-                color = Color(0xFF20290A)
+                offset = Offset(x = 0f, y = 4.dp.toPx())
+                color = Color.Black.copy(alpha = 0.5f)
             }
             .background(containerColor, shape)
+            .border(1.5.dp, AdsToolbarBorderBrush, shape = shape)
             .clip(shape)
             .clickable { onClick() },
         contentAlignment = Alignment.Center,

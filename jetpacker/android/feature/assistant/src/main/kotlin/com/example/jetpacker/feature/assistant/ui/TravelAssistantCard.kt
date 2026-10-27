@@ -98,6 +98,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.jetpacker.core.ui.AdsBorderBrush
+import com.example.jetpacker.core.ui.AdsLoadingBorderBrush
 import com.example.jetpacker.feature.assistant.TravelAssistantViewModel
 import com.example.jetpacker.feature.assistant.model.ActionStepCategory
 import com.example.jetpacker.feature.assistant.model.ActionStepStatus
@@ -156,11 +158,17 @@ fun TravelAssistantCard(
     }
   }
 
+  val isAssistantLoading = uiState is Thinking || uiState is ExecutingTool || voiceState.isListening
+
   Card(
     modifier = modifier.fillMaxWidth(),
     shape = MaterialTheme.shapes.large,
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+    border =
+      BorderStroke(
+        if (isAssistantLoading) 1.5.dp else 1.dp,
+        if (isAssistantLoading) AdsLoadingBorderBrush else AdsBorderBrush,
+      ),
   ) {
     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
       // Header: Assistant title, Nano badge, Documents button, and Reset button
@@ -992,6 +1000,13 @@ fun AmbientTripAssistantSheet(
     }
   }
 
+  val isSheetLoading =
+    displayOverlayState is AssistantOverlayState.PerformingActions ||
+      displayOverlayState is AssistantOverlayState.Listening ||
+      uiState is Thinking ||
+      uiState is ExecutingTool ||
+      voiceState.isListening
+
   val sheetShape = RoundedCornerShape(24.dp)
   Surface(
     modifier =
@@ -1007,7 +1022,11 @@ fun AmbientTripAssistantSheet(
     color = MaterialTheme.colorScheme.surfaceContainerHigh,
     tonalElevation = 6.dp,
     shadowElevation = 0.dp,
-    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+    border =
+      BorderStroke(
+        if (isSheetLoading) 1.5.dp else 1.dp,
+        if (isSheetLoading) AdsLoadingBorderBrush else AdsBorderBrush,
+      ),
   ) {
     Box(
       modifier =
