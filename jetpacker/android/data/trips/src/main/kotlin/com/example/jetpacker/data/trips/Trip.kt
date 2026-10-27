@@ -33,4 +33,6 @@ data class Trip(
   @JvmField val imageUri: String? = null,
   @JvmField val participants: List<String> = emptyList(),
   @JvmField val tripSummaryAndTips: String? = null,
+  @JvmField val budget: Double = 2000.0,
+  @JvmField val currency: String = "USD",
 )

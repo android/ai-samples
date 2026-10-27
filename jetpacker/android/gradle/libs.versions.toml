@@ -37,6 +37,14 @@ lifecycleViewmodelCompose = "2.8.7"
 loggingInterceptor = "4.10.0"
 material = "1.14.0-alpha01"
 minSdk = "26"
+mlkitGenaiAgent = "1.0.0-alpha1"
+mlkitGenaiCommon = "1.0.0-beta5"
+mlkitGenaiEmbedding = "1.0.0-alpha1"
+mlkitGenaiPrompt = "1.0.0-beta5"
+mlkitGenaiSchema = "1.0.0-alpha2"
+mlkitGenaiSpeech = "1.0.0-alpha2"
+mlkitLanguageId = "17.0.0"
+mlkitTranslate = "17.0.3"
 moshiKotlin = "1.15.2"
 moshiKotlinCodegen = "1.15.2"
 nav3Core = "1.1.3"
@@ -109,9 +117,16 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "loggingInterceptor" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-mlkit-genai-prompt = { group = "com.google.mlkit", name = "genai-prompt", version = "1.0.0-beta2" }
-mlkit-genai-speech = { group = "com.google.mlkit", name = "genai-speech-recognition", version = "1.0.0-alpha1" }
-mlkit-translate = { group = "com.google.mlkit", name = "translate", version = "17.0.3" }
+mlkit-genai-agent = { group = "com.google.mlkit", name = "genai-agent", version.ref = "mlkitGenaiAgent" }
+mlkit-genai-common = { group = "com.google.mlkit", name = "genai-common", version.ref = "mlkitGenaiCommon" }
+mlkit-genai-embedding = { group = "com.google.mlkit", name = "genai-embedding", version.ref = "mlkitGenaiEmbedding" }
+mlkit-genai-prompt = { group = "com.google.mlkit", name = "genai-prompt", version.ref = "mlkitGenaiPrompt" }
+mlkit-genai-schema = { group = "com.google.mlkit", name = "genai-schema", version.ref = "mlkitGenaiSchema" }
+mlkit-genai-speech = { group = "com.google.mlkit", name = "genai-speech-recognition", version.ref = "mlkitGenaiSpeech" }
+androidx-appsearch = { group = "androidx.appsearch", name = "appsearch", version = "1.1.0-alpha07" }
+androidx-appsearch-local-storage = { group = "androidx.appsearch", name = "appsearch-local-storage", version = "1.1.0-alpha07" }
+androidx-concurrent-futures-ktx = { group = "androidx.concurrent", name = "concurrent-futures-ktx", version = "1.2.0" }
+mlkit-translate = { group = "com.google.mlkit", name = "translate", version.ref = "mlkitTranslate" }
 moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshiKotlin" }
 moshi-kotlin-codegen = { group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "moshiKotlinCodegen" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
@@ -119,7 +134,7 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 screenshot-validation-api = { group = "com.android.tools.screenshot", name = "screenshot-validation-api", version.ref = "composeScreenshot" }
-mlkit-language-id = { group = "com.google.android.gms", name = "play-services-mlkit-language-id", version = "17.0.0" }
+mlkit-language-id = { group = "com.google.android.gms", name = "play-services-mlkit-language-id", version.ref = "mlkitLanguageId" }
 firebase-appcheck-playintegrity = { group = "com.google.firebase", name = "firebase-appcheck-playintegrity" }
 firebase-appcheck-debug = { group = "com.google.firebase", name = "firebase-appcheck-debug" }
 androidx-appfunctions = { group = "androidx.appfunctions", name = "appfunctions", version.ref = "appfunctions" }

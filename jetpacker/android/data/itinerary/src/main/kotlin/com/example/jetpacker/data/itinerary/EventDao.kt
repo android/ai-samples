@@ -26,8 +26,8 @@ import kotlinx.coroutines.flow.Flow
 data class TripSessionIdentifier(@JvmField val tripId: String, @JvmField val sessionId: String?)
 
 /**
- * Data Access Object (DAO) for managing timeline events and their detailed subtypes (flights, hotels,
- * dining, museum entries, and voice notes) stored in the Room database.
+ * Data Access Object (DAO) for managing timeline events and their detailed subtypes (flights,
+ * hotels, dining, museum entries, and voice notes) stored in the Room database.
  */
 @Dao
 interface EventDao {
