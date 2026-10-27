@@ -119,7 +119,7 @@ object FeatureFlags {
 
   // Offline features
   val ENABLE_ITINERARY_ENRICHMENT: Boolean
-    get() = readFlag(KEY_ENABLE_ITINERARY_ENRICHMENT, false)
+    get() = readFlag(KEY_ENABLE_ITINERARY_ENRICHMENT, true)
 
   val ENABLE_EXPENSE_MANAGEMENT: Boolean
     get() = readFlag(KEY_ENABLE_EXPENSE_MANAGEMENT, true)

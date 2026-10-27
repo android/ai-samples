@@ -111,8 +111,6 @@ fun TripScreen(
   LaunchedEffect(tripId) { assistantViewModel.setTripId(tripId) }
 
   val overlayState by assistantViewModel.overlayState.collectAsStateWithLifecycle()
-  val isAssistantProcessingExpense by
-    assistantViewModel.isProcessingExpense.collectAsStateWithLifecycle()
 
   val audioPermissionLauncher =
     rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
@@ -191,7 +189,6 @@ fun TripScreen(
             contentPadding = innerPadding,
             onBack = { selectedTab = TripTab.ITINERARY },
             onFabConfigChange = { fabConfigs[TripTab.EXPENSES] = it },
-            isAssistantProcessingExpense = isAssistantProcessingExpense,
           )
         }
 
