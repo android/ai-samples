@@ -40,7 +40,8 @@ constructor(
 ) : ViewModel() {
 
   private val _tripIdFlow = MutableStateFlow(savedStateHandle.get<String>("tripId") ?: "")
-  internal val tripId: String get() = _tripIdFlow.value
+  internal val tripId: String
+    get() = _tripIdFlow.value
 
   fun loadForTrip(id: String) {
     if (id.isNotEmpty() && id != _tripIdFlow.value) {
@@ -49,7 +50,9 @@ constructor(
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  val expenses: Flow<List<Expense>> = _tripIdFlow.flatMapLatest { id -> expenseDao.getExpensesForTrip(id) }
+  val expenses: Flow<List<Expense>> = _tripIdFlow.flatMapLatest { id ->
+    expenseDao.getExpensesForTrip(id)
+  }
 
   suspend fun isSupported(): Boolean {
     return receiptParser.isSupported()
