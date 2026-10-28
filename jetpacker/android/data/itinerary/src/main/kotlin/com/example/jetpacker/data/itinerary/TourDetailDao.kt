@@ -22,9 +22,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Data Access Object (DAO) for managing custom tour details associated with timeline events.
- */
+/** Data Access Object (DAO) for managing custom tour details associated with timeline events. */
 @Dao
 interface TourDetailDao {
   @Query("SELECT * FROM tour_details WHERE eventId = :eventId")

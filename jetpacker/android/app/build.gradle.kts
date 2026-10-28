@@ -105,6 +105,7 @@ dependencies {
   implementation(project(":data:trips"))
   implementation(project(":feature:appfunctions"))
   implementation(libs.androidx.appfunctions)
+  implementation(project(":feature:assistant"))
   implementation(project(":feature:create_trip"))
   implementation(project(":feature:detail"))
   implementation(project(":feature:detail:museum_assistant"))

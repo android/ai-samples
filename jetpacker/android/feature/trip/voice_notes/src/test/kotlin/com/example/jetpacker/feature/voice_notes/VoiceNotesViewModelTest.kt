@@ -29,8 +29,6 @@ import com.example.jetpacker.data.itinerary.MuseumDetail
 import com.example.jetpacker.data.itinerary.TimelineEvent
 import com.example.jetpacker.data.itinerary.TripSessionIdentifier
 import com.example.jetpacker.data.itinerary.VoiceNoteEntity
-import com.google.common.util.concurrent.ListenableFuture
-import com.google.mlkit.genai.common.DownloadCallback
 import com.google.mlkit.genai.common.DownloadStatus
 import com.google.mlkit.genai.common.GenAiException
 import com.google.mlkit.genai.common.StreamingCallback
@@ -38,8 +36,9 @@ import com.google.mlkit.genai.prompt.Caches
 import com.google.mlkit.genai.prompt.CountTokensResponse
 import com.google.mlkit.genai.prompt.GenerateContentRequest
 import com.google.mlkit.genai.prompt.GenerateContentResponse
+import com.google.mlkit.genai.prompt.GenerateTypedContentRequest
+import com.google.mlkit.genai.prompt.GenerateTypedContentResponse
 import com.google.mlkit.genai.prompt.GenerativeModel
-import java.util.concurrent.ExecutorService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -340,37 +339,29 @@ class VoiceNotesViewModelTest {
 
     override suspend fun checkStatus(): Int = 3
 
+    override suspend fun getAvailableFeatures(): List<Int> = TODO("Not implemented")
+
     override suspend fun isCachingFeatureAvailable(): Boolean = TODO("Not implemented")
 
+    override suspend fun isStructuredOutputFeatureAvailable(): Boolean = TODO("Not implemented")
 
-    override fun download():
-      Flow<DownloadStatus> =
-      TODO("Not implemented")
+    override suspend fun isSystemPromptAvailable(): Boolean = TODO("Not implemented")
 
-    override fun downloadForFutures(
-      callback: DownloadCallback
-    ): ListenableFuture<Void> = TODO("Not implemented")
+    override suspend fun isThinkingModeAvailable(): Boolean = TODO("Not implemented")
+
+    override fun download(): Flow<DownloadStatus> = TODO("Not implemented")
 
     override suspend fun warmup() = TODO("Not implemented")
-
-    override fun warmupForFutures(): ListenableFuture<Void> =
-      TODO("Not implemented")
 
     override suspend fun countTokens(
       request: GenerateContentRequest
     ): CountTokensResponse = TODO("Not implemented")
 
-
-    override fun countTokensForFutures(
-      request: GenerateContentRequest
-    ): ListenableFuture<
-      CountTokensResponse
-    > = TODO("Not implemented")
+    override suspend fun <T : Any> countTokens(
+      request: GenerateTypedContentRequest<T>
+    ): CountTokensResponse = TODO("Not implemented")
 
     override suspend fun getTokenLimit(): Int = TODO("Not implemented")
-
-    override fun getTokenLimitForFutures():
-      ListenableFuture<Int> = TODO("Not implemented")
 
     override suspend fun generateContent(
       request: GenerateContentRequest
@@ -383,17 +374,14 @@ class VoiceNotesViewModelTest {
 
     override fun generateContentStream(
       request: GenerateContentRequest
-    ): Flow<GenerateContentResponse> =
-      TODO("Not implemented")
+    ): Flow<GenerateContentResponse> = TODO("Not implemented")
 
+    override suspend fun <T : Any> generateContent(
+      request: GenerateTypedContentRequest<T>
+    ): GenerateTypedContentResponse<T> = TODO("Not implemented")
 
     override suspend fun clearImplicitCaches() = TODO("Not implemented")
 
-    override fun clearImplicitCachesForFutures():
-      ListenableFuture<Void> = TODO("Not implemented")
-
     override fun close() {}
-
-    override fun getWorkerExecutor(): ExecutorService = TODO("Not implemented")
   }
 }

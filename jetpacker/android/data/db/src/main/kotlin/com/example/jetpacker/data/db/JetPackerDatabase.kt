@@ -19,6 +19,8 @@ package com.example.jetpacker.data.db
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.jetpacker.data.itinerary.ActivityDetail
+import com.example.jetpacker.data.itinerary.AssistantConversation
+import com.example.jetpacker.data.itinerary.AssistantConversationDao
 import com.example.jetpacker.data.itinerary.DayTheme
 import com.example.jetpacker.data.itinerary.DayThemeDao
 import com.example.jetpacker.data.itinerary.DiningDetail
@@ -49,8 +51,9 @@ import com.example.jetpacker.data.trips.TripDao
       MuseumDetail::class,
       Expense::class,
       VoiceNoteEntity::class,
+      AssistantConversation::class,
     ],
-  version = 1,
+  version = 4,
   exportSchema = false,
 )
 abstract class JetPackerDatabase : RoomDatabase() {
@@ -63,4 +66,6 @@ abstract class JetPackerDatabase : RoomDatabase() {
   abstract fun dayThemeDao(): DayThemeDao
 
   abstract fun expenseDao(): ExpenseDao
+
+  abstract fun assistantConversationDao(): AssistantConversationDao
 }

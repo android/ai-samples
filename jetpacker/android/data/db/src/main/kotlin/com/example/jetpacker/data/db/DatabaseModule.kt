@@ -18,6 +18,7 @@ package com.example.jetpacker.data.db
 
 import android.content.Context
 import androidx.room.Room
+import com.example.jetpacker.data.itinerary.AssistantConversationDao
 import com.example.jetpacker.data.itinerary.DayThemeDao
 import com.example.jetpacker.data.itinerary.EventDao
 import com.example.jetpacker.data.itinerary.ExpenseDao
@@ -65,5 +66,10 @@ object DatabaseModule {
   @Provides
   fun provideExpenseDao(db: JetPackerDatabase): ExpenseDao {
     return db.expenseDao()
+  }
+
+  @Provides
+  fun provideAssistantConversationDao(db: JetPackerDatabase): AssistantConversationDao {
+    return db.assistantConversationDao()
   }
 }
