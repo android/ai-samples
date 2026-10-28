@@ -2,7 +2,7 @@
 <AppFunctionAppMetadata xmlns:appfn="http://schemas.android.com/apk/androidx.appfunctions"
     appfn:description="This app manages trips and travel expenses.
     Operational Patterns:
-    - Use 'getAllTrips' to find the correct 'tripId' before adding expenses or managing trip details.
+    - Use 'searchTrip' to find the correct 'tripId' before adding expenses or managing trip details.
     Constraints:
     - Expenses must be associated with a valid trip ID."
     appfn:displayDescription="@string/user_visible_description" />

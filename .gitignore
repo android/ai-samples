@@ -5,3 +5,12 @@ build/
 **/local.properties
 **/google-services.json
 .DS_Store
+
+# Keystores and bundle artifacts
+*.jks
+*.keystore
+*.p12
+*.aab
+*.apk
+*.apks
+
