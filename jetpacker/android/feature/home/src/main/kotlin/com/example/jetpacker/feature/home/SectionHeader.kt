@@ -21,6 +21,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -54,6 +55,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.jetpacker.core.ui.AdsBorderBrush
 import com.example.jetpacker.core.ui.SekuyaFontFamily
 
 @Composable
@@ -119,7 +121,9 @@ fun SectionHeader(
     if (isExpandable) {
       Box(
         modifier =
-          Modifier.size(40.dp).border(2.dp, MaterialTheme.colorScheme.outline, CircleShape),
+          Modifier.size(40.dp)
+            .background(MaterialTheme.colorScheme.surfaceContainerLow, CircleShape)
+            .border(1.5.dp, AdsBorderBrush, CircleShape),
         contentAlignment = Alignment.Center,
       ) {
         AnimatedContent(

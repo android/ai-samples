@@ -315,13 +315,13 @@ fun MuseumDetailScreen(
               Modifier.fillMaxWidth()
                 .height(120.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(Color(0xFFE0E0E0)),
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
             contentAlignment = Alignment.Center,
           ) {
             Icon(
               Icons.Rounded.Map,
               contentDescription = "Map Placeholder",
-              tint = Color.Gray,
+              tint = MaterialTheme.colorScheme.onSurfaceVariant,
               modifier = Modifier.size(48.dp),
             )
           }
@@ -347,7 +347,7 @@ fun MuseumDetailScreen(
           modifier = Modifier.height(56.dp).fillMaxWidth(),
           colors =
             ButtonDefaults.buttonColors(
-              containerColor = MaterialTheme.colorScheme.tertiary,
+              containerColor = MaterialTheme.colorScheme.primary,
               contentColor = MaterialTheme.colorScheme.onPrimary,
             ),
         ) {

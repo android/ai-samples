@@ -156,7 +156,7 @@ fun CreateTripPanelContent(
               fontSize = 22.sp,
               fontFamily = SekuyaFontFamily,
             ),
-          color = MaterialTheme.colorScheme.secondary,
+          color = MaterialTheme.colorScheme.onSurface,
         )
       }
     },

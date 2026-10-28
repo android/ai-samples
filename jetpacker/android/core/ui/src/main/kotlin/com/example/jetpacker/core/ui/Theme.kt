@@ -102,7 +102,7 @@ private val LightColorScheme =
 
 @Composable
 fun JetPackerTheme(
-  darkTheme: Boolean = isSystemInDarkTheme(),
+  darkTheme: Boolean = true,
   content: @Composable () -> Unit,
 ) {
   val colorScheme =

@@ -155,6 +155,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.jetpacker.core.flags.FeatureFlags
+import com.example.jetpacker.core.ui.AdsBorderBrush
+import com.example.jetpacker.core.ui.AdsIconBadgeDark
+import com.example.jetpacker.core.ui.AdsIconBadgeLight
+import com.example.jetpacker.core.ui.AdsLoadingBorderBrush
 import com.example.jetpacker.core.ui.EventColors
 import com.example.jetpacker.core.ui.JetPackerTheme
 import com.example.jetpacker.core.ui.R
@@ -199,8 +203,8 @@ fun ItineraryScreen(
   LocalContext.current
 
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-  val fabContainerColor = MaterialTheme.colorScheme.secondary
-  val fabContentColor = MaterialTheme.colorScheme.onSecondary
+  val fabContainerColor = MaterialTheme.colorScheme.primary
+  val fabContentColor = MaterialTheme.colorScheme.onPrimary
 
   var eventToDelete by remember { mutableStateOf<TimelineEvent?>(null) }
 
@@ -243,19 +247,19 @@ fun ItineraryScreen(
               uiState.trip?.title?.uppercase() ?: "ITINERARY",
               style =
                 MaterialTheme.typography.titleLarge.copy(
-                  fontSize = 22.sp,
+                  fontSize = 17.sp,
                   fontFamily = SekuyaFontFamily,
                 ),
-              color = MaterialTheme.colorScheme.secondary,
+              color = MaterialTheme.colorScheme.onSurface,
               maxLines = 1,
-              autoSize = TextAutoSize.StepBased(minFontSize = 12.sp, maxFontSize = 22.sp),
+              autoSize = TextAutoSize.StepBased(minFontSize = 12.sp, maxFontSize = 17.sp),
             )
 
             uiState.trip?.location?.let { location ->
               Text(
                 location,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
               )
             }
           }
@@ -272,7 +276,7 @@ fun ItineraryScreen(
         },
         scrollBehavior = scrollBehavior,
         colors =
-          TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary),
+          TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
       )
     },
     containerColor = Color.Transparent,
@@ -645,7 +649,11 @@ fun TimelineItemCard(
 ) {
   Card(
     onClick = onClick,
-    modifier = modifier.fillMaxWidth().padding(bottom = 16.dp),
+    modifier =
+      modifier
+        .fillMaxWidth()
+        .padding(bottom = 16.dp)
+        .border(1.dp, AdsBorderBrush, RoundedCornerShape(12.dp)),
     shape = RoundedCornerShape(12.dp),
     colors =
       CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
@@ -665,23 +673,23 @@ fun TimelineItemCard(
 
       Box(
         modifier =
-          Modifier.size(50.dp)
+          Modifier.size(48.dp)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.secondary, MaterialShapes.Burst.toShape()),
+            .background(AdsIconBadgeLight, CircleShape),
         contentAlignment = Alignment.Center,
       ) {
         Icon(
           imageVector = icon,
           contentDescription = null,
-          tint = MaterialTheme.colorScheme.onSecondary,
-          modifier = Modifier.size(18.dp),
+          tint = AdsIconBadgeDark,
+          modifier = Modifier.size(22.dp),
         )
       }
 
       Spacer(modifier = Modifier.width(16.dp))
 
       Column(modifier = Modifier.weight(1f)) {
-        val tagColor = MaterialTheme.colorScheme.surface
+        val tagColor = eventColors.container
         val tagTextColor = eventColors.content
 
         Text(
@@ -691,7 +699,7 @@ fun TimelineItemCard(
           color = tagTextColor,
           modifier =
             Modifier.background(tagColor, RoundedCornerShape(16.dp))
-              .border(1.dp, tagTextColor, RoundedCornerShape(16.dp))
+              .border(1.dp, tagTextColor.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
               .padding(horizontal = 8.dp, vertical = 2.dp),
         )
 
@@ -775,7 +783,10 @@ fun TimelineShimmerItem(modifier: Modifier = Modifier) {
 
     // Content column
     Card(
-      modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+      modifier =
+        Modifier.fillMaxWidth()
+          .padding(bottom = 24.dp)
+          .border(1.5.dp, AdsLoadingBorderBrush, MaterialTheme.shapes.medium),
       shape = MaterialTheme.shapes.medium,
       colors = CardDefaults.elevatedCardColors(),
     ) {
@@ -841,11 +852,11 @@ fun rememberShimmerBrush(): Brush {
 
 @Composable
 fun DashedLine(modifier: Modifier = Modifier) {
-  val dashedLineColor = MaterialTheme.colorScheme.onSurface
+  val dashedLineColor = MaterialTheme.colorScheme.onSurfaceVariant
 
   Canvas(modifier = modifier.width(2.dp)) {
-    val dashLength = 12.dp.toPx()
-    val gapLength = 2.dp.toPx()
+    val dashLength = 8.dp.toPx()
+    val gapLength = 5.dp.toPx()
     drawLine(
       color = dashedLineColor,
       start = Offset(size.width / 2, 0f),

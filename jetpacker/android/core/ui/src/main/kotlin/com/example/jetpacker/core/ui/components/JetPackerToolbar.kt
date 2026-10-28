@@ -20,6 +20,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.animation.core.animateSizeAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,6 +63,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.example.jetpacker.core.ui.AdsToolbarBorderBrush
 import com.example.jetpacker.core.ui.JetPackerTheme
 import kotlin.math.roundToInt
 
@@ -92,17 +94,12 @@ fun JetPackerToolbar(modifier: Modifier = Modifier, content: @Composable RowScop
     modifier =
       modifier
         .dropShadow(shape = shape) {
-          radius = 3.dp.toPx()
-          offset = Offset(0f, 1.dp.toPx())
-          color = Color.Black.copy(alpha = 0.3f)
-        }
-        .dropShadow(shape = shape) {
-          radius = 8.dp.toPx()
+          radius = 12.dp.toPx()
           offset = Offset(0f, 4.dp.toPx())
-          spread = 3.dp.toPx()
-          color = Color.Black.copy(alpha = 0.15f)
+          color = Color.Black.copy(alpha = 0.55f)
         }
-        .background(MaterialTheme.colorScheme.onSurface, shape)
+        .background(MaterialTheme.colorScheme.surfaceContainerLow, shape)
+        .border(1.5.dp, AdsToolbarBorderBrush, shape)
         .onGloballyPositioned { state.toolbarCoords = it }
   ) {
     if (state.selectedBounds != null) {
@@ -144,8 +141,8 @@ fun JetPackerToolbarAction(
   val contentColor by
     animateColorAsState(
       targetValue =
-        if (selected) MaterialTheme.colorScheme.onSurfaceVariant
-        else MaterialTheme.colorScheme.surfaceContainer,
+        if (selected) MaterialTheme.colorScheme.onPrimary
+        else MaterialTheme.colorScheme.onSurfaceVariant,
       label = "contentColor",
     )
 

@@ -73,6 +73,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.jetpacker.core.ui.AdsBorderBrush
+import com.example.jetpacker.core.ui.AdsIconBadgeDark
+import com.example.jetpacker.core.ui.AdsIconBadgeLight
 import com.example.jetpacker.core.ui.JetPackerTheme
 import com.example.jetpacker.core.ui.R as CoreUiR
 import com.example.jetpacker.core.ui.SekuyaFontFamily
@@ -163,8 +166,8 @@ fun TripCard(
         Modifier.fillMaxWidth()
           .clip(RoundedCornerShape(40.dp))
           .then(modifier)
-          .background(MaterialTheme.colorScheme.surface)
-          .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(40.dp))
+          .background(MaterialTheme.colorScheme.surfaceContainerLow)
+          .border(1.5.dp, AdsBorderBrush, RoundedCornerShape(40.dp))
           .clickable(onClick = onClick)
           .padding(16.dp),
       config = {
@@ -275,19 +278,19 @@ private fun TripInfoItem(icon: ImageVector, text: String, modifier: Modifier = M
   Row(
     modifier = modifier,
     verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.spacedBy(8.dp),
+    horizontalArrangement = Arrangement.spacedBy(10.dp),
   ) {
     Surface(
       modifier = Modifier.size(32.dp),
-      color = MaterialTheme.colorScheme.primary,
-      shape = RoundedCornerShape(12.dp),
+      color = AdsIconBadgeLight,
+      shape = CircleShape,
     ) {
       Box(contentAlignment = Alignment.Center) {
         Icon(
           imageVector = icon,
           contentDescription = null,
-          modifier = Modifier.size(20.dp),
-          tint = MaterialTheme.colorScheme.onPrimary,
+          modifier = Modifier.size(18.dp),
+          tint = AdsIconBadgeDark,
         )
       }
     }
