@@ -14,41 +14,33 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
+
 package com.example.jetpacker.feature.booking_assistant
 
-import androidx.a2ui.model.processor.A2uiSurfaceModel
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.ConfirmationNumber
 import androidx.compose.material.icons.rounded.Flight
-import androidx.compose.material.icons.rounded.Hotel
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.Restaurant
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -66,17 +58,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.jetpacker.core.ui.SekuyaFontFamily
+import com.example.jetpacker.feature.booking_assistant.components.BookingChatComposer
+import com.example.jetpacker.feature.booking_assistant.components.ChatMessageItem
+import com.example.jetpacker.feature.booking_assistant.components.JourneyCategoryCard
+import com.example.jetpacker.feature.booking_assistant.components.JourneySubItemRow
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookingAssistantScreen(
   tripId: String,
@@ -85,22 +82,20 @@ fun BookingAssistantScreen(
   viewModel: BookingAssistantViewModel = hiltViewModel(),
   modifier: Modifier = Modifier,
 ) {
-  val activeSurfaces by viewModel.activeSurfaces.collectAsStateWithLifecycle()
-  val isStreaming by viewModel.isStreaming.collectAsStateWithLifecycle()
-  val surfaceStatuses by viewModel.surfaceStatuses.collectAsStateWithLifecycle()
+  val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+  var inputText by remember { mutableStateOf("") }
+  val listState = rememberLazyListState()
 
-  val groupedSurfaces = remember(activeSurfaces) {
-    activeSurfaces
-      .groupBy { BookingCategory.fromCategoryName(viewModel.getCategory(it.id)) }
-      .toSortedMap(compareBy { it.order })
-  }
+  LaunchedEffect(tripId) { viewModel.initializeChat(tripId) }
 
-  var expandedCategories by remember {
-    mutableStateOf(emptySet<BookingCategory>())
-  }
-
-  LaunchedEffect(tripId) {
-    viewModel.startBooking(tripId)
+  // Auto-scroll to the latest message or newly streamed surface
+  LaunchedEffect(uiState.chatMessages.size, uiState.activeSurfaces.size) {
+    if (uiState.chatMessages.isNotEmpty()) {
+      val totalItems = listState.layoutInfo.totalItemsCount
+      if (totalItems > 0) {
+        listState.animateScrollToItem(totalItems - 1)
+      }
+    }
   }
 
   Scaffold(
@@ -110,23 +105,32 @@ fun BookingAssistantScreen(
       Column(modifier = Modifier.background(MaterialTheme.colorScheme.primary)) {
         TopAppBar(
           title = {
-            Text(
-              text = "MANAGE BOOKINGS",
-              style =
-                MaterialTheme.typography.titleLarge.copy(
-                  fontFamily = SekuyaFontFamily,
-                  fontSize = 24.sp,
-                  letterSpacing = 0.5.sp,
-                ),
-              color = Color(0xFF1E293B),
-            )
+            Column {
+              Text(
+                text = uiState.trip?.title?.uppercase() ?: "ITINERARY",
+                style =
+                  MaterialTheme.typography.titleLarge.copy(
+                    fontFamily = SekuyaFontFamily,
+                  ),
+                color = MaterialTheme.colorScheme.secondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+              )
+              uiState.trip?.location?.let { location ->
+                Text(
+                  text = location,
+                  style = MaterialTheme.typography.labelMedium,
+                  color = MaterialTheme.colorScheme.onSurface,
+                )
+              }
+            }
           },
           navigationIcon = {
             IconButton(onClick = onBack) {
               Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                 contentDescription = "Back",
-                tint = Color(0xFF1E293B),
+                tint = MaterialTheme.colorScheme.onPrimary,
               )
             }
           },
@@ -134,19 +138,17 @@ fun BookingAssistantScreen(
             IconButton(onClick = { viewModel.resetBookings() }) {
               Icon(
                 imageVector = Icons.Rounded.Refresh,
-                contentDescription = "Reset Bookings",
-                tint = Color(0xFF1E293B).copy(alpha = 0.4f),
+                contentDescription = "Reset Chat",
+                tint = MaterialTheme.colorScheme.onPrimary,
               )
             }
           },
           colors =
-            TopAppBarDefaults.topAppBarColors(
-              containerColor = MaterialTheme.colorScheme.primary,
-            ),
+            TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary),
         )
-        if (isStreaming) {
+        if (uiState.isStreaming) {
           LinearProgressIndicator(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().height(3.dp),
             color = MaterialTheme.colorScheme.secondary,
             trackColor = Color.Transparent,
           )
@@ -154,258 +156,175 @@ fun BookingAssistantScreen(
       }
     },
   ) { innerPadding ->
-    LazyColumn(
-      modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
-      contentPadding =
-        PaddingValues(
-          top = innerPadding.calculateTopPadding() + 8.dp,
-          bottom = contentPadding.calculateBottomPadding() + 24.dp,
-        ),
-      verticalArrangement = Arrangement.spacedBy(16.dp),
+    val bottomBarPadding = contentPadding.calculateBottomPadding()
+    val imeBottomPadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
+    val effectiveBottomPadding = maxOf(bottomBarPadding, imeBottomPadding)
+
+    Column(
+      modifier =
+        Modifier.fillMaxSize()
+          .padding(top = innerPadding.calculateTopPadding(), bottom = effectiveBottomPadding)
     ) {
-      item {
-        Column(
-          modifier =
-            Modifier
-              .fillMaxWidth()
-              .padding(top = 4.dp, bottom = 8.dp),
-          verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-          Text(
-            text = "Current Itinerary •",
-            style =
-              MaterialTheme.typography.titleMedium.copy(
-                fontWeight = FontWeight.Bold,
-                fontSize = 15.sp,
-              ),
-            color = Color(0xFF1E293B),
-          )
-          Text(
-            text = "YOUR NEXT JOURNEY",
-            style =
-              MaterialTheme.typography.headlineMedium.copy(
-                fontFamily = SekuyaFontFamily,
-                fontSize = 24.sp,
-                letterSpacing = 0.5.sp,
-              ),
-            color = Color(0xFF1E293B),
-          )
-          Spacer(modifier = Modifier.height(4.dp))
-          Text(
-            text =
-              "Review and finalize your travel segments. We've organized your selections for a seamless booking.",
-            style =
-              MaterialTheme.typography.bodyMedium.copy(
-                fontSize = 14.sp,
-                lineHeight = 20.sp,
-              ),
-            color = Color(0xFF334155),
-          )
-        }
+      val linkedSurfaceIds = remember(uiState.chatMessages) {
+        uiState.chatMessages.mapNotNull { it.surfaceId }.toSet()
+      }
+      val unlinkedSurfaces = remember(uiState.activeSurfaces, linkedSurfaceIds) {
+        uiState.activeSurfaces.filter { it.id !in linkedSurfaceIds }
       }
 
-      if (activeSurfaces.isEmpty()) {
-        item {
-          Box(
-            modifier = Modifier.fillMaxWidth().padding(top = 48.dp),
-            contentAlignment = Alignment.Center,
-          ) {
-            Column(
-              horizontalAlignment = Alignment.CenterHorizontally,
-              verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-              Text(
-                text = "No active booking surfaces.\nPress 'Start Booking' to initialize.",
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+      LazyColumn(
+        state = listState,
+        modifier =
+          Modifier.weight(1f)
+            .fillMaxWidth()
+            .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+            .drawWithContent {
+              drawContent()
+              drawRect(
+                brush =
+                  Brush.verticalGradient(
+                    0f to Color.Black,
+                    0.94f to Color.Black,
+                    1f to Color.Transparent,
+                  ),
+                blendMode = BlendMode.DstIn,
               )
-              Button(
-                onClick = { viewModel.resetBookings() },
-                shape = RoundedCornerShape(12.dp),
-              ) {
-                Text("Start Booking", fontWeight = FontWeight.Bold)
-              }
             }
-          }
+            .padding(horizontal = 16.dp),
+        contentPadding = PaddingValues(top = 12.dp, bottom = 52.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+      ) {
+        items(items = uiState.chatMessages, key = { it.id }) { message ->
+          val linkedSurface =
+            remember(message.surfaceId, uiState.activeSurfaces) {
+              message.surfaceId?.let { id -> uiState.activeSurfaces.find { it.id == id } }
+            }
+          ChatMessageItem(message = message, surfaceModel = linkedSurface)
         }
-      } else {
-        groupedSurfaces.forEach { (category, surfaces) ->
-          item(key = category.name) {
-            CategoryCard(
-              category = category,
-              surfaces = surfaces,
-              subtitle = viewModel.getCategorySubtitle(surfaces),
-              isExpanded = expandedCategories.contains(category),
-              onToggleExpand = {
-                expandedCategories =
-                  if (expandedCategories.contains(category)) {
-                    expandedCategories - category
-                  } else {
-                    expandedCategories + category
-                  }
+
+        items(items = unlinkedSurfaces, key = { "unlinked_surface_${it.id}" }) { surface ->
+          A2uiSurface(surfaceModel = surface, modifier = Modifier.fillMaxWidth())
+        }
+
+        if (uiState.chatMessages.none { it.isUser } && uiState.activeSurfaces.isEmpty()) {
+          item(key = "your_next_journey_overview") {
+            YourNextJourneySection(
+              flightItems = uiState.flightJourneyItems,
+              activityItems = uiState.activityJourneyItems,
+              onSelectItem = { item ->
+                viewModel.sendChatMessage(
+                  prompt = item.prompt,
+                  intentOverride = item.intent,
+                  targetTitleOverride = item.targetTitle,
+                )
               },
+              modifier = Modifier.padding(horizontal = 8.dp),
             )
           }
         }
       }
+
+      BookingChatComposer(
+        inputText = inputText,
+        onInputTextChange = { inputText = it },
+        onSendMessage = { prompt -> viewModel.sendChatMessage(prompt) },
+        isStreaming = uiState.isStreaming,
+      )
     }
   }
 }
 
 @Composable
-private fun CategoryCard(
-  category: BookingCategory,
-  surfaces: List<A2uiSurfaceModel>,
-  subtitle: String,
-  isExpanded: Boolean,
-  onToggleExpand: () -> Unit,
+private fun YourNextJourneySection(
+  flightItems: List<BookableJourneyItem>,
+  activityItems: List<BookableJourneyItem>,
+  onSelectItem: (BookableJourneyItem) -> Unit,
   modifier: Modifier = Modifier,
 ) {
-  Card(
-    modifier = modifier.fillMaxWidth(),
-    shape = RoundedCornerShape(28.dp),
-    colors =
-      CardDefaults.cardColors(
-        containerColor = Color(0xFFFFFDF5),
-      ),
-    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-  ) {
-    Column(
-      modifier =
-        Modifier
-          .fillMaxWidth()
-          .padding(20.dp),
-    ) {
+  var flightsExpanded by remember { mutableStateOf(false) }
+  var activitiesExpanded by remember { mutableStateOf(false) }
+
+  Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
       Row(
-        modifier =
-          Modifier
-            .fillMaxWidth()
-            .clickable(
-              interactionSource = remember { MutableInteractionSource() },
-              indication = null,
-              onClick = onToggleExpand,
-            ),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
       ) {
-        Box(
-          modifier =
-            Modifier
-              .size(48.dp)
-              .background(category.circleColor, CircleShape),
-          contentAlignment = Alignment.Center,
-        ) {
-          Icon(
-            imageVector = category.icon,
-            contentDescription = category.displayName,
-            tint = Color.White,
-            modifier = Modifier.size(24.dp),
-          )
-        }
-
-        Column(modifier = Modifier.weight(1f)) {
-          Text(
-            text = "${category.displayName} (${surfaces.size})",
-            style =
-              MaterialTheme.typography.titleMedium.copy(
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-              ),
-            color = Color(0xFF1E293B),
-          )
-          Text(
-            text = subtitle,
-            style =
-              MaterialTheme.typography.bodySmall.copy(
-                fontSize = 13.sp,
-              ),
-            color = Color(0xFF64748B),
-          )
-        }
-
-        Box(
-          modifier =
-            Modifier
-              .size(36.dp)
-              .background(Color.White, CircleShape),
-          contentAlignment = Alignment.Center,
-        ) {
-          Icon(
-            imageVector =
-              if (isExpanded) Icons.Rounded.KeyboardArrowUp
-              else Icons.Rounded.KeyboardArrowDown,
-            contentDescription = if (isExpanded) "Collapse" else "Expand",
-            tint = Color(0xFF1E293B),
-            modifier = Modifier.size(20.dp),
-          )
-        }
+        Text(
+          text = "Trip Concierge",
+          style = MaterialTheme.typography.labelLarge,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+          text = "•",
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
       }
+      Text(
+        text = "FINALIZE YOUR TRIP",
+        style =
+          MaterialTheme.typography.titleLarge.copy(
+            fontFamily = SekuyaFontFamily,
+          ),
+        color = MaterialTheme.colorScheme.onSurface,
+      )
+    }
 
-      AnimatedVisibility(visible = isExpanded) {
+    Text(
+      text =
+        "Complete your pending reservations below, or ask to customize your stay, seats, or dining.",
+      style = MaterialTheme.typography.bodyMedium,
+      color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+
+    Spacer(modifier = Modifier.height(2.dp))
+
+    if (flightItems.isNotEmpty()) {
+      JourneyCategoryCard(
+        title = "Flights (${flightItems.size})",
+        subtitle = "Action required",
+        icon = Icons.Rounded.Flight,
+        expanded = flightsExpanded,
+        onToggle = { flightsExpanded = !flightsExpanded },
+      ) {
         Column(
-          modifier =
-            Modifier
-              .fillMaxWidth()
-              .padding(top = 16.dp),
+          modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+          verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-          surfaces.forEachIndexed { index, surfaceModel ->
-            if (index > 0) {
-              HorizontalDivider(
-                modifier = Modifier.padding(vertical = 16.dp),
-                color = Color(0xFFE5E7EB),
-                thickness = 1.dp,
-              )
-            }
-            A2uiSurface(
-              surfaceModel = surfaceModel,
-              modifier = Modifier.fillMaxWidth(),
+          flightItems.forEach { item ->
+            JourneySubItemRow(
+              title = item.title,
+              subtitle = item.subtitle,
+              ctaText = item.ctaText,
+              onClick = { onSelectItem(item) },
             )
           }
         }
       }
     }
-  }
-}
 
-enum class BookingCategory(
-  val displayName: String,
-  val order: Int,
-) {
-  FLIGHT("Flights", 1),
-  HOTEL("Hotels", 2),
-  ACTIVITY("Activities", 3),
-  DINING("Dining", 4),
-  OTHER("Other", 5);
-
-  val icon: ImageVector
-    get() =
-      when (this) {
-        FLIGHT -> Icons.Rounded.Flight
-        HOTEL -> Icons.Rounded.Hotel
-        ACTIVITY -> Icons.Rounded.ConfirmationNumber
-        DINING -> Icons.Rounded.Restaurant
-        OTHER -> Icons.Rounded.ConfirmationNumber
-      }
-
-  val circleColor: Color
-    get() =
-      when (this) {
-        FLIGHT -> Color(0xFFF05123)
-        HOTEL -> Color(0xFF2563EB)
-        ACTIVITY -> Color(0xFF059669)
-        DINING -> Color(0xFFD97706)
-        OTHER -> Color(0xFF64748B)
-      }
-
-  companion object {
-    fun fromCategoryName(name: String): BookingCategory {
-      return when (name.lowercase()) {
-        "flight", "flights" -> FLIGHT
-        "hotel", "hotels" -> HOTEL
-        "activity", "activities" -> ACTIVITY
-        "dining", "dining & restaurants" -> DINING
-        else -> OTHER
+    if (activityItems.isNotEmpty()) {
+      JourneyCategoryCard(
+        title = "Activities (${activityItems.size})",
+        subtitle = "Action required",
+        icon = Icons.Rounded.ConfirmationNumber,
+        expanded = activitiesExpanded,
+        onToggle = { activitiesExpanded = !activitiesExpanded },
+      ) {
+        Column(
+          modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+          verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+          activityItems.forEach { item ->
+            JourneySubItemRow(
+              title = item.title,
+              subtitle = item.subtitle,
+              ctaText = item.ctaText,
+              onClick = { onSelectItem(item) },
+            )
+          }
+        }
       }
     }
   }

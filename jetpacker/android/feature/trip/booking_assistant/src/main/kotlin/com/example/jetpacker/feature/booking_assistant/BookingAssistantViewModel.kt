@@ -17,23 +17,29 @@
 package com.example.jetpacker.feature.booking_assistant
 
 import android.util.Log
-import androidx.a2ui.compose.ui.A2uiMessageProcessor
+import androidx.a2ui.compose.runtime.A2uiMessageParser
+import androidx.a2ui.compose.ui.A2uiMessageProcessor as createA2uiMessageProcessor
 import androidx.a2ui.model.processor.A2uiMessageProcessor
 import androidx.a2ui.model.processor.A2uiSurfaceModel
+import androidx.a2ui.model.processor.processInput
 import androidx.a2ui.model.protocol.A2uiClientEventMessage
 import androidx.a2ui.model.protocol.A2uiComponentPayload
 import androidx.a2ui.model.protocol.A2uiCreateSurfaceMessage
 import androidx.a2ui.model.protocol.A2uiUpdateComponentsMessage
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.a2ui.model.protocol.A2uiUpdateDataModelMessage
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetpacker.data.itinerary.EventDao
 import com.example.jetpacker.data.itinerary.EventType
+import com.example.jetpacker.data.itinerary.FlightDetail
 import com.example.jetpacker.data.itinerary.TimelineEvent
 import com.example.jetpacker.data.trips.DummyData
+import com.example.jetpacker.data.trips.Trip
+import com.example.jetpacker.data.trips.TripDao
+import com.example.jetpacker.feature.booking_assistant.domain.BookingAssistantUiState
+import com.example.jetpacker.feature.booking_assistant.domain.BookingEventNormalizer
+import com.example.jetpacker.feature.booking_assistant.domain.BookingIntentClassifier
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.BufferedReader
@@ -42,12 +48,15 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -55,88 +64,60 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 
-data class SurfaceStatus(
-  val surfaceId: String,
-  val type: String,
-  val status: String,
+data class BookingChatMessage(
+  val id: String,
+  val isUser: Boolean,
+  val text: String,
+  val surfaceId: String? = null,
 )
 
+data class BookableJourneyItem(
+  val id: String,
+  val title: String,
+  val subtitle: String,
+  val ctaText: String,
+  val prompt: String,
+  val intent: String,
+  val targetTitle: String,
+)
+
+// Configure with your deployed Cloud Run / API Gateway URL, or "http://10.0.2.2:8000" / "http://localhost:8000" for local testing.
+private const val DEFAULT_BACKEND_URL = "https://YOUR_BACKEND_GATEWAY_URL/v2"
+
 @HiltViewModel
-class BookingAssistantViewModel @Inject constructor(
+class BookingAssistantViewModel
+@Inject
+constructor(
   private val savedStateHandle: SavedStateHandle,
   private val eventDao: EventDao,
+  private val tripDao: TripDao,
 ) : ViewModel() {
 
-  private val messageProcessor: A2uiMessageProcessor = A2uiMessageProcessor(
-    catalogs = listOf(bookingAssistantCatalog())
-  )
+  private val _uiState = MutableStateFlow(BookingAssistantUiState())
+  val uiState: StateFlow<BookingAssistantUiState> = _uiState.asStateFlow()
 
-  val activeSurfaces: StateFlow<List<A2uiSurfaceModel>> = messageProcessor.activeSurfaces
+  private val a2uiParser = A2uiMessageParser()
+  private val messageProcessor: A2uiMessageProcessor =
+    createA2uiMessageProcessor(catalogs = listOf(bookingAssistantCatalog()))
 
   private var tripEvents: List<TimelineEvent> = emptyList()
   private var currentTripId: String? = null
   private var activeStreamJob: Job? = null
+  private var activeStreamCall: Call? = null
   private var streamIdleJob: Job? = null
-
-  enum class BackendEndpoint {
-    LOCAL,
-    PARALLEL_STAGING,
-    PRODUCTION,
-  }
-
-  /**
-   * Active backend endpoint. Defaults to [BackendEndpoint.PARALLEL_STAGING] to connect to the
-   * side-by-side /v2 Cloud Run service without impacting production.
-   */
-  var backendEndpoint by mutableStateOf(BackendEndpoint.PARALLEL_STAGING)
-
-  // Backwards compatibility property
-  var useLocalServer: Boolean
-    get() = backendEndpoint == BackendEndpoint.LOCAL
-    set(value) {
-      backendEndpoint = if (value) BackendEndpoint.LOCAL else BackendEndpoint.PARALLEL_STAGING
-    }
-
-  val baseUrl: String
-    get() =
-      when (backendEndpoint) {
-        BackendEndpoint.LOCAL -> "http://localhost:8000"
-        BackendEndpoint.PARALLEL_STAGING -> "https://jetset-gateway-38wzy18y.uc.gateway.dev/v2"
-        BackendEndpoint.PRODUCTION -> "https://jetset-gateway-38wzy18y.uc.gateway.dev"
-      }
 
   private val client = OkHttpClient.Builder().readTimeout(0, TimeUnit.MILLISECONDS).build()
 
-  private var sessionId: String?
-    get() = savedStateHandle["session_id"]
-    set(value) {
-      savedStateHandle["session_id"] = value
-    }
-
-  private var streamToken: String?
-    get() = savedStateHandle["stream_token"]
-    set(value) {
-      savedStateHandle["stream_token"] = value
-    }
-
-  private var streamUrl: String?
-    get() = savedStateHandle["stream_url"]
-    set(value) {
-      savedStateHandle["stream_url"] = value
-    }
-
-  private val _isStreaming = MutableStateFlow(false)
-  val isStreaming: StateFlow<Boolean> = _isStreaming.asStateFlow()
-
-  private val _surfaceStatuses = MutableStateFlow<Map<String, SurfaceStatus>>(emptyMap())
-  val surfaceStatuses: StateFlow<Map<String, SurfaceStatus>> = _surfaceStatuses.asStateFlow()
-
-  private val _logs = MutableStateFlow<List<String>>(emptyList())
-  val logs: StateFlow<List<String>> = _logs.asStateFlow()
+  private var sessionId: String? = null
+  private var streamToken: String? = null
+  private var streamUrl: String? = null
 
   init {
+    viewModelScope.launch { messageProcessor.collectMessages() }
     viewModelScope.launch {
-      messageProcessor.collectMessages()
+      messageProcessor.activeSurfaces.collect { surfaces ->
+        _uiState.update { it.copy(activeSurfaces = surfaces) }
+      }
     }
     viewModelScope.launch {
       messageProcessor.outboundEvents.collect { message ->
@@ -147,227 +128,213 @@ class BookingAssistantViewModel @Inject constructor(
     }
   }
 
-  private fun resetStreamIdleTimer(delayMillis: Long = 2500L) {
-    streamIdleJob?.cancel()
-    streamIdleJob = viewModelScope.launch {
-      kotlinx.coroutines.delay(delayMillis)
-      _isStreaming.value = false
+  fun initializeChat(tripId: String, forceReset: Boolean = false) {
+    if (currentTripId == tripId && !forceReset) return
+    currentTripId = tripId
+
+    viewModelScope.launch {
+      val loadedTrip = tripDao.getTripById(tripId).first()
+      val rawEvents = eventDao.getEventsForTrip(tripId).first()
+      tripEvents = BookingEventNormalizer.normalizeBookableEvents(rawEvents)
+
+      val flightItems =
+        tripEvents
+          .filter { it.type == EventType.TRANSPORTATION }
+          .map { event ->
+            BookableJourneyItem(
+              id = event.id,
+              title = event.title,
+              subtitle = "Flight booking pending",
+              ctaText = "Select seat",
+              prompt = "Book flight ${event.title}",
+              intent = "flight",
+              targetTitle = event.title,
+            )
+          }
+
+      val activityItems =
+        tripEvents
+          .filter {
+            it.type == EventType.ACTIVITY ||
+              it.type == EventType.CULTURE ||
+              it.type == EventType.FOOD_AND_DRINK ||
+              it.type == EventType.ACCOMMODATION
+          }
+          .map { event ->
+            val cta =
+              when (event.type) {
+                EventType.ACCOMMODATION -> "Select room"
+                EventType.FOOD_AND_DRINK -> "Reserve table"
+                else -> "Book tickets"
+              }
+            val intent =
+              when (event.type) {
+                EventType.ACCOMMODATION -> "hotel"
+                EventType.FOOD_AND_DRINK -> "dining"
+                else -> "activity"
+              }
+            BookableJourneyItem(
+              id = event.id,
+              title = event.title,
+              subtitle = event.location.ifEmpty { "Reservation pending" },
+              ctaText = cta,
+              prompt = "Book ${event.title}",
+              intent = intent,
+              targetTitle = event.title,
+            )
+          }
+
+      _uiState.update {
+        it.copy(
+          trip = loadedTrip,
+          flightJourneyItems = flightItems,
+          activityJourneyItems = activityItems,
+          chatMessages =
+            if (forceReset) emptyList()
+            else it.chatMessages.ifEmpty {
+              listOf(
+                BookingChatMessage(
+                  id = "welcome",
+                  isUser = false,
+                  text =
+                    "Hi! I'm your Trip Concierge. Let's finish booking your flights, stays, and activities for ${loadedTrip?.title ?: "your trip"}.",
+                )
+              )
+            },
+        )
+      }
     }
   }
 
-  fun startBooking(tripId: String, forceRestart: Boolean = false) {
-    if (currentTripId == tripId && activeStreamJob?.isActive == true && !forceRestart) return
-    currentTripId = tripId
-    savedStateHandle["tripId"] = tripId
+  fun sendChatMessage(
+    prompt: String,
+    intentOverride: String? = null,
+    targetTitleOverride: String? = null,
+  ) {
+    val cleanPrompt = prompt.trim()
+    log("sendChatMessage: prompt='$cleanPrompt'")
+    if (cleanPrompt.isEmpty() || _uiState.value.isStreaming) {
+      log("sendChatMessage: early return (empty=${cleanPrompt.isEmpty()}, streaming=${_uiState.value.isStreaming})")
+      return
+    }
 
-    activeStreamJob?.cancel()
-    streamIdleJob?.cancel()
-    activeStreamJob = viewModelScope.launch(Dispatchers.IO) {
+    val userMsg =
+      BookingChatMessage(
+        id = System.currentTimeMillis().toString(),
+        isUser = true,
+        text = cleanPrompt,
+      )
+
+    _uiState.update { it.copy(chatMessages = it.chatMessages + userMsg, isStreaming = true) }
+    resetStreamIdleTimer()
+
+    viewModelScope.launch(Dispatchers.IO) {
+      val sId = sessionId ?: "session_${System.currentTimeMillis()}".also { sessionId = it }
+      val directMatch =
+        tripEvents.find {
+          it.title.equals(cleanPrompt, ignoreCase = true) ||
+            cleanPrompt.contains(it.title, ignoreCase = true)
+        }
+      val resolvedIntent =
+        BookingIntentClassifier.resolveIntent(cleanPrompt, directMatch, intentOverride)
+      val resolvedTarget =
+        BookingIntentClassifier.resolveTargetTitle(
+          cleanPrompt,
+          resolvedIntent,
+          tripEvents,
+          directMatch,
+          targetTitleOverride,
+        )
+
+      if (resolvedTarget.isNotEmpty()) {
+        runCatching {
+          val deleteJson =
+            """{"version":"v0.9","deleteSurface":{"surfaceId":${JSONObject.quote(resolvedTarget)}}}"""
+          messageProcessor.processInput(a2uiParser, deleteJson)
+        }
+      }
+
       try {
-        _isStreaming.value = true
-        log("Loading trip events for trip: $tripId")
-
-        val dbEvents = runCatching { eventDao.getEventsForTrip(tripId).first() }.getOrNull() ?: emptyList()
-        tripEvents = if (dbEvents.isNotEmpty()) {
-          dbEvents
-        } else {
-          DummyData.events.filter { it.tripId == tripId }.ifEmpty {
-            DummyData.events.take(4)
-          }
-        }
-
-        // Initialize A2UI surfaces for each itinerary event
-        tripEvents.forEach { event ->
-          val cat = when (event.type) {
-            EventType.TRANSPORTATION -> "Flight"
-            EventType.ACCOMMODATION -> "Hotel"
-            EventType.ACTIVITY, EventType.CULTURE -> "Activity"
-            EventType.FOOD_AND_DRINK -> "Dining"
-            else -> "Booking"
-          }
-          upsertSurface(
-            surfaceId = event.title,
-            payload = A2uiComponentPayload(
-              id = "root",
-              type = "BookingStatus",
-              properties = mapOf(
-                "category" to cat,
-                "title" to event.title,
-                "description" to (event.description?.ifEmpty { "Waiting for coordinator..." } ?: "Waiting for coordinator..."),
-                "status" to "Queued",
-              ),
-            ),
-          )
-        }
-
-        val sId = if (forceRestart) {
-          System.currentTimeMillis().toString().also { sessionId = it }
-        } else {
-          sessionId ?: System.currentTimeMillis().toString().also { sessionId = it }
-        }
-
-        log("Surfaces ready for trip $tripId, sId=$sId. Connecting to stream...")
-        connectToStream(sId)
-        log("connectToStream completed.")
+        connectToStream(
+          sId = sId,
+          command = "chat",
+          prompt = cleanPrompt,
+          intent = resolvedIntent,
+          targetTitle = resolvedTarget,
+        )
       } catch (e: Exception) {
-        log("Error starting booking: ${e.message}")
-        Log.e("BookingAssistant", "Exception in startBooking", e)
-        _isStreaming.value = false
+        log("Error in sendChatMessage stream: ${e.message}")
+        _uiState.update { it.copy(isStreaming = false) }
       }
     }
   }
 
   fun resetBookings() {
     val tripId = currentTripId ?: savedStateHandle["tripId"] ?: "2026-1"
+    activeStreamJob?.cancel()
+    activeStreamJob = null
+    activeStreamCall?.cancel()
+    activeStreamCall = null
+    streamIdleJob?.cancel()
+    streamIdleJob = null
     sessionId = null
     streamToken = null
     streamUrl = null
-    streamIdleJob?.cancel()
-    _isStreaming.value = false
-    _surfaceStatuses.value = emptyMap()
-    startBooking(tripId, forceRestart = true)
+    _uiState.value.activeSurfaces.forEach { surface ->
+      runCatching {
+        val deleteJson =
+          """{"version":"v0.9","deleteSurface":{"surfaceId":${JSONObject.quote(surface.id)}}}"""
+        messageProcessor.processInput(a2uiParser, deleteJson)
+      }
+    }
+    _uiState.update { it.copy(isStreaming = false, activeSurfaces = emptyList()) }
+    initializeChat(tripId, forceReset = true)
   }
 
-  private fun upsertSurface(surfaceId: String, payload: A2uiComponentPayload) {
-    val exists = messageProcessor.activeSurfaces.value.any { it.id == surfaceId }
-    if (!exists) {
-      messageProcessor.processMessage(
-        A2uiCreateSurfaceMessage(
-          surfaceId = surfaceId,
-          catalogId = BOOKING_ASSISTANT_CATALOG_ID,
+  private suspend fun connectToStream(
+    sId: String,
+    command: String = "start",
+    prompt: String = "",
+    intent: String = "",
+    targetTitle: String = "",
+  ) {
+    val itineraryJson = JSONArray()
+    for (event in tripEvents) {
+      val activeTrip = _uiState.value.trip
+      itineraryJson.put(
+        BookingEventNormalizer.buildEventJson(
+          event = event,
+          eventDao = eventDao,
+          tripTitle = activeTrip?.title,
+          tripLocation = activeTrip?.location,
         )
       )
     }
-    messageProcessor.processMessage(
-      A2uiUpdateComponentsMessage(
-        surfaceId = surfaceId,
-        components = listOf(payload),
-      )
-    )
-    val status = (payload.properties["status"] as? String).orEmpty()
-    _surfaceStatuses.value = _surfaceStatuses.value + (
-      surfaceId to SurfaceStatus(
-        surfaceId = surfaceId,
-        type = payload.type,
-        status = status,
-      )
-    )
-  }
 
-  fun getCategory(title: String): String {
-    val event = tripEvents.find { it.title.equals(title, ignoreCase = true) || it.id == title }
-    return when (event?.type) {
-      EventType.TRANSPORTATION -> "Flight"
-      EventType.ACCOMMODATION -> "Hotel"
-      EventType.ACTIVITY, EventType.CULTURE -> "Activity"
-      EventType.FOOD_AND_DRINK -> "Dining"
-      else -> when {
-        title.contains("Flight", ignoreCase = true) ||
-          title.contains("AMS", ignoreCase = true) ||
-          title.contains("SFO", ignoreCase = true) -> "Flight"
-        title.contains("Hotel", ignoreCase = true) ||
-          title.contains("Check-in", ignoreCase = true) ||
-          title.contains("Checkout", ignoreCase = true) ||
-          title.contains("Check out", ignoreCase = true) -> "Hotel"
-        title.contains("Restaurant", ignoreCase = true) ||
-          title.contains("Dining", ignoreCase = true) ||
-          title.contains("Bistro", ignoreCase = true) ||
-          title.contains("Cafe", ignoreCase = true) -> "Dining"
-        else -> "Activity"
-      }
-    }
-  }
-
-  private suspend fun connectToStream(sId: String) {
-    val itineraryJson = JSONArray()
-    val accommodationEvents = tripEvents.filter { it.type == EventType.ACCOMMODATION }
-    val checkins = accommodationEvents.filter {
-      it.title.contains("Check-in", ignoreCase = true) || it.title.contains("Check in", ignoreCase = true)
-    }
-    val checkouts = accommodationEvents.filter {
-      it.title.contains("Checkout", ignoreCase = true) ||
-        it.title.contains("Check-out", ignoreCase = true) ||
-        it.title.contains("Check out", ignoreCase = true)
-    }
-    val matchedCheckouts = mutableSetOf<TimelineEvent>()
-    val processedCheckins = mutableSetOf<TimelineEvent>()
-
-    for (checkin in checkins) {
-      val matchingCheckout = checkouts.find {
-        it.location.equals(checkin.location, ignoreCase = true) && it.timestamp > checkin.timestamp
-      }
-      if (matchingCheckout != null) {
-        matchedCheckouts.add(matchingCheckout)
-        processedCheckins.add(checkin)
-        val eventJson = JSONObject()
-        eventJson.put("type", "ACCOMMODATION")
-        val cleanTitle = checkin.location.trim()
-        eventJson.put("title", if (cleanTitle.isNotEmpty()) cleanTitle else checkin.title)
-        itineraryJson.put(eventJson)
-      }
-    }
-
-    for (event in tripEvents) {
-      if (event.type == EventType.ACCOMMODATION) {
-        if (checkins.contains(event)) {
-          if (!processedCheckins.contains(event)) {
-            val eventJson = JSONObject()
-            eventJson.put("type", event.type.name)
-            eventJson.put("title", event.title)
-            itineraryJson.put(eventJson)
-          }
-        } else if (checkouts.contains(event)) {
-          if (!matchedCheckouts.contains(event)) {
-            val eventJson = JSONObject()
-            eventJson.put("type", event.type.name)
-            eventJson.put("title", event.title)
-            itineraryJson.put(eventJson)
-          }
-        } else {
-          val eventJson = JSONObject()
-          eventJson.put("type", event.type.name)
-          eventJson.put("title", event.title)
-          itineraryJson.put(eventJson)
+    val fbToken = getFirebaseAuthToken()
+    log("connectToStream: fbToken length=${fbToken.length}")
+    val tokenUrl = "$DEFAULT_BACKEND_URL/stream?auth_only=true"
+    val tokenRequest =
+      Request.Builder()
+        .url(tokenUrl)
+        .apply {
+          if (fbToken.isNotEmpty()) addHeader("Authorization", "Bearer $fbToken")
         }
-      } else {
-        val eventJson = JSONObject()
-        eventJson.put("type", event.type.name)
-        eventJson.put("title", event.title)
-        itineraryJson.put(eventJson)
-      }
-    }
-
-    log("Starting connectToStream with sId: $sId, backendEndpoint: $backendEndpoint")
-
-    if (backendEndpoint == BackendEndpoint.LOCAL) {
-      streamToken = "local_dev_token"
-      streamUrl = "http://localhost:8000/run_sse"
-    } else {
-      val fbToken = getFirebaseAuthToken()
-      if (fbToken.isEmpty()) {
-        log("Failed to obtain Firebase Auth token")
-        _isStreaming.value = false
-        return
-      }
-
-      val gatewayUrl = "$baseUrl/stream?auth_only=true"
-      val tokenRequest = Request.Builder()
-        .url(gatewayUrl)
-        .addHeader("Authorization", "Bearer $fbToken")
         .get()
         .build()
 
-      client.newCall(tokenRequest).execute().use { tokenResponse ->
-        if (!tokenResponse.isSuccessful) {
-          log("Failed to get stream token from gateway: ${tokenResponse.code}")
-          _isStreaming.value = false
-          return
-        }
-        val responseBody = tokenResponse.body?.string().orEmpty()
-        val jsonResponse = JSONObject(responseBody)
-        streamToken = jsonResponse.optString("token")
-        streamUrl = jsonResponse.optString("url")
+    client.newCall(tokenRequest).execute().use { tokenResponse ->
+      log("connectToStream: tokenResponse code=${tokenResponse.code}")
+      if (!tokenResponse.isSuccessful) {
+        log("Failed to get stream token: ${tokenResponse.code}")
+        _uiState.update { it.copy(isStreaming = false) }
+        return
       }
+      val responseBody = tokenResponse.body?.string().orEmpty()
+      val jsonResponse = JSONObject(responseBody)
+      streamToken = jsonResponse.optString("token")
+      streamUrl = jsonResponse.optString("url")
+      log("connectToStream: streamToken=${streamToken?.take(10)}..., streamUrl=$streamUrl")
     }
 
     val payload = JSONObject()
@@ -377,410 +344,267 @@ class BookingAssistantViewModel @Inject constructor(
     payload.put("streaming", true)
 
     val messageJson = JSONObject()
-    messageJson.put("command", "start")
+    messageJson.put("command", command)
+    if (prompt.isNotEmpty()) messageJson.put("prompt", prompt)
+    if (intent.isNotEmpty()) messageJson.put("intent", intent)
+    if (targetTitle.isNotEmpty()) messageJson.put("targetTitle", targetTitle)
     messageJson.put("itinerary", itineraryJson)
 
-    val partObj = JSONObject()
-    partObj.put("text", messageJson.toString())
-    val partsArr = JSONArray()
-    partsArr.put(partObj)
+    val partsArr = JSONArray().apply { put(JSONObject().apply { put("text", messageJson.toString()) }) }
+    payload.put("new_message", JSONObject().apply { put("parts", partsArr) })
 
-    val newMessageObj = JSONObject()
-    newMessageObj.put("parts", partsArr)
-    payload.put("new_message", newMessageObj)
+    val st = streamToken ?: return
+    val su = streamUrl ?: return
 
-    val st = streamToken
-    val su = streamUrl
-    if (st.isNullOrEmpty() || su.isNullOrEmpty()) {
-      log("Missing stream credentials")
-      _isStreaming.value = false
-      return
-    }
+    val sseRequest =
+      Request.Builder()
+        .url(su)
+        .addHeader("Accept", "text/event-stream")
+        .addHeader("Authorization", "Bearer $st")
+        .post(payload.toString().toRequestBody("application/json".toMediaType()))
+        .build()
 
-    log("Connecting to SSE stream at $su...")
-    val streamRequest = Request.Builder()
-      .url(su)
-      .addHeader("Accept", "text/event-stream")
-      .addHeader("Authorization", "Bearer $st")
-      .post(payload.toString().toRequestBody("application/json".toMediaType()))
-      .build()
-
-    client.newCall(streamRequest).execute().use { streamResponse ->
-      if (!streamResponse.isSuccessful) {
-        log("Stream connection failed with code: ${streamResponse.code}")
-        _isStreaming.value = false
-        return
-      }
-
-      log("Stream connected successfully! (code: ${streamResponse.code})")
-      resetStreamIdleTimer(3000L)
-
-      val source = streamResponse.body?.source() ?: return
-      val reader = BufferedReader(source.inputStream().reader())
-      var line: String?
-
-      try {
-        while (reader.readLine().also { line = it } != null) {
-          val currentLine = line ?: continue
-          if (currentLine.startsWith("data: ")) {
-            val jsonStr = currentLine.substring(6)
-            _isStreaming.value = true
-            resetStreamIdleTimer(2000L)
-            parseAndApplyEvent(jsonStr)
-          }
+    activeStreamJob?.cancel()
+    activeStreamCall?.cancel()
+    activeStreamJob =
+      viewModelScope.launch(Dispatchers.IO) {
+        val serverBase = su.removeSuffix("/run_sse")
+        runCatching {
+          val createSessionReq =
+            Request.Builder()
+              .url("$serverBase/apps/booking/users/user_id/sessions/$sId")
+              .apply {
+                if (st.isNotEmpty()) addHeader("Authorization", "Bearer $st")
+              }
+              .post("{}".toRequestBody("application/json".toMediaType()))
+              .build()
+          client.newCall(createSessionReq).execute().close()
+        }.onFailure {
+          log("Create session error: ${it.message}")
         }
-      } catch (e: Exception) {
-        log("Stream reading interrupted: ${e.message}")
-      } finally {
-        streamIdleJob?.cancel()
-        _isStreaming.value = false
+
+        val call = client.newCall(sseRequest)
+        activeStreamCall = call
+        try {
+          log("Opening SSE connection to $su")
+          call.execute().use { response ->
+            log("SSE connection established: code=${response.code}")
+            if (!response.isSuccessful) {
+              log("SSE error response: ${response.code}")
+              _uiState.update { it.copy(isStreaming = false) }
+              return@use
+            }
+            val reader = BufferedReader(response.body!!.charStream())
+            var line: String?
+            while (reader.readLine().also { line = it } != null) {
+              if (line != null && line.startsWith("data: ")) {
+                val data = line.removePrefix("data: ").trim()
+                if (data.isNotEmpty() && data != "[DONE]") {
+                  processSseChunk(data)
+                }
+              }
+            }
+          }
+        } catch (e: Exception) {
+          log("Stream reading error: ${e.message}")
+        } finally {
+          if (activeStreamCall === call) {
+            activeStreamCall = null
+          }
+          log("SSE stream closed")
+          _uiState.update { it.copy(isStreaming = false) }
+        }
       }
-    }
   }
 
-  private fun parseAndApplyEvent(jsonStr: String) {
-    try {
-      val json = JSONObject(jsonStr)
+  private fun processSseChunk(chunk: String) {
+    log("processSseChunk: received ${chunk.take(120)}...")
+    resetStreamIdleTimer()
+    runCatching {
+      val json = JSONObject(chunk)
       val author = json.optString("author")
-      if (author.isEmpty()) return
-
-      val category = getCategory(author)
-      val actionsJson = json.optJSONObject("actions")
-      val endOfAgent = actionsJson?.optBoolean("endOfAgent", false) ?: false
-      val contentJson = json.optJSONObject("content")
-      val partsArr = contentJson?.optJSONArray("parts")
-
-      var textContent = ""
-      var uiType: String? = null
-      var uiOptions = emptyList<String>()
-      var uiMessage: String? = null
+      val contentObj = json.optJSONObject("content")
+      val partsArr = contentObj?.optJSONArray("parts")
 
       if (partsArr != null) {
         for (i in 0 until partsArr.length()) {
           val part = partsArr.getJSONObject(i)
-          if (part.has("text")) {
-            val txt = part.getString("text")
-            if (txt.contains("\"ui\":")) {
-              try {
-                val uiJson = JSONObject(txt)
-                uiType = uiJson.optString("ui")
-                uiMessage = uiJson.optString("message")
-                val opts = uiJson.optJSONArray("options")
-                if (opts != null) {
-                  uiOptions = List(opts.length()) { opts.getString(it) }
+          val text = part.optString("text", "").trim()
+          if (text.isEmpty()) continue
+
+          if (author == "__assistant__" || text.contains("\"chatMessage\"")) {
+            runCatching {
+              val obj = JSONObject(text)
+              val chatMsg = obj.optString("chatMessage", "")
+              val sId = obj.optString("surfaceId", "").ifEmpty { null }
+              if (chatMsg.isNotEmpty()) {
+                val msgId =
+                  "assistant_${System.currentTimeMillis()}_${_uiState.value.chatMessages.size}"
+                _uiState.update { state ->
+                  state.copy(
+                    chatMessages =
+                      state.chatMessages +
+                        BookingChatMessage(
+                          id = msgId,
+                          isUser = false,
+                          text = chatMsg,
+                          surfaceId = sId,
+                        )
+                  )
                 }
-              } catch (e: Exception) {
-                textContent += txt
               }
-            } else {
-              textContent += txt
+            }.onFailure {
+              val msgId =
+                "assistant_${System.currentTimeMillis()}_${_uiState.value.chatMessages.size}"
+              _uiState.update { state ->
+                state.copy(
+                  chatMessages =
+                    state.chatMessages +
+                      BookingChatMessage(id = msgId, isUser = false, text = text)
+                )
+              }
+            }
+          }
+
+          val directives = extractA2uiDirectives(text)
+          if (directives.isNotEmpty()) {
+            for (directive in directives) {
+              messageProcessor.processInput(a2uiParser, directive)
+            }
+          } else if (author != "__assistant__" && !text.contains("\"chatMessage\"") && text.isNotEmpty()) {
+            val msgId =
+              "assistant_${System.currentTimeMillis()}_${_uiState.value.chatMessages.size}"
+            _uiState.update { state ->
+              state.copy(
+                chatMessages =
+                  state.chatMessages +
+                    BookingChatMessage(id = msgId, isUser = false, text = text),
+              )
             }
           }
         }
+      } else {
+        if (json.has("content")) {
+          val text = json.optString("content")
+          if (text.isNotBlank()) {
+            val msgId = json.optString("id", System.currentTimeMillis().toString())
+            _uiState.update { state ->
+              val existing = state.chatMessages.find { it.id == msgId }
+              val updatedMessages =
+                if (existing != null) {
+                  state.chatMessages.map { if (it.id == msgId) it.copy(text = it.text + text) else it }
+                } else {
+                  state.chatMessages + BookingChatMessage(id = msgId, isUser = false, text = text)
+                }
+              state.copy(chatMessages = updatedMessages)
+            }
+          }
+        }
+        messageProcessor.processInput(a2uiParser, chunk)
       }
-
-      when {
-        uiType == "time_selection" -> {
-          upsertSurface(
-            surfaceId = author,
-            payload = A2uiComponentPayload(
-              id = "root",
-              type = "InteractiveOptionPicker",
-              properties = mapOf(
-                "title" to author,
-                "category" to category,
-                "status" to "CONFIRMATION REQUIRED",
-                "prompt" to (uiMessage ?: "Flight Departure"),
-                "options" to uiOptions,
-                "selectedOption" to uiOptions.firstOrNull(),
-                "confirmBtnText" to "Confirm Selection",
-                "action" to mapOf(
-                  "event" to mapOf(
-                    "name" to "confirm_option",
-                    "context" to mapOf(
-                      "agentId" to author,
-                      "selectionType" to "time",
-                    ),
-                  )
-                ),
-              ),
-            ),
-          )
-        }
-
-        uiType == "seat_map" || uiType == "seat_selection" -> {
-          upsertSurface(
-            surfaceId = author,
-            payload = A2uiComponentPayload(
-              id = "root",
-              type = "SeatSelectionPicker",
-              properties = mapOf(
-                "title" to author,
-                "category" to category,
-                "status" to "ACTION REQUIRED",
-                "prompt" to (uiMessage ?: "Seat Selection"),
-                "options" to uiOptions.ifEmpty { listOf("1A", "1B", "2A", "2B") },
-                "selectedSeat" to uiOptions.firstOrNull(),
-                "confirmBtnText" to "Confirm Selection",
-                "action" to mapOf(
-                  "event" to mapOf(
-                    "name" to "confirm_seat",
-                    "context" to mapOf(
-                      "agentId" to author,
-                      "selectionType" to "seat",
-                    ),
-                  )
-                ),
-              ),
-            ),
-          )
-        }
-
-        uiType == "ticket_selection" -> {
-          upsertSurface(
-            surfaceId = author,
-            payload = A2uiComponentPayload(
-              id = "root",
-              type = "InteractiveOptionPicker",
-              properties = mapOf(
-                "title" to author,
-                "category" to category,
-                "status" to "CONFIRMATION REQUIRED",
-                "prompt" to (uiMessage ?: "Select party size:"),
-                "options" to uiOptions.ifEmpty { listOf("1", "2", "3", "4+") },
-                "selectedOption" to uiOptions.firstOrNull(),
-                "confirmBtnText" to "Confirm Selection",
-                "action" to mapOf(
-                  "event" to mapOf(
-                    "name" to "confirm_option",
-                    "context" to mapOf(
-                      "agentId" to author,
-                      "selectionType" to "tickets",
-                    ),
-                  )
-                ),
-              ),
-            ),
-          )
-        }
-
-        textContent.contains("Please confirm", ignoreCase = true) ||
-          textContent.contains("confirm reservation", ignoreCase = true) ||
-          textContent.contains("confirm tickets", ignoreCase = true) -> {
-          upsertSurface(
-            surfaceId = author,
-            payload = A2uiComponentPayload(
-              id = "root",
-              type = "BookingConfirmation",
-              properties = mapOf(
-                "category" to category,
-                "title" to author,
-                "status" to "CONFIRMATION REQUIRED",
-                "prompt" to textContent.trim(),
-                "confirmBtnText" to "Confirm Reservation",
-                "action" to mapOf(
-                  "event" to mapOf(
-                    "name" to "confirm_booking",
-                    "context" to mapOf(
-                      "agentId" to author,
-                      "selectionType" to "confirm",
-                    ),
-                  )
-                ),
-              ),
-            ),
-          )
-        }
-
-        endOfAgent ||
-          textContent.contains("confirmed", ignoreCase = true) ||
-          textContent.contains("secured", ignoreCase = true) -> {
-          upsertSurface(
-            surfaceId = author,
-            payload = A2uiComponentPayload(
-              id = "root",
-              type = "BookingStatus",
-              properties = mapOf(
-                "category" to category,
-                "title" to author,
-                "description" to textContent.ifEmpty { "Booking confirmed." },
-                "status" to "Confirmed",
-              ),
-            ),
-          )
-        }
-
-        textContent.isNotEmpty() -> {
-          upsertSurface(
-            surfaceId = author,
-            payload = A2uiComponentPayload(
-              id = "root",
-              type = "BookingStatus",
-              properties = mapOf(
-                "category" to category,
-                "title" to author,
-                "description" to textContent,
-                "status" to "Processing",
-              ),
-            ),
-          )
-        }
-      }
-    } catch (e: Exception) {
-      log("Error parsing SSE event: ${e.message}")
     }
   }
 
   private fun handleClientEvent(event: A2uiClientEventMessage) {
     val context = event.context
     val agentId = (context["agentId"] as? String) ?: event.surfaceId
-    val selectionType = (context["selectionType"] as? String) ?: (context["type"] as? String).orEmpty()
-    val selectedOption = context["selectedOption"] as? String
-    val selectedSeat = context["selectedSeat"] as? String
     val sId = sessionId ?: return
 
-    log("User interaction for $agentId ($selectionType): option=$selectedOption, seat=$selectedSeat")
-
-    _isStreaming.value = true
+    _uiState.update { it.copy(isStreaming = true) }
     resetStreamIdleTimer(5000L)
-
-    val category = getCategory(agentId)
-    upsertSurface(
-      surfaceId = agentId,
-      payload = A2uiComponentPayload(
-        id = "root",
-        type = "BookingStatus",
-        properties = mapOf(
-          "category" to category,
-          "title" to agentId,
-          "description" to when (selectionType) {
-            "time" -> "Selected $selectedOption. Confirming with provider..."
-            "seat" -> "Selected seat $selectedSeat. Confirming assignment..."
-            "tickets" -> "Selected party size $selectedOption. Securing reservation..."
-            else -> "Processing confirmation..."
-          },
-          "status" to "Processing",
-        ),
-      ),
-    )
 
     viewModelScope.launch(Dispatchers.IO) {
       try {
         val json = JSONObject()
-        when (selectionType) {
-          "time" -> json.put("time", selectedOption)
-          "seat" -> json.put("seat", selectedSeat ?: selectedOption)
-          "tickets" -> {
-            json.put("tickets", selectedOption)
-            json.put("people", selectedOption)
-          }
-          "confirm", "confirm_booking" -> json.put("confirmed", true)
-          else -> {
-            if (selectedOption != null) json.put("time", selectedOption)
-            else if (selectedSeat != null) json.put("seat", selectedSeat)
-            else json.put("confirmed", true)
-          }
+        json.put("agent_id", agentId)
+        event.context.forEach { (k, v) -> json.put(k, v) }
+        val seatVal = event.context["selectedSeat"] ?: event.context["seat"]
+        if (seatVal != null) {
+          json.put("seat", seatVal)
+        }
+        event.clientDataModel?.toPayloadMap()?.let { dm ->
+          json.put("clientDataModel", JSONObject(dm))
         }
 
         val token = getFirebaseAuthToken()
         val encodedSessionId = URLEncoder.encode(sId, "UTF-8")
         val encodedAgentId = URLEncoder.encode(agentId, "UTF-8")
-        val request = Request.Builder()
-          .url("$baseUrl/respond?session_id=$encodedSessionId&agent_id=$encodedAgentId")
-          .addHeader("Authorization", "Bearer $token")
-          .post(json.toString().toRequestBody("application/json".toMediaType()))
-          .build()
+        val request =
+          Request.Builder()
+            .url("$DEFAULT_BACKEND_URL/respond?session_id=$encodedSessionId&agent_id=$encodedAgentId")
+            .apply {
+              if (token.isNotEmpty()) addHeader("Authorization", "Bearer $token")
+            }
+            .post(json.toString().toRequestBody("application/json".toMediaType()))
+            .build()
 
         client.newCall(request).execute().use { response ->
           if (!response.isSuccessful) {
-            log("Error sending response: ${response.code}")
-          } else {
-            log("Response successfully delivered to server for $agentId")
+            log("Error sending respond POST: ${response.code}")
           }
         }
       } catch (e: Exception) {
-        log("Error sending response to server: ${e.message}")
+        log("Error sending response: ${e.message}")
       }
     }
+  }
+
+  private fun resetStreamIdleTimer(timeoutMs: Long = 8000L) {
+    streamIdleJob?.cancel()
+    streamIdleJob =
+      viewModelScope.launch {
+        delay(timeoutMs)
+        _uiState.update { it.copy(isStreaming = false) }
+      }
+  }
+
+  override fun onCleared() {
+    super.onCleared()
+    streamIdleJob?.cancel()
+    activeStreamJob?.cancel()
+    activeStreamCall?.cancel()
   }
 
   private suspend fun getFirebaseAuthToken(): String {
-    log("getFirebaseAuthToken: getting FirebaseAuth instance")
-    val auth = try {
-      FirebaseAuth.getInstance()
-    } catch (e: Exception) {
-      log("FirebaseAuth.getInstance failed: ${e.message}")
-      Log.e("BookingAssistant", "FirebaseAuth.getInstance failed", e)
-      return ""
-    }
-    var user = auth.currentUser
-    log("getFirebaseAuthToken: current user is ${user?.uid ?: "null"}")
-    if (user == null) {
-      log("getFirebaseAuthToken: signing in anonymously...")
-      user = try {
-        auth.signInAnonymously().await().user
-      } catch (e: Exception) {
-        log("Firebase signInAnonymously failed: ${e.message}")
-        Log.e("BookingAssistant", "Firebase signInAnonymously failed", e)
-        null
+    return runCatching {
+        var user = FirebaseAuth.getInstance().currentUser
+        if (user == null) {
+          log("FirebaseAuth: currentUser is null, performing anonymous sign-in...")
+          FirebaseAuth.getInstance().signInAnonymously().await()
+          user = FirebaseAuth.getInstance().currentUser
+        }
+        val token = user?.getIdToken(false)?.await()?.token.orEmpty()
+        log("FirebaseAuth: retrieved token (length ${token.length})")
+        token
       }
-      log("getFirebaseAuthToken: signed in as ${user?.uid ?: "null"}")
-    }
-    return try {
-      val token = user?.getIdToken(false)?.await()?.token.orEmpty()
-      log("getFirebaseAuthToken: got token length=${token.length}")
-      token
-    } catch (e: Exception) {
-      log("Firebase getIdToken failed: ${e.message}")
-      Log.e("BookingAssistant", "Firebase getIdToken failed", e)
-      ""
-    }
-  }
-
-  fun getCategorySubtitle(surfaces: List<A2uiSurfaceModel>): String {
-    val statuses = surfaces.map { _surfaceStatuses.value[it.id] }
-    val hasActionRequired = statuses.any { statusInfo ->
-      statusInfo != null && (
-        statusInfo.type in listOf("InteractiveOptionPicker", "SeatSelectionPicker", "BookingConfirmation") ||
-        statusInfo.status.contains("REQUIRED", ignoreCase = true) ||
-        statusInfo.status.contains("ACTION", ignoreCase = true)
-      )
-    }
-    if (hasActionRequired) {
-      return "Action required"
-    }
-
-    val allConfirmed = statuses.isNotEmpty() && statuses.all { statusInfo ->
-      statusInfo != null && (
-        statusInfo.status.equals("Confirmed", ignoreCase = true) ||
-        statusInfo.status.equals("Complete", ignoreCase = true) ||
-        statusInfo.status.equals("Completed", ignoreCase = true)
-      )
-    }
-    if (allConfirmed) {
-      return if (surfaces.size > 1) "All confirmed" else "Confirmed"
-    }
-
-    val anyProcessing = statuses.any { statusInfo ->
-      statusInfo != null && statusInfo.status.equals("Processing", ignoreCase = true)
-    }
-    if (anyProcessing) {
-      return "Processing..."
-    }
-
-    val anyConfirmed = statuses.any { statusInfo ->
-      statusInfo != null && statusInfo.status.equals("Confirmed", ignoreCase = true)
-    }
-    if (anyConfirmed) {
-      val confirmedCount = statuses.count { it?.status.equals("Confirmed", ignoreCase = true) }
-      return "$confirmedCount of ${surfaces.size} confirmed"
-    }
-
-    return "Queued"
+      .onFailure {
+        log("FirebaseAuth: failed to get token: ${it.message}")
+      }
+      .getOrDefault("")
   }
 
   private fun log(message: String) {
-    Log.e("BookingAssistant", message)
-    _logs.value = (_logs.value + message).takeLast(100)
+    Log.i("BookingAssistantVM", message)
+  }
+
+  companion object {
+    internal fun extractA2uiDirectives(text: String): List<String> {
+      val trimmed = text.trim()
+      if (!trimmed.contains("\"createSurface\"") &&
+        !trimmed.contains("\"updateComponents\"") &&
+        !trimmed.contains("\"updateDataModel\"") &&
+        !trimmed.contains("\"deleteSurface\"")
+      ) {
+        return emptyList()
+      }
+      return if (trimmed.startsWith("[")) {
+        runCatching {
+          val array = JSONArray(trimmed)
+          (0 until array.length()).map { array.getJSONObject(it).toString() }
+        }.getOrDefault(emptyList())
+      } else {
+        listOf(trimmed)
+      }
+    }
   }
 }
