@@ -15,7 +15,7 @@
   -->
 
 <resources>
-    <style name="Theme.JetPacker" parent="Theme.MaterialComponents.Light">
+    <style name="Theme.JetPacker" parent="Theme.MaterialComponents.NoActionBar">
         <item name="windowSplashScreenBackground">@color/window_background</item>
         <item name="android:windowBackground">@color/window_background</item>
     </style>

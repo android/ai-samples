@@ -23,9 +23,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Data Access Object (DAO) for managing financial expenses logged during trips.
- */
+/** Data Access Object (DAO) for managing financial expenses logged during trips. */
 @Dao
 interface ExpenseDao {
   @Query("SELECT * FROM expenses ORDER BY timestamp DESC") fun getAllExpenses(): Flow<List<Expense>>

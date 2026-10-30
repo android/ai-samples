@@ -61,6 +61,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.jetpacker.core.ui.AdsGreen
+import com.example.jetpacker.core.ui.AdsGreenBright
 import com.example.jetpacker.core.ui.JetPackerTheme
 
 @Composable
@@ -74,19 +76,18 @@ fun JetPackerExtendedFloatingActionButton(
   trailingContent: @Composable (RowScope.() -> Unit)? = null,
 ) {
   val shape = CircleShape
-  val inverseSurface = MaterialTheme.colorScheme.inverseSurface
 
   Row(
     modifier =
       modifier
         .dropShadow(shape = shape) {
-          radius = 0f
+          radius = 16.dp.toPx()
           spread = 0f
-          offset = Offset(x = 2.dp.toPx(), y = 3.dp.toPx())
-          color = inverseSurface
+          offset = Offset(x = 0f, y = 4.dp.toPx())
+          color = AdsGreen.copy(alpha = 0.35f)
         }
         .background(MaterialTheme.colorScheme.primary, shape)
-        .border(1.dp, MaterialTheme.colorScheme.onSurfaceVariant, shape)
+        .border(1.dp, AdsGreenBright.copy(alpha = 0.45f), shape)
         .clip(shape)
         .padding(horizontal = 8.dp, vertical = 12.dp)
         .height(IntrinsicSize.Min),

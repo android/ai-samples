@@ -19,6 +19,11 @@ package com.example.jetpacker.core.flags
 import android.content.Context
 
 object FeatureFlags {
+  const val KEY_DEMO_PRESET = "demo_preset"
+  const val PRESET_ADS_003 = "ads_003"
+  const val PRESET_DEMO_BOOTH = "demo_booth"
+  const val PRESET_CUSTOM = "custom"
+
   const val KEY_DEMO_LANGUAGE = "demo_language"
   const val KEY_OVERRIDE_CURRENT_TIME_MILLIS = "override_current_time_millis"
   const val EXTRA_OVERRIDE_TIME = "override_time"
@@ -32,11 +37,66 @@ object FeatureFlags {
   const val KEY_ENABLE_URL_GROUNDING = "enable_url_grounding"
   const val KEY_ENABLE_SEARCH_GROUNDING = "enable_search_grounding"
   const val KEY_ENABLE_BOOKING_ASSISTANT = "enable_booking_assistant"
+  const val KEY_ENABLE_TRAVEL_ASSISTANT = "enable_travel_assistant"
+  const val KEY_ENABLE_DOCUMENTS = "enable_documents"
+
+  const val KEY_BOOKING_BACKEND_MODE = "booking_backend_mode"
+  const val BOOKING_BACKEND_MODE_MOCK = "mock"
+  const val BOOKING_BACKEND_MODE_LIVE = "live"
+
+  const val KEY_BACKEND_URL = "backend_url"
+  const val CLOUD_RUN_BACKEND_URL =
+    "https://jetpacker-server-348872485807.us-central1.run.app"
+  const val LOCAL_BACKEND_URL = "http://localhost:8000"
+  const val DEFAULT_BACKEND_URL = CLOUD_RUN_BACKEND_URL
 
   private var appContext: Context? = null
 
   fun initialize(context: Context) {
     appContext = context.applicationContext
+    val prefs = appContext?.getSharedPreferences("debug_settings", Context.MODE_PRIVATE)
+    if (prefs != null && !prefs.contains(KEY_DEMO_PRESET)) {
+      applyPreset(context, PRESET_DEMO_BOOTH)
+    }
+  }
+
+  fun applyPreset(context: Context, preset: String) {
+    val editor = context.getSharedPreferences("debug_settings", Context.MODE_PRIVATE).edit()
+    when (preset) {
+      PRESET_ADS_003 -> {
+        editor
+          .putString(KEY_DEMO_PRESET, PRESET_ADS_003)
+          .putString(KEY_BOOKING_BACKEND_MODE, BOOKING_BACKEND_MODE_LIVE)
+          .putBoolean(KEY_ENABLE_TRAVEL_ASSISTANT, true)
+          .putBoolean(KEY_ENABLE_EXPENSE_MANAGEMENT, true)
+          .putBoolean(KEY_ENABLE_ITINERARY_ENRICHMENT, false)
+          .putBoolean(KEY_ENABLE_TRIP_SUMMARY_AND_TIPS, false)
+          .putBoolean(KEY_ENABLE_VOICE_NOTES, false)
+          .putBoolean(KEY_ENABLE_DOCUMENTS, false)
+          .putBoolean(KEY_ENABLE_BOOKING_ASSISTANT, false)
+          .putBoolean(KEY_ENABLE_REVIEW_GENERATION, false)
+          .putBoolean(KEY_ENABLE_MUSEUM_ASSISTANT, false)
+          .putBoolean(KEY_ENABLE_URL_GROUNDING, false)
+          .putBoolean(KEY_ENABLE_SEARCH_GROUNDING, false)
+      }
+      PRESET_DEMO_BOOTH -> {
+        editor
+          .putString(KEY_DEMO_PRESET, PRESET_DEMO_BOOTH)
+          .putString(KEY_BOOKING_BACKEND_MODE, BOOKING_BACKEND_MODE_LIVE)
+          .putBoolean(KEY_ENABLE_TRAVEL_ASSISTANT, true)
+          .putBoolean(KEY_ENABLE_EXPENSE_MANAGEMENT, true)
+          .putBoolean(KEY_ENABLE_ITINERARY_ENRICHMENT, true)
+          .putBoolean(KEY_ENABLE_TRIP_SUMMARY_AND_TIPS, true)
+          .putBoolean(KEY_ENABLE_VOICE_NOTES, true)
+          .putBoolean(KEY_ENABLE_DOCUMENTS, true)
+          .putBoolean(KEY_ENABLE_BOOKING_ASSISTANT, true)
+          .putBoolean(KEY_ENABLE_REVIEW_GENERATION, true)
+          .putBoolean(KEY_ENABLE_MUSEUM_ASSISTANT, true)
+          .putBoolean(KEY_ENABLE_URL_GROUNDING, true)
+          .putBoolean(KEY_ENABLE_SEARCH_GROUNDING, true)
+      }
+    }
+    editor.apply()
   }
 
   private fun readFlag(keyName: String, defaultValue: Boolean): Boolean {
@@ -53,8 +113,11 @@ object FeatureFlags {
       .getString(keyName, defaultValue) ?: defaultValue
   }
 
+  val DEMO_PRESET: String
+    get() = readStringFlag(KEY_DEMO_PRESET, PRESET_DEMO_BOOTH)
+
   // Voice / Demo Language Settings
-  val DEFAULT_DEMO_LANGUAGE = "nl"
+  val DEFAULT_DEMO_LANGUAGE = "en"
 
   val DEMO_LANGUAGE: String
     get() = readStringFlag(KEY_DEMO_LANGUAGE, DEFAULT_DEMO_LANGUAGE)
@@ -76,6 +139,9 @@ object FeatureFlags {
   val ENABLE_VOICE_NOTES: Boolean
     get() = readFlag(KEY_ENABLE_VOICE_NOTES, true)
 
+  val ENABLE_DOCUMENTS: Boolean
+    get() = readFlag(KEY_ENABLE_DOCUMENTS, true)
+
   // Online features
   val ENABLE_REVIEW_GENERATION: Boolean
     get() = readFlag(KEY_ENABLE_REVIEW_GENERATION, true)
@@ -91,6 +157,15 @@ object FeatureFlags {
 
   val ENABLE_BOOKING_ASSISTANT: Boolean
     get() = readFlag(KEY_ENABLE_BOOKING_ASSISTANT, true)
+
+  val BOOKING_BACKEND_MODE: String
+    get() = readStringFlag(KEY_BOOKING_BACKEND_MODE, BOOKING_BACKEND_MODE_LIVE)
+
+  val BACKEND_URL: String
+    get() = readStringFlag(KEY_BACKEND_URL, DEFAULT_BACKEND_URL)
+
+  val ENABLE_TRAVEL_ASSISTANT: Boolean
+    get() = readFlag(KEY_ENABLE_TRAVEL_ASSISTANT, true)
 
   private fun readLongFlag(keyName: String, defaultValue: Long): Long {
     val context = appContext ?: return defaultValue
@@ -110,6 +185,7 @@ object FeatureFlags {
       .getSharedPreferences("debug_settings", Context.MODE_PRIVATE)
       .edit()
       .putBoolean(keyName, value)
+      .putString(KEY_DEMO_PRESET, PRESET_CUSTOM)
       .apply()
   }
 

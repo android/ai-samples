@@ -75,3 +75,5 @@ include(":feature:trip:voice_notes")
 include(":feature:trip:itinerary:enrichment")
 include(":feature:appfunctions")
 include(":feature:trip:booking_assistant")
+
+include(":feature:assistant")

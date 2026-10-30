@@ -21,11 +21,11 @@ import androidx.compose.ui.graphics.Color
 data class EventColor(val container: Color, val content: Color)
 
 object EventColors {
-  val Flight = EventColor(container = Color(0xFFF3E5F5), content = Color(0xFF8523C2))
-  val Hotel = EventColor(container = Color(0xFFE3F2FD), content = Color(0xFF1976D2))
-  val Activity = EventColor(container = Color(0xFFFFF3E0), content = Color(0xFFE65100))
-  val Museum = EventColor(container = Color(0xFFFFF3E0), content = Color(0xFF8BC34A))
-  val Food = EventColor(container = Color(0xFFE8F5E9), content = Color(0xFF2E7D32))
-  val Shopping = EventColor(container = Color(0xFFFCE4EC), content = Color(0xFFC2185B))
-  val Entertainment = EventColor(container = Color(0xFFFFFDE7), content = Color(0xFFFBC02D))
+  val Flight = EventColor(container = Color(0xFF102A4C), content = Color(0xFF60A5FA))
+  val Hotel = EventColor(container = Color(0xFF0D333B), content = Color(0xFF26C6DA))
+  val Activity = EventColor(container = Color(0xFF0B3820), content = Color(0xFF3DDC84))
+  val Museum = EventColor(container = Color(0xFF12362C), content = Color(0xFF38D9A9))
+  val Food = EventColor(container = Color(0xFF0A3622), content = Color(0xFF01AF57))
+  val Shopping = EventColor(container = Color(0xFF3E1F38), content = Color(0xFFFDADEE))
+  val Entertainment = EventColor(container = Color(0xFF241B4B), content = Color(0xFFA78BFA))
 }

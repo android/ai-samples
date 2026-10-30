@@ -19,6 +19,8 @@ package com.example.jetpacker.data.db
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.jetpacker.data.itinerary.ActivityDetail
+import com.example.jetpacker.data.itinerary.AssistantConversation
+import com.example.jetpacker.data.itinerary.AssistantConversationDao
 import com.example.jetpacker.data.itinerary.DayTheme
 import com.example.jetpacker.data.itinerary.DayThemeDao
 import com.example.jetpacker.data.itinerary.DiningDetail
@@ -31,6 +33,8 @@ import com.example.jetpacker.data.itinerary.MuseumDetail
 import com.example.jetpacker.data.itinerary.TimelineEvent
 import com.example.jetpacker.data.itinerary.TourDetail
 import com.example.jetpacker.data.itinerary.TourDetailDao
+import com.example.jetpacker.data.itinerary.TravelDocument
+import com.example.jetpacker.data.itinerary.TravelDocumentDao
 import com.example.jetpacker.data.itinerary.VoiceNoteEntity
 import com.example.jetpacker.data.trips.Trip
 import com.example.jetpacker.data.trips.TripDao
@@ -49,8 +53,10 @@ import com.example.jetpacker.data.trips.TripDao
       MuseumDetail::class,
       Expense::class,
       VoiceNoteEntity::class,
+      TravelDocument::class,
+      AssistantConversation::class,
     ],
-  version = 1,
+  version = 4,
   exportSchema = false,
 )
 abstract class JetPackerDatabase : RoomDatabase() {
@@ -63,4 +69,8 @@ abstract class JetPackerDatabase : RoomDatabase() {
   abstract fun dayThemeDao(): DayThemeDao
 
   abstract fun expenseDao(): ExpenseDao
+
+  abstract fun travelDocumentDao(): TravelDocumentDao
+
+  abstract fun assistantConversationDao(): AssistantConversationDao
 }

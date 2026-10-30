@@ -16,8 +16,13 @@
 
 package com.example.jetpacker.feature.trip
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateBounds
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -31,21 +36,24 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.ConfirmationNumber
+import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.Event
 import androidx.compose.material.icons.rounded.Wallet
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,6 +63,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.jetpacker.core.flags.FeatureFlags
 import com.example.jetpacker.core.ui.R
 import com.example.jetpacker.core.ui.components.JetPackerFab
@@ -62,6 +72,11 @@ import com.example.jetpacker.core.ui.components.JetPackerFabConfig
 import com.example.jetpacker.core.ui.components.JetPackerToolbar
 import com.example.jetpacker.core.ui.components.JetPackerToolbarAction
 import com.example.jetpacker.data.itinerary.EventType
+import com.example.jetpacker.feature.assistant.TravelAssistantViewModel
+import com.example.jetpacker.feature.assistant.documents.DocumentsScreen
+import com.example.jetpacker.feature.assistant.history.ChatHistoryScreen
+import com.example.jetpacker.feature.assistant.model.AssistantOverlayState
+import com.example.jetpacker.feature.assistant.ui.AmbientTripAssistantSheet
 import com.example.jetpacker.feature.booking_assistant.BookingAssistantScreen
 import com.example.jetpacker.feature.expenses.ManageExpensesScreen
 import com.example.jetpacker.feature.itinerary.ItineraryScreen
@@ -69,9 +84,11 @@ import com.example.jetpacker.feature.voice_notes.VoiceNotesScreen
 
 enum class TripTab {
   ITINERARY,
+  DOCUMENTS,
   EXPENSES,
   VOICE_NOTES,
   BOOKING,
+  CHAT_HISTORY,
 }
 
 /**
@@ -86,35 +103,74 @@ fun TripScreen(
   onEventClick: (String, EventType) -> Unit = { _, _ -> },
   onVoiceNotesClick: () -> Unit = {},
   onNavigateToDebug: () -> Unit = {},
+  assistantViewModel: TravelAssistantViewModel = hiltViewModel(),
 ) {
   var selectedTab by remember { mutableStateOf(TripTab.ITINERARY) }
-  var fabConfig by remember { mutableStateOf<JetPackerFabConfig?>(null) }
+  // One FAB config slot per tab so a tab can never render another tab's FAB, even for the frame
+  // between switching tabs and the new screen publishing its config from a LaunchedEffect.
+  val fabConfigs = remember { mutableStateMapOf<TripTab, JetPackerFabConfig?>() }
+
+  LaunchedEffect(tripId) { assistantViewModel.setTripId(tripId) }
+
+  val overlayState by assistantViewModel.overlayState.collectAsStateWithLifecycle()
+  val isAssistantProcessingExpense by
+    assistantViewModel.isProcessingExpense.collectAsStateWithLifecycle()
+
+  val audioPermissionLauncher =
+    rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+      isGranted ->
+      assistantViewModel.setVoicePermissionGranted(isGranted)
+      if (isGranted) {
+        assistantViewModel.startVoiceAssistant(onPermissionRequired = {})
+      } else {
+        assistantViewModel.dismissOverlay()
+      }
+    }
+
+  val assistantFabConfig =
+    JetPackerFabConfig(
+      icon = Icons.Rounded.AutoAwesome,
+      onClick = {
+        assistantViewModel.startVoiceAssistant(
+          onPermissionRequired = {
+            audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+          }
+        )
+      },
+      contentDescription = "Trip Assistant",
+      containerColor = MaterialTheme.colorScheme.primary,
+      contentColor = MaterialTheme.colorScheme.onPrimary,
+    )
+
+  val assistantEnabled = FeatureFlags.ENABLE_TRAVEL_ASSISTANT
+  val assistantAvailableOnTab = assistantEnabled && selectedTab != TripTab.BOOKING
+  val showAssistantOverlay =
+    assistantAvailableOnTab && overlayState !is AssistantOverlayState.Collapsed
+  // Tab's own action FAB takes precedence; if the tab has no specific creation FAB,
+  // fall back to the assistant FAB when enabled.
+  val tabFabConfig = fabConfigs[selectedTab]
+  val bottomBarFabConfig =
+    tabFabConfig ?: if (assistantAvailableOnTab) assistantFabConfig else null
 
   Scaffold(
-    containerColor = MaterialTheme.colorScheme.primary,
+    containerColor = MaterialTheme.colorScheme.background,
     bottomBar = {
-      val showExpenses = FeatureFlags.ENABLE_EXPENSE_MANAGEMENT
-      val showVoiceNotes = FeatureFlags.ENABLE_VOICE_NOTES
-      val showBooking = FeatureFlags.ENABLE_BOOKING_ASSISTANT
-
-      var visibleCount = 1
-      if (showExpenses) visibleCount++
-      if (showVoiceNotes) visibleCount++
-      if (showBooking) visibleCount++
-
-      if (visibleCount > 1) {
-        AnimatedVisibility(
-          visible = true,
-          enter = slideInVertically { it },
-          exit = slideOutVertically { it },
-        ) {
+      TripBottomBarContainer(
+        showAssistantOverlay = showAssistantOverlay,
+        bottomBar = {
           JetPackerBottomBar(
             selectedTab = selectedTab,
             onTabSelected = { selectedTab = it },
-            fabConfig = fabConfig,
+            fabConfig = bottomBarFabConfig,
           )
-        }
-      }
+        },
+        assistantSheet = {
+          AmbientTripAssistantSheet(
+            viewModel = assistantViewModel,
+            modifier = Modifier.padding(bottom = 8.dp),
+          )
+        },
+      )
     },
   ) { innerPadding ->
     Box(modifier = Modifier.fillMaxSize()) {
@@ -126,8 +182,17 @@ fun TripScreen(
             onBack = onBack,
             onEditTripClick = onEditTripClick,
             onEventClick = onEventClick,
-            onFabConfigChange = { fabConfig = it },
+            onFabConfigChange = { fabConfigs[TripTab.ITINERARY] = it },
             onNavigateToDebug = onNavigateToDebug,
+          )
+        }
+
+        TripTab.DOCUMENTS -> {
+          DocumentsScreen(
+            tripId = tripId,
+            contentPadding = innerPadding,
+            onBack = { selectedTab = TripTab.ITINERARY },
+            onFabConfigChange = { fabConfigs[TripTab.DOCUMENTS] = it },
           )
         }
 
@@ -136,7 +201,8 @@ fun TripScreen(
             tripId = tripId,
             contentPadding = innerPadding,
             onBack = { selectedTab = TripTab.ITINERARY },
-            onFabConfigChange = { fabConfig = it },
+            onFabConfigChange = { fabConfigs[TripTab.EXPENSES] = it },
+            isAssistantProcessingExpense = isAssistantProcessingExpense,
           )
         }
 
@@ -145,10 +211,9 @@ fun TripScreen(
             tripId = tripId,
             contentPadding = innerPadding,
             onBack = { selectedTab = TripTab.ITINERARY },
-            onFabConfigChange = { fabConfig = it },
+            onFabConfigChange = { fabConfigs[TripTab.VOICE_NOTES] = it },
           )
         }
-
         TripTab.BOOKING -> {
           BookingAssistantScreen(
             tripId = tripId,
@@ -156,7 +221,52 @@ fun TripScreen(
             onBack = { selectedTab = TripTab.ITINERARY },
           )
         }
+        TripTab.CHAT_HISTORY -> {
+          ChatHistoryScreen(
+            tripId = tripId,
+            contentPadding = innerPadding,
+            onBack = { selectedTab = TripTab.ITINERARY },
+            onFabConfigChange = { fabConfigs[TripTab.CHAT_HISTORY] = it },
+            onSelectConversation = { conversation ->
+              assistantViewModel.loadConversation(conversation)
+            },
+            onStartNewChat = {
+              assistantViewModel.clearChat()
+              assistantViewModel.openConversationalOverlay()
+            },
+          )
+        }
       }
+    }
+  }
+}
+
+/**
+ * Hosts the bottom navigation bar and the ambient assistant sheet in the same slot, overlapping
+ * them so the Scaffold's bottom inset stays stable while one slides out and the other slides in.
+ */
+@Composable
+private fun TripBottomBarContainer(
+  showAssistantOverlay: Boolean,
+  bottomBar: @Composable () -> Unit,
+  assistantSheet: @Composable () -> Unit,
+  modifier: Modifier = Modifier,
+) {
+  val enter =
+    slideInVertically(tween(durationMillis = 240, easing = FastOutSlowInEasing)) { it } +
+      fadeIn(tween(durationMillis = 180))
+  val exit =
+    slideOutVertically(tween(durationMillis = 220, easing = FastOutSlowInEasing)) { it } +
+      fadeOut(tween(durationMillis = 120))
+
+  Box(
+    modifier =
+      modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars).imePadding(),
+    contentAlignment = Alignment.BottomCenter,
+  ) {
+    AnimatedVisibility(visible = !showAssistantOverlay, enter = enter, exit = exit) { bottomBar() }
+    AnimatedVisibility(visible = showAssistantOverlay, enter = enter, exit = exit) {
+      assistantSheet()
     }
   }
 }
@@ -168,23 +278,40 @@ fun JetPackerBottomBar(
   fabConfig: JetPackerFabConfig?,
   modifier: Modifier = Modifier,
 ) {
+  val showDocuments = FeatureFlags.ENABLE_DOCUMENTS
   val showExpenses = FeatureFlags.ENABLE_EXPENSE_MANAGEMENT
   val showVoiceNotes = FeatureFlags.ENABLE_VOICE_NOTES
   val showBooking = FeatureFlags.ENABLE_BOOKING_ASSISTANT
+  val visibleTabCount =
+    1 +
+      (if (showDocuments) 1 else 0) +
+      (if (showExpenses) 1 else 0) +
+      (if (showVoiceNotes) 1 else 0) +
+      (if (showBooking) 1 else 0)
+  val maxToolbarWidth =
+    when {
+      visibleTabCount <= 2 -> if (fabConfig != null) 240.dp else 300.dp
+      visibleTabCount == 3 -> if (fabConfig != null) 280.dp else 340.dp
+      visibleTabCount == 4 -> if (fabConfig != null) 340.dp else 400.dp
+      visibleTabCount == 5 -> if (fabConfig != null) 390.dp else 450.dp
+      else -> if (fabConfig != null) 440.dp else 500.dp
+    }
 
   LookaheadScope {
     Row(
       modifier =
         modifier
           .fillMaxWidth()
-          .windowInsetsPadding(WindowInsets.navigationBars)
-          .padding(bottom = 16.dp)
-          .padding(horizontal = 32.dp),
+          .padding(top = 12.dp, bottom = 16.dp)
+          .padding(horizontal = 16.dp),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.Center,
     ) {
       JetPackerToolbar(
-        modifier = Modifier.widthIn(max = 336.dp).animateBounds(this@LookaheadScope)
+        modifier =
+          Modifier.weight(1f, fill = false)
+            .widthIn(max = maxToolbarWidth)
+            .animateBounds(this@LookaheadScope)
       ) {
         JetPackerToolbarAction(
           icon = Icons.Rounded.Event,
@@ -192,6 +319,14 @@ fun JetPackerBottomBar(
           selected = selectedTab == TripTab.ITINERARY,
           contentDescription = "Itinerary",
         )
+        if (showDocuments) {
+          JetPackerToolbarAction(
+            icon = Icons.Rounded.Description,
+            onClick = { onTabSelected(TripTab.DOCUMENTS) },
+            selected = selectedTab == TripTab.DOCUMENTS,
+            contentDescription = "Documents",
+          )
+        }
         if (showExpenses) {
           JetPackerToolbarAction(
             icon = Icons.Rounded.Wallet,
@@ -209,7 +344,6 @@ fun JetPackerBottomBar(
             contentDescription = "Voice Notes",
           )
         }
-
         if (showBooking) {
           JetPackerToolbarAction(
             selected = selectedTab == TripTab.BOOKING,
@@ -220,21 +354,30 @@ fun JetPackerBottomBar(
         }
       }
 
-      Spacer(Modifier.width(4.dp))
+      // While the FAB animates out (fabConfig == null) keep rendering the last config instead of a
+      // generic fallback, so a transient null frame never flashes a different icon/colour.
+      var lastFabConfig by remember { mutableStateOf(fabConfig) }
+      if (fabConfig != null) lastFabConfig = fabConfig
+      val displayFab = lastFabConfig
 
       AnimatedVisibility(
         visible = fabConfig != null,
         enter = slideInHorizontally { it / 2 } + fadeIn(),
         exit = slideOutHorizontally { it / 2 } + fadeOut(),
       ) {
-        JetPackerFab(
-          modifier = Modifier.padding(4.dp),
-          onClick = fabConfig?.onClick ?: {},
-          icon = fabConfig?.icon ?: Icons.Rounded.Add,
-          contentDescription = fabConfig?.contentDescription,
-          containerColor = fabConfig?.containerColor ?: MaterialTheme.colorScheme.tertiary,
-          contentColor = fabConfig?.contentColor ?: MaterialTheme.colorScheme.onTertiary,
-        )
+        if (displayFab != null) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Spacer(Modifier.width(8.dp))
+            JetPackerFab(
+              modifier = Modifier.padding(4.dp),
+              onClick = displayFab.onClick,
+              icon = displayFab.icon,
+              contentDescription = displayFab.contentDescription,
+              containerColor = displayFab.containerColor ?: MaterialTheme.colorScheme.primary,
+              contentColor = displayFab.contentColor ?: MaterialTheme.colorScheme.onPrimary,
+            )
+          }
+        }
       }
     }
   }

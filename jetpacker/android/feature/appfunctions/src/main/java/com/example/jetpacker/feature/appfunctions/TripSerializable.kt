@@ -19,94 +19,224 @@ package com.example.jetpacker.feature.appfunctions
 import androidx.appfunctions.AppFunctionSerializable
 
 /**
- * Represents a trip.
+ * Tracks the currently active trip ID in the UI session so AppFunctions can resolve omitted
+ * `tripId` parameters to the user's active trip.
  */
+object ActiveTripSession {
+  @Volatile var activeTripId: String? = null
+  @Volatile var isReadOnlyBudgetCheck: Boolean = false
+  @Volatile var pendingExpenseTitle: String? = null
+  @Volatile var pendingExpenseAmount: Double? = null
+  @Volatile var pendingExpenseCurrency: String? = null
+}
+
+/** Represents a trip. */
 @AppFunctionSerializable(isDescribedByKDoc = true)
 data class TripSerializable(
-    /** The trip's unique identifier. */
-    val id: String,
-    /** The trip's title. */
-    val title: String,
-    /** The trip's destination location. */
-    val location: String,
-    /** The trip's start date in milliseconds. */
-    val startDate: Long,
-    /** The trip's end date in milliseconds. */
-    val endDate: Long,
-    /** A list of participants. */
-    val participants: List<String>,
+  /** The trip's unique identifier. */
+  val id: String,
+  /** The trip's title. */
+  val title: String,
+  /** The trip's destination location. */
+  val location: String,
+  /** The trip's start date in milliseconds. */
+  val startDate: Long,
+  /** The trip's end date in milliseconds. */
+  val endDate: Long,
+  /** A list of participants. */
+  val participants: List<String>,
+  /** The trip's total budget. */
+  val budget: Double,
+  /** The currency code of the trip (e.g. USD, EUR, JPY). */
+  val currency: String,
 )
 
-/**
- * Represents an expense associated with a trip.
- */
+/** Represents an expense associated with a trip. */
 @AppFunctionSerializable(isDescribedByKDoc = true)
 data class ExpenseSerializable(
-    /** The expense's unique identifier. */
-    val id: String,
-    /** The trip ID this expense is associated with. */
-    val tripId: String,
-    /** The expense title or description. */
-    val title: String,
-    /** The amount spent. */
-    val amount: Double,
-    /** The currency code (e.g., USD, EUR). */
-    val currency: String,
-    /** The expense category (e.g., Food, Transport). */
-    val category: String,
-    /** The timestamp of the expense. */
-    val timestamp: Long,
+  /** The expense's unique identifier. */
+  val id: String,
+  /** The trip ID this expense is associated with. */
+  val tripId: String,
+  /** The expense title or description. */
+  val title: String,
+  /** The amount spent. */
+  val amount: Double,
+  /** The currency code (e.g., USD, EUR). */
+  val currency: String,
+  /** The expense category (e.g., Food, Transport). */
+  val category: String,
+  /** The timestamp of the expense. */
+  val timestamp: Long,
+  /** The title of the trip this expense was added to. */
+  val tripTitle: String? = null,
+  /** The expense amount converted to USD. */
+  val amountUsd: Double? = null,
+  /** Total spent across the trip in USD (matches the Expenses screen total). */
+  val tripTotalSpentUsd: Double? = null,
+  /** Remaining trip budget in USD out of the $2,000 USD budget. */
+  val tripRemainingBudgetUsd: Double? = null,
+  /** Remaining trip budget converted to Japanese Yen (JPY). */
+  val tripRemainingBudgetJpy: Double? = null,
+  /** The native currency code of the trip (e.g. EUR, USD, JPY). */
+  val tripCurrency: String? = null,
+  /** Total budget for the trip in its native currency. */
+  val tripBudget: Double? = null,
+  /** Total spent across the trip in its native currency. */
+  val tripTotalSpent: Double? = null,
+  /** Remaining trip budget in the trip's native currency. */
+  val tripRemainingBudget: Double? = null,
+  /** Execution status of the tool call (e.g., SUCCESS). */
+  val status: String? = "SUCCESS",
+  /** Human-readable completion message instructing the agent not to repeat the call. */
+  val message: String? = null,
 )
 
-/**
- * Represents an event in a trip itinerary.
- */
+/** Represents an event in a trip itinerary. */
 @AppFunctionSerializable(isDescribedByKDoc = true)
 data class TimelineEventSerializable(
-    /** The event's unique identifier. */
-    val id: String,
-    /** The trip ID this event belongs to. */
-    val tripId: String,
-    /** The type of event (e.g., TRANSPORTATION, ACCOMMODATION, FOOD_AND_DRINK). */
-    val type: String,
-    /** The timestamp of the event. */
-    val timestamp: Long,
-    /** The title of the event. */
-    val title: String,
-    /** The location of the event. */
-    val location: String,
-    /** A description of the event. */
-    val description: String?,
+  /** The event's unique identifier. */
+  val id: String,
+  /** The trip ID this event belongs to. */
+  val tripId: String,
+  /** The type of event (e.g., TRANSPORTATION, ACCOMMODATION, FOOD_AND_DRINK). */
+  val type: String,
+  /** The timestamp of the event. */
+  val timestamp: Long,
+  /** The title of the event. */
+  val title: String,
+  /** The location of the event. */
+  val location: String,
+  /** A description of the event. */
+  val description: String?,
+  /** The title of the trip this event belongs to. */
+  val tripTitle: String? = null,
+  /** Optional title of a matched itinerary event when added as a reminder. */
+  val matchedEventTitle: String? = null,
+  /** Execution status of the tool call (e.g., SUCCESS). */
+  val status: String? = "SUCCESS",
+  /** Human-readable completion message instructing the agent not to repeat the call. */
+  val message: String? = null,
 )
 
-/**
- * Represents a voice note or memo associated with a trip.
- */
+/** Represents a voice note or memo associated with a trip. */
 @AppFunctionSerializable(isDescribedByKDoc = true)
 data class VoiceNoteSerializable(
-    /** The voice note's unique identifier. */
-    val id: String,
-    /** The trip ID this voice note is linked to. */
-    val tripId: String,
-    /** The title of the voice note. */
-    val title: String,
-    /** The transcription text of the voice note. */
-    val transcription: String,
-    /** The timestamp when it was recorded. */
-    val timestamp: Long,
+  /** The voice note's unique identifier. */
+  val id: String,
+  /** The trip ID this voice note is linked to. */
+  val tripId: String,
+  /** The title of the voice note. */
+  val title: String,
+  /** The transcription text of the voice note. */
+  val transcription: String,
+  /** The timestamp when it was recorded. */
+  val timestamp: Long,
+  /** Optional ID of the itinerary event this voice note was matched to. */
+  val matchedEventId: String? = null,
+  /** Optional title of the itinerary event this voice note was matched to. */
+  val matchedEventTitle: String? = null,
+  /** Execution status of the tool call (e.g., SUCCESS). */
+  val status: String? = "SUCCESS",
+  /** Human-readable completion message instructing the agent not to repeat the call. */
+  val message: String? = null,
+)
+
+/** Represents a theme assigned to a specific day of a trip. */
+@AppFunctionSerializable(isDescribedByKDoc = true)
+data class DayThemeSerializable(
+  /** The theme's unique identifier. */
+  val id: String,
+  /** The trip ID this theme belongs to. */
+  val tripId: String,
+  /** The date in YYYY-MM-DD format. */
+  val date: String,
+  /** The descriptive theme for the day. */
+  val theme: String,
 )
 
 /**
- * Represents a theme assigned to a specific day of a trip.
+ * Represents rich subtype details for a specific itinerary event (flight, hotel, museum, dining, or
+ * tour).
  */
 @AppFunctionSerializable(isDescribedByKDoc = true)
-data class DayThemeSerializable(
-    /** The theme's unique identifier. */
-    val id: String,
-    /** The trip ID this theme belongs to. */
-    val tripId: String,
-    /** The date in YYYY-MM-DD format. */
-    val date: String,
-    /** The descriptive theme for the day. */
-    val theme: String,
+data class EventDetailsSerializable(
+  /** The unique identifier of the itinerary event. */
+  val eventId: String,
+  /** The title of the event. */
+  val title: String,
+  /** The type of the event (e.g., TRANSPORTATION, ACCOMMODATION, CULTURE, FOOD_AND_DRINK). */
+  val type: String,
+  /** The location or address of the event. */
+  val location: String,
+  /** Museum or attraction admission ticket price (e.g., "€28", "€17", "$25"). */
+  val admissionPrice: String? = null,
+  /** Opening hours for a museum or attraction. */
+  val openingHours: String? = null,
+  /** Hotel nightly rate (e.g., "€220/night"). */
+  val pricePerNight: String? = null,
+  /** Hotel or booking confirmation number. */
+  val confirmationNumber: String? = null,
+  /** Airline and flight number if applicable. */
+  val flightInfo: String? = null,
+  /** Flight baggage allowance (e.g., "2 x 23kg Checked, 1 Carry-on"). */
+  val baggageAllowance: String? = null,
+  /** Visitor tips, notes, or instructions for this event. */
+  val tips: List<String> = emptyList(),
+  /** Summary description of the event details. */
+  val description: String? = null,
+)
+
+/** Represents a saved travel document (passport, visa, ticket, booking confirmation, or note). */
+@AppFunctionSerializable(isDescribedByKDoc = true)
+data class TravelDocumentSerializable(
+  /** The document's unique identifier. */
+  val id: String,
+  /** The title or name of the document (e.g. 'US Passport', 'SFMOMA Admission Ticket'). */
+  val title: String,
+  /** The category or type of the document (e.g. 'PASSPORT', 'VISA', 'TICKET', 'HOTEL', 'OTHER'). */
+  val documentType: String,
+  /** The issuing country or authority if applicable. */
+  val issuingCountry: String? = null,
+  /** The masked document number or confirmation reference if applicable. */
+  val documentNumberMasked: String? = null,
+  /** The expiration date formatted as YYYY-MM-DD, or null if none. */
+  val expiryDateFormatted: String? = null,
+  /** Notes, booking codes, Wi-Fi passwords, or important details. */
+  val notes: String? = null,
+  /** The trip ID this document belongs to, or null if general. */
+  val tripId: String? = null,
+  /** Validity status ('VALID', 'EXPIRING_SOON', 'EXPIRED', 'NO_EXPIRY'). */
+  val validityStatus: String? = "VALID",
+  /** Status of the tool execution. */
+  val status: String? = "SUCCESS",
+  /** User-friendly completion message. */
+  val message: String? = null,
+)
+
+/** Represents detailed content and text extracted from a travel document. */
+@AppFunctionSerializable(isDescribedByKDoc = true)
+data class TravelDocumentDetailsSerializable(
+  /** The document's unique identifier. */
+  val id: String,
+  /** The title of the document. */
+  val title: String,
+  /** The category or type of the document. */
+  val documentType: String,
+  /** The issuing country if applicable. */
+  val issuingCountry: String? = null,
+  /** The masked document number or confirmation code. */
+  val documentNumberMasked: String? = null,
+  /** The expiration date formatted as YYYY-MM-DD. */
+  val expiryDateFormatted: String? = null,
+  /** Notes or extra information stored with the document. */
+  val notes: String? = null,
+  /** Full textual content or extracted document text. */
+  val content: String? = null,
+  /** Validity status ('VALID', 'EXPIRING_SOON', 'EXPIRED', 'NO_EXPIRY'). */
+  val validityStatus: String? = "VALID",
+  /** Status of the tool execution. */
+  val status: String? = "SUCCESS",
+  /** User-friendly completion message. */
+  val message: String? = null,
 )

@@ -20,7 +20,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
-import org.intellij.lang.annotations.Language
 
 @Entity(
   tableName = "flight_details",
@@ -42,6 +41,7 @@ data class FlightDetail(
   @JvmField val destination: String = "",
   @JvmField val gate: String? = null,
   @JvmField val seat: String? = null,
+  @JvmField val passengerName: String? = null,
   @JvmField val departureTerminal: String? = null,
   @JvmField val arrivalTerminal: String? = null,
   @JvmField val arrivalGate: String? = null,
