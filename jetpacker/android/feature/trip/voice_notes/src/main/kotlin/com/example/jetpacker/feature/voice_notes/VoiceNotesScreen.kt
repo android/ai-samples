@@ -115,6 +115,8 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.jetpacker.core.ui.AdsBorderBrush
+import com.example.jetpacker.core.ui.AdsLoadingBorderBrush
 import com.example.jetpacker.core.ui.JetPackerTheme
 import com.example.jetpacker.core.ui.SekuyaFontFamily
 import com.example.jetpacker.data.itinerary.TimelineEvent
@@ -179,17 +181,17 @@ fun VoiceNotesScreen(
     )
   }
 
-  val secondary = MaterialTheme.colorScheme.secondary
+  val primary = MaterialTheme.colorScheme.primary
   val tertiary = MaterialTheme.colorScheme.tertiary
-  val onSecondary = MaterialTheme.colorScheme.onSecondary
+  val onPrimary = MaterialTheme.colorScheme.onPrimary
   val onTertiary = MaterialTheme.colorScheme.onTertiary
 
   LaunchedEffect(voiceInputState.isReady, voiceInputState.isListening, voiceInputState.statusText) {
     onFabConfigChange(
       JetPackerFabConfig(
         onClick = handleListenToggle,
-        containerColor = if (voiceInputState.isListening) tertiary else secondary,
-        contentColor = if (voiceInputState.isListening) onTertiary else onSecondary,
+        containerColor = if (voiceInputState.isListening) tertiary else primary,
+        contentColor = if (voiceInputState.isListening) onTertiary else onPrimary,
         icon = if (voiceInputState.isListening) Icons.Rounded.Stop else Icons.Rounded.Mic,
         contentDescription = if (voiceInputState.isListening) "Stop" else "Record",
       )
@@ -215,7 +217,7 @@ fun VoiceNotesScreen(
               style =
                 MaterialTheme.typography.titleLarge.copy(
                   fontFamily = SekuyaFontFamily,
-                  fontSize = 22.sp,
+                  fontSize = 17.sp,
                 ),
               color = MaterialTheme.colorScheme.onSurface,
             )
@@ -326,7 +328,7 @@ fun VoiceModeOverlay(
       label = "animation_progress",
     )
 
-  JetPackerTheme(darkTheme = false) {
+  JetPackerTheme {
     Box(modifier = Modifier.fillMaxSize().clickable { onDismiss() }) {
       // 60% Surface Overlay (Scrim)
       Box(
@@ -459,14 +461,12 @@ fun ProcessingVoiceNoteItem(placeholder: VoiceNotePlaceholder) {
   val shape = RoundedCornerShape(12.dp)
   Card(
     modifier =
-      Modifier.fillMaxWidth().border(1.dp, MaterialTheme.colorScheme.outline, shape).dropShadow(
-        shape = shape
-      ) {
-        radius = 0f
-        spread = 0f
-        offset = Offset(x = 4.dp.toPx(), y = 6.dp.toPx())
-        color = Color(0xFF20290A)
-      },
+      Modifier.fillMaxWidth()
+        .border(
+          if (placeholder.isError) 1.dp else 1.5.dp,
+          if (placeholder.isError) AdsBorderBrush else AdsLoadingBorderBrush,
+          shape,
+        ),
     shape = shape,
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
   ) {
@@ -576,13 +576,7 @@ fun VoiceNoteItem(
       modifier =
         Modifier.fillMaxWidth()
           .padding(bottom = 16.dp)
-          .border(1.dp, MaterialTheme.colorScheme.outline, shape)
-          .dropShadow(shape = shape) {
-            radius = 0f
-            spread = 0f
-            offset = Offset(x = 4.dp.toPx(), y = 6.dp.toPx())
-            color = Color(0xFF20290A)
-          },
+          .border(1.dp, AdsBorderBrush, shape),
       shape = shape,
       colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
@@ -607,7 +601,7 @@ fun VoiceNoteItem(
           Surface(
             shape = CircleShape,
             color = MaterialTheme.colorScheme.surface,
-            border = BorderStroke(1.dp, Color(0xFF299EAF)),
+            border = BorderStroke(1.dp, AdsBorderBrush),
             modifier = Modifier.padding(bottom = 8.dp),
           ) {
             Text(

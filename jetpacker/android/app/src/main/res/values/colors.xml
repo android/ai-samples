@@ -23,5 +23,27 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="window_background">#FCF8E5</color>
+    <color name="window_background">#131314</color>
+
+    <!-- View-system mirror of the Compose ADS26 palette in core/ui Color.kt. -->
+    <color name="jp_primary">#FF01AF57</color>
+    <color name="jp_on_primary">#FF061B0E</color>
+    <color name="jp_primary_container">#FF0A3D22</color>
+    <color name="jp_on_primary_container">#FFB9F6CA</color>
+    <color name="jp_secondary">#FF26C6DA</color>
+    <color name="jp_on_secondary">#FF052329</color>
+    <color name="jp_secondary_container">#FF183A9C</color>
+    <color name="jp_on_secondary_container">#FFD0E4FF</color>
+    <color name="jp_tertiary">#FF3DDC84</color>
+    <color name="jp_on_tertiary">#FF061B0E</color>
+    <color name="jp_error">#FFFF6E6E</color>
+    <color name="jp_on_error">#FF3B080A</color>
+    <color name="jp_error_container">#FF4A151B</color>
+    <color name="jp_surface">#FF131314</color>
+    <color name="jp_on_surface">#FFFFFFFF</color>
+    <color name="jp_surface_variant">#FF22262B</color>
+    <color name="jp_on_surface_variant">#FFC4C7C5</color>
+    <color name="jp_outline">#FF01AF57</color>
+    <color name="jp_outline_variant">#FF2A3038</color>
+    <color name="jp_surface_container">#FF1E2226</color>
 </resources>

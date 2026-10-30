@@ -80,6 +80,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.example.jetpacker.core.ui.AdsBorderBrush
+import com.example.jetpacker.core.ui.AdsGlowColors
+import com.example.jetpacker.core.ui.AdsLoadingBorderBrush
 import com.example.jetpacker.data.trips.DummyData
 import com.example.jetpacker.data.trips.Trip
 import java.time.ZoneId
@@ -118,12 +121,7 @@ fun TripSummaryAndTipsCard(modifier: Modifier = Modifier, isLoading: Boolean, su
 
       val xOffset = width * (rotation / 360f)
       Brush.linearGradient(
-        colors =
-          listOf(
-            Color(0xFF9CEFFF), // Cyan
-            Color(0xFFD2E4FF), // Blue
-            Color(0xFFFFB59F), // Pink
-          ),
+        colors = AdsGlowColors,
         start = Offset(xOffset - width, 0f),
         end = Offset(xOffset, 0f),
         tileMode = TileMode.Mirror,
@@ -140,13 +138,13 @@ fun TripSummaryAndTipsCard(modifier: Modifier = Modifier, isLoading: Boolean, su
           if (isLoaded) {
             brush = glowBrush
             radius = 24.dp.toPx()
-            offset = Offset(x = 0f, y = 16.dp.toPx())
+            offset = Offset(x = 0f, y = 12.dp.toPx())
           }
         }
-        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
+        .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(24.dp))
         .border(
-          2.dp,
-          if (isLoaded) Color.Transparent else Color.Black.copy(alpha = 0.45f),
+          1.5.dp,
+          if (isLoading) AdsLoadingBorderBrush else AdsBorderBrush,
           RoundedCornerShape(24.dp),
         )
         .clip(RoundedCornerShape(24.dp))
@@ -245,7 +243,7 @@ fun TripSummaryAndTipsCard(modifier: Modifier = Modifier, isLoading: Boolean, su
               .height(40.dp)
               .background(
                 Brush.verticalGradient(
-                  listOf(Color.Transparent, MaterialTheme.colorScheme.surfaceBright)
+                  listOf(Color.Transparent, MaterialTheme.colorScheme.surfaceContainer)
                 )
               )
         )

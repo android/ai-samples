@@ -35,10 +35,13 @@ import com.google.mlkit.nl.translate.TranslatorOptions
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,15 +52,21 @@ import kotlinx.coroutines.tasks.await
 @Singleton
 @SuppressLint("NewApi", "GlobalCoroutineDispatchers")
 class VoiceInputManager @Inject constructor() {
-  private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+  private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+    Log.e("VoiceInputManager", "Uncaught exception in VoiceInputManager scope", throwable)
+  }
+  private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate + exceptionHandler)
   private val _uiState = MutableStateFlow(VoiceInputState())
   val uiState: StateFlow<VoiceInputState> = _uiState.asStateFlow()
 
   private var speechRecognizer: SpeechRecognizer? = null
   private var translator: Translator? = null
   private var listenJob: Job? = null
+  private var autoStopJob: Job? = null
+  private var statusCheckJob: Job? = null
   private var hasRecordAudioPermission = false
   private var autoStartListeningWhenReady = false
+  private var hasDeliveredResult = false
   private var queuedOnResult: ((original: String, translated: String) -> Unit)? = null
 
   init {
@@ -176,101 +185,114 @@ class VoiceInputManager @Inject constructor() {
           )
           return
         }
-    scope.launch {
-      Log.d("VoiceInputManager", "checkModelStatus: Checking speech model status asynchronously...")
-      _uiState.value = _uiState.value.copy(statusText = "Checking model status...", isReady = false)
-      val status = recognizer.checkStatus()
-      Log.d("VoiceInputManager", "checkModelStatus: Speech model status resolved to: $status")
-      if (status == FeatureStatus.DOWNLOADABLE) {
-        Log.d(
-          "VoiceInputManager",
-          "checkModelStatus: Speech model is downloadable, starting collectors flow...",
-        )
-        _uiState.value = _uiState.value.copy(statusText = "Downloading model...", isReady = false)
-        recognizer.download().collect { downloadStatus ->
-          Log.d("VoiceInputManager", "checkModelStatus collect: downloadStatus=$downloadStatus")
-          when (downloadStatus) {
-            is DownloadStatus.DownloadCompleted -> {
-              Log.d(
-                "VoiceInputManager",
-                "checkModelStatus collect: Download completed successfully!",
-              )
-              _uiState.value = _uiState.value.copy(statusText = "Model ready!", isReady = true)
-              triggerListeningIfQueued()
-
-              // Preemptively warm up ASR model loading in background to displace other concurrent
-              // isolated AI/LLM models in AICore memory
-              scope.launch {
-                Log.d(
-                  "VoiceInputManager",
-                  "checkModelStatus: Preemptively warming up SpeechRecognizer model...",
-                )
-                try {
-                  // recognizer.warmup()
-                  Log.d(
-                    "VoiceInputManager",
-                    "checkModelStatus: SpeechRecognizer model warm up completed successfully.",
-                  )
-                } catch (e: Exception) {
-                  Log.e(
-                    "VoiceInputManager",
-                    "checkModelStatus: Preemptive SpeechRecognizer warm up failed.",
-                    e,
-                  )
-                }
-              }
-            }
-            is DownloadStatus.DownloadFailed -> {
-              Log.e("VoiceInputManager", "checkModelStatus collect: Download failed.")
-              _uiState.value =
-                _uiState.value.copy(
-                  statusText =
-                    "Download failed. Please check your internet connection and try again.",
-                  isReady = false,
-                  isError = true,
-                  showDialog = true,
-                )
-            }
-            else ->
-              _uiState.value = _uiState.value.copy(statusText = "Downloading...", isReady = false)
-          }
-        }
-      } else if (status == FeatureStatus.AVAILABLE) {
-        Log.d(
-          "VoiceInputManager",
-          "checkModelStatus: Speech model is fully available locally. Making ready.",
-        )
-        _uiState.value = _uiState.value.copy(statusText = "Model ready!", isReady = true)
-        triggerListeningIfQueued()
-
-        // Preemptively warm up ASR model loading in background to displace other concurrent
-        // isolated AI/LLM models in AICore memory
-        scope.launch {
+    if (statusCheckJob?.isActive == true) {
+      Log.d(
+        "VoiceInputManager",
+        "checkModelStatus: Status check already active, skipping duplicate invocation.",
+      )
+      return
+    }
+    statusCheckJob = scope.launch {
+      try {
+        Log.d("VoiceInputManager", "checkModelStatus: Checking speech model status asynchronously...")
+        _uiState.value = _uiState.value.copy(statusText = "Checking model status...", isReady = false)
+        val status = recognizer.checkStatus()
+        Log.d("VoiceInputManager", "checkModelStatus: Speech model status resolved to: $status")
+        if (status == FeatureStatus.DOWNLOADABLE) {
           Log.d(
             "VoiceInputManager",
-            "checkModelStatus: Preemptively warming up SpeechRecognizer model...",
+            "checkModelStatus: Speech model is downloadable, starting collectors flow...",
           )
-          try {
-            // recognizer.warmup()
+          _uiState.value = _uiState.value.copy(statusText = "Downloading model...", isReady = false)
+          recognizer.download().collect { downloadStatus ->
+            Log.d("VoiceInputManager", "checkModelStatus collect: downloadStatus=$downloadStatus")
+            when (downloadStatus) {
+              is DownloadStatus.DownloadCompleted -> {
+                Log.d(
+                  "VoiceInputManager",
+                  "checkModelStatus collect: Download completed successfully!",
+                )
+                _uiState.value = _uiState.value.copy(statusText = "Model ready!", isReady = true)
+                triggerListeningIfQueued()
+
+                // Preemptively warm up ASR model loading in background to displace other concurrent
+                // isolated AI/LLM models in AICore memory
+                scope.launch {
+                  Log.d(
+                    "VoiceInputManager",
+                    "checkModelStatus: Preemptively warming up SpeechRecognizer model...",
+                  )
+                  try {
+                    // recognizer.warmup()
+                    Log.d(
+                      "VoiceInputManager",
+                      "checkModelStatus: SpeechRecognizer model warm up completed successfully.",
+                    )
+                  } catch (e: Exception) {
+                    Log.e(
+                      "VoiceInputManager",
+                      "checkModelStatus: Preemptive SpeechRecognizer warm up failed.",
+                      e,
+                    )
+                  }
+                }
+              }
+              is DownloadStatus.DownloadFailed -> {
+                Log.e("VoiceInputManager", "checkModelStatus collect: Download failed.")
+                _uiState.value =
+                  _uiState.value.copy(
+                    statusText =
+                      "Download failed. Please check your internet connection and try again.",
+                    isReady = false,
+                    isError = true,
+                    showDialog = true,
+                  )
+              }
+              else ->
+                _uiState.value = _uiState.value.copy(statusText = "Downloading...", isReady = false)
+            }
+          }
+        } else if (status == FeatureStatus.AVAILABLE) {
+          Log.d(
+            "VoiceInputManager",
+            "checkModelStatus: Speech model is fully available locally. Making ready.",
+          )
+          _uiState.value = _uiState.value.copy(statusText = "Model ready!", isReady = true)
+          triggerListeningIfQueued()
+
+          // Preemptively warm up ASR model loading in background to displace other concurrent
+          // isolated AI/LLM models in AICore memory
+          scope.launch {
             Log.d(
               "VoiceInputManager",
-              "checkModelStatus: SpeechRecognizer model warm up completed successfully.",
+              "checkModelStatus: Preemptively warming up SpeechRecognizer model...",
             )
-          } catch (e: Exception) {
-            Log.e(
-              "VoiceInputManager",
-              "checkModelStatus: Preemptive SpeechRecognizer warm up failed.",
-              e,
-            )
+            try {
+              // recognizer.warmup()
+              Log.d(
+                "VoiceInputManager",
+                "checkModelStatus: SpeechRecognizer model warm up completed successfully.",
+              )
+            } catch (e: Exception) {
+              Log.e(
+                "VoiceInputManager",
+                "checkModelStatus: Preemptive SpeechRecognizer warm up failed.",
+                e,
+              )
+            }
           }
+        } else {
+          Log.w(
+            "VoiceInputManager",
+            "checkModelStatus: Speech model is completely unavailable on device (Status: $status).",
+          )
+          _uiState.value =
+            _uiState.value.copy(statusText = "Model not available (Status: $status)", isReady = false)
         }
-      } else {
-        Log.w(
-          "VoiceInputManager",
-          "checkModelStatus: Speech model is completely unavailable on device (Status: $status).",
-        )
-        _uiState.value =
-          _uiState.value.copy(statusText = "Model not available (Status: $status)", isReady = false)
+      } catch (e: CancellationException) {
+        throw e
+      } catch (e: Exception) {
+        Log.e("VoiceInputManager", "checkModelStatus: Error checking or downloading speech model", e)
       }
     }
   }
@@ -287,8 +309,9 @@ class VoiceInputManager @Inject constructor() {
       )
       autoStartListeningWhenReady = false
       val recognizer = speechRecognizer ?: return
-      val onResult = queuedOnResult
-      startListening(recognizer, onResult)
+      val callback = queuedOnResult
+      queuedOnResult = null
+      startListening(recognizer, callback)
     }
   }
 
@@ -325,6 +348,33 @@ class VoiceInputManager @Inject constructor() {
       }
 
       initSpeechAndTranslation()
+
+      if (speechRecognizer == null) {
+        _uiState.value =
+          _uiState.value.copy(
+            statusText = "Speech recognizer could not be initialized.",
+            isReady = false,
+            isError = true,
+            showDialog = true,
+          )
+        return@launch
+      }
+
+      if (!_uiState.value.isReady) {
+        Log.d(
+          "VoiceInputManager",
+          "handleListenToggle: Mic triggered but model is not ready. Queuing auto-start listener on status completed.",
+        )
+        autoStartListeningWhenReady = true
+        queuedOnResult = onResult
+        _uiState.value =
+          _uiState.value.copy(
+            showDialog = true,
+            statusText = "Speech model is not ready. Initializing...",
+          )
+        checkModelStatus()
+        return@launch
+      }
 
       Log.d(
         "VoiceInputManager",
@@ -368,21 +418,6 @@ class VoiceInputManager @Inject constructor() {
             return@launch
           }
 
-      if (!_uiState.value.isReady) {
-        Log.d(
-          "VoiceInputManager",
-          "handleListenToggle: Mic triggered but model is not ready. Queuing auto-start listener on status completed.",
-        )
-        autoStartListeningWhenReady = true
-        queuedOnResult = onResult
-        _uiState.value =
-          _uiState.value.copy(
-            showDialog = true,
-            statusText = "Speech model is not ready. Initializing...",
-          )
-        checkModelStatus()
-        return@launch
-      }
       Log.d("VoiceInputManager", "handleListenToggle: Model is ready. Starting listening segment.")
       startListening(recognizer, onResult)
     }
@@ -396,6 +431,8 @@ class VoiceInputManager @Inject constructor() {
       "VoiceInputManager",
       "startListening: Waking up microphone and opening SODA continuous streaming collection.",
     )
+    autoStopJob?.cancel()
+    hasDeliveredResult = false
     _uiState.value =
       _uiState.value.copy(
         isListening = true,
@@ -425,9 +462,11 @@ class VoiceInputManager @Inject constructor() {
           var lastError: Throwable? = null
 
           var lastVoiceActivityTime = System.currentTimeMillis()
-          val autoStopJob = scope.launch {
+          autoStopJob?.cancel()
+          autoStopJob = scope.launch {
             while (isActive) {
-              kotlinx.coroutines.delay(500)
+              delay(500)
+              if (!_uiState.value.isListening || hasDeliveredResult) break
               if (System.currentTimeMillis() - lastVoiceActivityTime > 3000L) {
                 Log.d("VoiceInputManager", "startListening: Auto-stopping due to silence.")
                 stopListening(onResult)
@@ -484,6 +523,7 @@ class VoiceInputManager @Inject constructor() {
                   "VoiceInputManager",
                   "startRecognition collect: CompletedResponse received naturally from SODA stream.",
                 )
+                autoStopJob?.cancel()
                 if (_uiState.value.isListening) {
                   finishListening(onResult)
                 }
@@ -511,8 +551,6 @@ class VoiceInputManager @Inject constructor() {
             }
           }
 
-          autoStopJob.cancel()
-
           if (errorOccurred) {
             val isRetryable = lastError?.message?.contains("ERROR_TYPE_INVALID_REQUEST") == true
             if (isRetryable && retryCount < maxRetries - 1) {
@@ -526,7 +564,7 @@ class VoiceInputManager @Inject constructor() {
               try {
                 currentRecognizer.close()
               } catch (e: Exception) {}
-              kotlinx.coroutines.delay(1500)
+              delay(1500)
               val currentLang = FeatureFlags.DEMO_LANGUAGE
               try {
                 val speechOptions = speechRecognizerOptions {
@@ -553,7 +591,7 @@ class VoiceInputManager @Inject constructor() {
             break
           }
         } catch (e: Exception) {
-          if (e is kotlinx.coroutines.CancellationException) throw e
+          if (e is CancellationException) throw e
           Log.e(
             "VoiceInputManager",
             "startListening exception: Continuous recognition loop failed.",
@@ -567,7 +605,7 @@ class VoiceInputManager @Inject constructor() {
             try {
               currentRecognizer.close()
             } catch (ex: Exception) {}
-            kotlinx.coroutines.delay(1500)
+            delay(1500)
             val currentLang = FeatureFlags.DEMO_LANGUAGE
             try {
               val speechOptions = speechRecognizerOptions {
@@ -589,6 +627,7 @@ class VoiceInputManager @Inject constructor() {
             break
           }
         } finally {
+          autoStopJob?.cancel()
           Log.d(
             "VoiceInputManager",
             "startListening: stopping recognizer in attempt loop finalizer.",
@@ -604,6 +643,7 @@ class VoiceInputManager @Inject constructor() {
   private suspend fun stopListening(
     onResult: ((original: String, translated: String) -> Unit)? = null
   ) {
+    autoStopJob?.cancel()
     _uiState.value =
       _uiState.value.copy(
         isListening = false,
@@ -613,7 +653,7 @@ class VoiceInputManager @Inject constructor() {
       )
     try {
       speechRecognizer?.stopRecognition()
-      kotlinx.coroutines.delay(200)
+      delay(200)
     } catch (e: Exception) {
       Log.e("VoiceInputManager", "Failed to stop recognition gracefully", e)
     }
@@ -622,6 +662,8 @@ class VoiceInputManager @Inject constructor() {
   }
 
   private fun finishListening(onResult: ((original: String, translated: String) -> Unit)? = null) {
+    if (hasDeliveredResult) return
+    hasDeliveredResult = true
     val original = (_uiState.value.transcription + _uiState.value.partialTranscription).trim()
     val translated = _uiState.value.translatedTranscription.trim()
     val finalResult = translated.ifEmpty { original }
@@ -654,6 +696,7 @@ class VoiceInputManager @Inject constructor() {
 
   fun cancelListening() {
     Log.d("VoiceInputManager", "cancelListening called")
+    autoStopJob?.cancel()
     autoStartListeningWhenReady = false
     queuedOnResult = null
     _uiState.value =
@@ -668,7 +711,7 @@ class VoiceInputManager @Inject constructor() {
     scope.launch {
       try {
         recognizer?.stopRecognition()
-        kotlinx.coroutines.delay(200)
+        delay(200)
       } catch (e: Exception) {
         Log.e("VoiceInputManager", "Failed to stop recognition during cancel", e)
       }
@@ -683,7 +726,7 @@ class VoiceInputManager @Inject constructor() {
     return try {
       currentTranslator.translate(text).await()
     } catch (e: Exception) {
-      if (e is kotlinx.coroutines.CancellationException) throw e
+      if (e is CancellationException) throw e
       text
     }
   }
@@ -707,6 +750,7 @@ class VoiceInputManager @Inject constructor() {
   }
 
   fun close() {
+    autoStopJob?.cancel()
     listenJob?.cancel()
   }
 }

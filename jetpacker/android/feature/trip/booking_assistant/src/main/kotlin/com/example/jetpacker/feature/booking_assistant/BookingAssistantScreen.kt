@@ -65,7 +65,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.jetpacker.core.ui.SekuyaFontFamily
@@ -100,27 +102,32 @@ fun BookingAssistantScreen(
 
   Scaffold(
     modifier = modifier.fillMaxSize(),
-    containerColor = MaterialTheme.colorScheme.primary,
+    containerColor = MaterialTheme.colorScheme.background,
     topBar = {
-      Column(modifier = Modifier.background(MaterialTheme.colorScheme.primary)) {
+      Column(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
         TopAppBar(
           title = {
             Column {
               Text(
-                text = uiState.trip?.title?.uppercase() ?: "ITINERARY",
+                text = "Trip Concierge",
                 style =
                   MaterialTheme.typography.titleLarge.copy(
                     fontFamily = SekuyaFontFamily,
+                    fontSize = 17.sp,
                   ),
-                color = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                autoSize =
+                  TextAutoSize.StepBased(
+                    minFontSize = 12.sp,
+                    maxFontSize = 17.sp,
+                  ),
               )
               uiState.trip?.location?.let { location ->
                 Text(
                   text = location,
                   style = MaterialTheme.typography.labelMedium,
-                  color = MaterialTheme.colorScheme.onSurface,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
               }
             }
@@ -130,7 +137,7 @@ fun BookingAssistantScreen(
               Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                 contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onPrimary,
+                tint = MaterialTheme.colorScheme.onSurface,
               )
             }
           },
@@ -139,17 +146,17 @@ fun BookingAssistantScreen(
               Icon(
                 imageVector = Icons.Rounded.Refresh,
                 contentDescription = "Reset Chat",
-                tint = MaterialTheme.colorScheme.onPrimary,
+                tint = MaterialTheme.colorScheme.onSurface,
               )
             }
           },
           colors =
-            TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary),
+            TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
         )
         if (uiState.isStreaming) {
           LinearProgressIndicator(
             modifier = Modifier.fillMaxWidth().height(3.dp),
-            color = MaterialTheme.colorScheme.secondary,
+            color = MaterialTheme.colorScheme.primary,
             trackColor = Color.Transparent,
           )
         }

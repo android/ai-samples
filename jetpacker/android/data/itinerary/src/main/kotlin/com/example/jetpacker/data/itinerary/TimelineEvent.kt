@@ -46,7 +46,7 @@ data class TimelineEvent(
   @JvmField val audioNote: String? = null,
   @JvmField val audioNotes: List<String> = emptyList(),
   @JvmField val placeId: String? = null,
-  @JvmField val language: String? = null
+  @JvmField val language: String? = null,
 )
 
 @Entity(tableName = "voice_notes")

@@ -54,6 +54,7 @@ dependencies {
   implementation(project(":feature:trip:expenses"))
   implementation(project(":feature:trip:voice_notes"))
   implementation(project(":feature:trip:booking_assistant"))
+  implementation(project(":feature:assistant"))
 
   implementation(libs.androidx.compose.material.icons.core)
   implementation(libs.androidx.compose.material.icons.extended)
