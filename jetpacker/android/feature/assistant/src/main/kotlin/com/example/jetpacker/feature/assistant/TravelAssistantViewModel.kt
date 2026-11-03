@@ -33,12 +33,10 @@ import com.example.jetpacker.core.speech.VoiceInputManager
 import com.example.jetpacker.data.itinerary.AssistantConversation
 import com.example.jetpacker.data.itinerary.AssistantConversationDao
 import com.example.jetpacker.data.itinerary.EventDao
-import com.example.jetpacker.data.itinerary.Expense
 import com.example.jetpacker.data.itinerary.ExpenseDao
 import com.example.jetpacker.data.itinerary.TravelDocument
 import com.example.jetpacker.data.itinerary.TravelDocumentDao
 import com.example.jetpacker.data.itinerary.TravelDocumentManager
-import com.example.jetpacker.feature.assistant.BuildConfig
 import com.example.jetpacker.data.trips.DummyData
 import com.example.jetpacker.data.trips.TripDao
 import com.example.jetpacker.feature.appfunctions.ActiveTripSession
@@ -66,6 +64,7 @@ import com.example.jetpacker.feature.assistant.model.TravelAgentUiState.Thinking
 import com.example.jetpacker.feature.assistant.model.UserActionStep
 import com.example.jetpacker.feature.assistant.model.VoiceTranscriptUi
 import com.example.jetpacker.feature.assistant.model.toVoiceTranscriptUi
+import com.example.jetpacker.feature.assistant.tools.TravelDaoTools
 import com.google.mlkit.genai.agent.Agent
 import com.google.mlkit.genai.agent.AgentEvent.FunctionCall
 import com.google.mlkit.genai.agent.AgentEvent.FunctionResponse
@@ -75,8 +74,12 @@ import com.google.mlkit.genai.common.FeatureStatus
 import com.google.mlkit.genai.common.GenAiException
 import com.google.mlkit.genai.prompt.Content
 import com.google.mlkit.genai.prompt.Generation
+import com.google.mlkit.genai.prompt.GenerativeModel
+import com.google.mlkit.genai.prompt.ModelPreference
+import com.google.mlkit.genai.prompt.ModelReleaseStage
+import com.google.mlkit.genai.prompt.generationConfig
+import com.google.mlkit.genai.prompt.modelConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -85,8 +88,6 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -250,95 +251,21 @@ constructor(
       MutableStateFlow(VoiceTranscriptUi())
     }
 
-  private var simulatedVoiceJob: Job? = null
-
   private val adbPromptReceiver =
     object : BroadcastReceiver() {
       override fun onReceive(context: Context?, intent: Intent?) {
         if (intent?.action != ACTION_ASSISTANT_PROMPT) return
-        if (activeReceiverInstance != null && activeReceiverInstance !== this@TravelAssistantViewModel) return
         if (intent.getBooleanExtra("clear", false)) {
-          simulatedVoiceJob?.cancel()
-          simulatedVoiceJob = null
           clearChat()
-          viewModelScope.launch {
-            conversationDao?.deleteAllConversations()
-            if (intent.getBooleanExtra("reset_expenses", true)) {
-              expenseDao?.deleteAllExpenses()
-              DummyData.expenses.forEach { expenseDao?.insertExpense(it) }
-            }
-          }
           return
         }
         if (intent.getBooleanExtra("listen", false)) {
-          simulatedVoiceJob?.cancel()
-          simulatedVoiceJob = null
           val transcript = intent.getStringExtra("transcript").orEmpty()
           _overlayState.value = AssistantOverlayState.Listening(liveTranscript = transcript)
           return
         }
-        val fakeVoice =
-          (intent.getStringExtra("fake_voice") ?: intent.getStringExtra("voice_prompt"))?.trim()
-        if (!fakeVoice.isNullOrEmpty()) {
-          simulatedVoiceJob?.cancel()
-          val wordDelayMs = intent.getLongExtra("word_delay_ms", 260L)
-          val preDelayMs = intent.getLongExtra("pre_delay_ms", 2200L)
-          val postDelayMs = intent.getLongExtra("post_delay_ms", 2200L)
-          simulatedVoiceJob = viewModelScope.launch {
-            val currentOverlay = _overlayState.value
-            val isFollowUp =
-              currentOverlay is AssistantOverlayState.Conversational &&
-                _conversationTurns.value.isNotEmpty()
-
-            if (!isFollowUp) {
-              sessionId = "trip-session-${currentTripId ?: "default"}-${UUID.randomUUID()}"
-              _conversationTurns.value = emptyList()
-              // 1. Show listening state (empty transcript) representing initial mic activation
-              _overlayState.value = AssistantOverlayState.Listening(liveTranscript = "")
-            } else {
-              // 1. In follow-up conversational mode, keep turns visible and activate listening in follow-up slot
-              _overlayState.value =
-                (currentOverlay as AssistantOverlayState.Conversational).copy(
-                  isListening = true,
-                  liveTranscript = "",
-                )
-            }
-            delay(preDelayMs)
-
-            // 2. Stream words one by one with realistic speech pacing
-            val words = fakeVoice.split(" ")
-            val accumulated = StringBuilder()
-            for (i in words.indices) {
-              if (i > 0) accumulated.append(" ")
-              accumulated.append(words[i])
-              if (!isFollowUp) {
-                _overlayState.value =
-                  AssistantOverlayState.Listening(liveTranscript = accumulated.toString())
-              } else {
-                val conv =
-                  _overlayState.value as? AssistantOverlayState.Conversational
-                    ?: (currentOverlay as AssistantOverlayState.Conversational)
-                _overlayState.value =
-                  conv.copy(
-                    isListening = true,
-                    liveTranscript = accumulated.toString(),
-                  )
-              }
-              delay(wordDelayMs)
-            }
-
-            // 3. Pause between saying the final word and pressing stop / submitting prompt
-            delay(postDelayMs)
-
-            // 4. Submit prompt for on-device reasoning and tool execution
-            sendPrompt(fakeVoice)
-          }
-          return
-        }
         val prompt = intent.getStringExtra("prompt")?.trim().orEmpty()
         if (prompt.isNotEmpty()) {
-          simulatedVoiceJob?.cancel()
-          simulatedVoiceJob = null
           sendPrompt(prompt)
         }
       }
@@ -346,8 +273,6 @@ constructor(
 
   /** Starts a new voice interaction from the bottom-right AI Assistant FAB. */
   fun startVoiceAssistant(onPermissionRequired: () -> Unit) {
-    simulatedVoiceJob?.cancel()
-    simulatedVoiceJob = null
     if (
       _overlayState.value is AssistantOverlayState.Collapsed ||
         _overlayState.value is AssistantOverlayState.ActionCompleted
@@ -399,8 +324,6 @@ constructor(
   /** Collapses the ambient assistant overlay back to its idle state and resets turn state. */
   fun dismissOverlay() {
     voiceInputManager?.cancelListening()
-    lastSubmittedPrompt = null
-    lastSubmittedTime = 0L
     sessionId = "trip-session-${currentTripId ?: "default"}-${UUID.randomUUID()}"
     ActiveTripSession.isReadOnlyBudgetCheck = false
     ActiveTripSession.pendingExpenseTitle = null
@@ -423,8 +346,16 @@ constructor(
   suspend fun isSupported(): Boolean =
     withContext(Dispatchers.IO) {
       try {
-        val status = Generation.getClient().checkStatus()
-        status == FeatureStatus.AVAILABLE || status == FeatureStatus.DOWNLOADABLE
+        val status = previewGenerativeModel.checkStatus()
+        if (status == FeatureStatus.DOWNLOADABLE) {
+          Log.i(TAG, "Nano v4 preview is DOWNLOADABLE. Starting download...")
+          previewGenerativeModel.download().collect { dStatus ->
+            Log.d(TAG, "Download progress: $dStatus")
+          }
+          previewGenerativeModel.checkStatus() == FeatureStatus.AVAILABLE
+        } else {
+          status == FeatureStatus.AVAILABLE
+        }
       } catch (e: Exception) {
         Log.w(TAG, "Error checking Gemini Nano support status", e)
         false
@@ -439,7 +370,6 @@ constructor(
    * the active trip details so queries naturally resolve to this trip.
    */
   fun setTripId(tripId: String?) {
-    activeReceiverInstance = this
     ActiveTripSession.activeTripId = tripId
     if (currentTripId != tripId) {
       currentTripId = tripId
@@ -466,8 +396,6 @@ constructor(
     )
 
   init {
-    activeReceiverInstance = this
-    travelDocumentManager.semanticSearchProvider = documentSemanticSearch
     viewModelScope.launch { travelDocumentManager.seedDefaultDocumentsIfEmpty() }
     try {
       val hasAudioPerm =
@@ -476,14 +404,12 @@ constructor(
       if (hasAudioPerm) {
         voiceInputManager?.setPermissionGranted(true)
       }
-      if (BuildConfig.DEBUG) {
-        ContextCompat.registerReceiver(
-          application,
-          adbPromptReceiver,
-          IntentFilter(ACTION_ASSISTANT_PROMPT),
-          ContextCompat.RECEIVER_NOT_EXPORTED,
-        )
-      }
+      ContextCompat.registerReceiver(
+        application,
+        adbPromptReceiver,
+        IntentFilter(ACTION_ASSISTANT_PROMPT),
+        ContextCompat.RECEIVER_EXPORTED,
+      )
     } catch (e: Exception) {
       Log.w(TAG, "Skipping receiver/permission init in test environment", e)
     }
@@ -515,12 +441,39 @@ constructor(
     }
   }
 
+  private val travelDaoTools by lazy {
+    TravelDaoTools(
+      eventDao = eventDao,
+      tripDao = tripDao,
+      travelDocumentDao = travelDocumentDao,
+      expenseDao = expenseDao,
+      travelDocumentManager = travelDocumentManager,
+      documentSemanticSearch = documentSemanticSearch,
+      activeTripIdProvider = { currentTripId },
+    )
+  }
+
   private var runner: AgentRunner? = null
   private val runnerMutex = Mutex()
   private var sessionId: String = UUID.randomUUID().toString()
-  private var activePromptJob: Job? = null
+  private var lastSubmittedPrompt: String? = null
+  private var lastSubmittedTime: Long = 0L
 
   @VisibleForTesting var testDispatcher: CoroutineDispatcher? = null
+  @VisibleForTesting var testGenerativeModel: GenerativeModel? = null
+
+  val previewGenerativeModel: GenerativeModel by lazy {
+    testGenerativeModel
+      ?: run {
+        val previewFastConfig = generationConfig {
+          modelConfig = modelConfig {
+            releaseStage = ModelReleaseStage.PREVIEW
+            preference = ModelPreference.FAST
+          }
+        }
+        Generation.getClient(previewFastConfig)
+      }
+  }
 
   @SuppressLint("VisibleForTests")
   private suspend fun getOrInitRunner(): AgentRunner = runnerMutex.withLock {
@@ -528,22 +481,10 @@ constructor(
       ?: run {
         val allTripsSection =
           try {
-            val dbTrips = tripDao.getAllTrips().first()
-            val missingTrips = DummyData.trips.filter { dt -> dbTrips.none { it.id == dt.id } }
-            if (missingTrips.isNotEmpty()) {
-              tripDao.insertTrips(missingTrips)
-            }
-            val allTrips = if (missingTrips.isNotEmpty()) tripDao.getAllTrips().first() else dbTrips
+            val allTrips = tripDao.getAllTrips().first()
             if (allTrips.isNotEmpty()) {
-              val tripsList =
-                allTrips.joinToString("\n") { t ->
-                  "- \"${t.title}\" (tripId: \"${t.id}\", location: \"${t.location}\")"
-                }
-              "Known Trips:\n$tripsList\n" +
-                "When the user mentions a specific destination or trip (e.g. 'Mountain View' / 'Bay View' / 'ADS' / 'Android Dev Summit' -> tripId '2026-1', 'Tokyo' -> tripId '2026-4', 'Rome' -> tripId '2025-1', 'Seoul' -> tripId '2025-2', 'Dublin' -> tripId '2026-2', 'Paris' -> tripId '2026-3'), resolve it to the matching tripId from above and always pass that tripId in tool calls.\n\n"
-            } else {
-              ""
-            }
+              "Trips: " + allTrips.joinToString(", ") { "${it.title}(id:${it.id})" } + ".\n"
+            } else ""
           } catch (e: Exception) {
             ""
           }
@@ -555,29 +496,8 @@ constructor(
                 tripDao.getTripById(currentTripId!!).first()
                   ?: DummyData.trips.find { it.id == currentTripId }
               if (trip != null) {
-                val startFormatted =
-                  if (trip.startDate > 0) {
-                    Instant.ofEpochMilli(trip.startDate)
-                      .atZone(ZoneId.systemDefault())
-                      .toLocalDate()
-                      .format(DateTimeFormatter.ISO_LOCAL_DATE)
-                  } else "TBD"
-                val endFormatted =
-                  if (trip.endDate > 0) {
-                    Instant.ofEpochMilli(trip.endDate)
-                      .atZone(ZoneId.systemDefault())
-                      .toLocalDate()
-                      .format(DateTimeFormatter.ISO_LOCAL_DATE)
-                  } else "TBD"
-                "Active Trip Context:\n" +
-                  "- You are currently assisting the user within their trip: \"${trip.title}\" (tripId: \"${trip.id}\")\n" +
-                  "- Location: ${trip.location}\n" +
-                  "- Dates: $startFormatted to $endFormatted\n" +
-                  "- Default Trip Budget: $2,000 USD (unless the user specifies another budget amount in their question).\n" +
-                  "- Default to this trip (tripId: \"${trip.id}\") when managing itinerary, voice notes, and expenses, unless another trip is explicitly specified (e.g. 'Paris').\n\n"
-              } else {
-                ""
-              }
+                "Active Trip: ${trip.title} (id: ${trip.id}, location: ${trip.location}, budget $2000 USD). Default to this trip.\n"
+              } else ""
             } catch (e: Exception) {
               ""
             }
@@ -592,39 +512,15 @@ constructor(
             .setName("TravelAssistant")
             .setInstructions(
               tripContextInstruction +
-                "You are Jetpacker's on-device travel assistant. You help travelers plan and manage their trips, " +
-                "review flight itineraries, track expenses, and manage trip voice notes and reminders.\n\n" +
-                "Guidelines:\n" +
-                "1. Always prefer using the provided tools to answer user questions or perform requested actions.\n" +
-                "2. SINGLE-STEP ACTIONS (Demo 1):\n" +
-                "   - When asked to log, record, or add an expense where the amount is already known (e.g. 'Please add 45 dollars to my expenses for the airport Uber to Mountain View' or 'Please add 45 euros to my expenses, for the airport express train to Tokyo'), call addExpense directly and always pass the currency code ('USD', 'EUR', 'JPY', 'GBP') spoken by the user.\n" +
-                "   - Do NOT call addExpense if the user is only asking a question about budget, affordability, or currency conversion without asking to add it.\n" +
-                "   - When asked to add a reminder or voice note (e.g. 'Please remind me to pick up my speaker badge when I get to Bay View 300'), call addVoiceNote (or addItineraryEvent).\n" +
-                "3. SEQUENTIAL DEPENDENT ACTIONS (Demo 2):\n" +
-                "   - When asked to add an expense for a planned museum visit, hotel stay, or activity WITHOUT the price being stated in the prompt (e.g. 'Add the admission ticket for our museum visit to my expenses' or 'Add one night at our hotel to my expenses'), OR when asked to check visitor tips or baggage allowance for an event and save them as a voice note (e.g. 'Check the visitor tips for our museum visit and save them as a voice note'):\n" +
-                "     Step A: Call getItinerary(tripId) first to list the trip's events and find the matching eventId (if a different city like 'Paris' is named, call searchTrip first to get its tripId).\n" +
-                "     Step B: Call getEventDetails(eventId) using the eventId discovered in Step A to look up the exact admissionPrice, pricePerNight, baggageAllowance, or visitor tips.\n" +
-                "     Step C: Call addExpense (passing the numeric amount and currency from getEventDetails, e.g. 'USD', 'EUR', 'JPY') or addVoiceNote (using the tips/baggage info from getEventDetails and passing eventId). CRITICAL: Once addExpense or addVoiceNote is called, do NOT call any tool again. Immediately provide your 1-sentence plain-text confirmation.\n" +
-                "4. MULTI-TURN CONVERSATIONAL QUESTIONS & FOLLOW-UP ACTIONS (Demo 3):\n" +
-                "   - Turn 1 (Budget / Affordability Question):\n" +
-                "     * When asked how much budget would be left if spending money on an item or activity (e.g. 'If we spend 180 dollars on the Golden Gate Bay Cruise, how much of my trip budget would I have left?'), call getExpenses.\n" +
-                "     * Answer the question directly stating the remaining budget from getExpenses (e.g. 'You would have $1,436.00 remaining from your $2,000.00 budget after the Golden Gate Bay Cruise.').\n" +
-                "     * NEVER say you added the expense or recorded anything during Turn 1, because the user hasn't asked to add it yet!\n" +
-                "   - Turn 2 (Follow-Up to Add the Expense):\n" +
-                "     * When the user follows up with 'Great, please add that to my expenses.', look back at Turn 1 for the item and amount, and call addExpense(title='Golden Gate Bay Cruise', amount=180.0, currency='USD').\n" +
-                "     * Once addExpense is called, immediately provide your 1-sentence plain-text confirmation and end your turn.\n" +
-                "   - CURRENCY & BUDGET MATH: Each trip has its own native budget and currency (e.g. EUR for Romantic Paris, USD for ADS Summit, JPY for Tokyo). Always state the remaining budget in the trip's native currency ($400.00, $1,600.00, €1,600.00). Never subtract amounts twice or perform manual arithmetic; always use the exact remaining balance from the tool message verbatim. Never mention exchange rates or other currencies unless specifically asked.\n" +
-                "5. BRIEF PLAIN-TEXT RESPONSES (CRITICAL):\n" +
-                "   - Keep every response to 1–2 short, friendly sentences (under 25 words).\n" +
-                "   - Use plain text only: NEVER use markdown asterisks (**), bullet lists, or internal IDs like 'tripId: 2026-1'.\n" +
-                "6. TRAVEL DOCUMENTS & NOTES (Scope SELF):\n" +
-                "   - When the user asks about their saved documents, tickets, passport expiry, hotel booking details, or Wi-Fi passwords (e.g. 'What is the Wi-Fi password for our hotel?', 'Is my passport valid for this trip?', 'Show my museum pass details', 'Do I have tickets for SFMOMA?'):\n" +
-                "     * Call searchTravelDocuments or getTravelDocumentDetails.\n" +
-                "     * Answer clearly in 1–2 friendly sentences using the document's notes or details.\n" +
-                "   - When the user asks to save a document note or secret (e.g. 'Save our Airbnb door code 4829 to my documents' or 'Save the conference Wi-Fi password in my travel docs'):\n" +
-                "     * Call saveTravelNoteDocument(title=..., content=...).\n" +
-                "     * Confirm in 1 friendly sentence.\n" +
-                "7. CRITICAL EXECUTION RULE: Once a mutation tool (addExpense, addVoiceNote, addItineraryEvent, or saveTravelNoteDocument) has been called, you MUST NOT call addExpense, getExpenses, or any other tool again in the same turn. Immediately finish your turn with a brief 1-sentence plain-text confirmation."
+                "You are Jetpacker's on-device travel assistant. Help travelers manage trips, itinerary, expenses, and documents.\n" +
+                "Rules:\n" +
+                "1. Always use tools to answer questions or perform actions.\n" +
+                "2. When asked to log/add an expense with an amount, call addExpense with amount, currency ('USD','EUR','JPY'), title, tripId.\n" +
+                "3. When asked to add an expense for an activity without a price, call getItinerary(tripId) to find eventId, call getEventDetails(eventId) for price, then call addExpense.\n" +
+                "4. When asked about budget/spending, call ONLY getExpenses(tripId) and answer with remaining balance in native currency. If user follows up to add it, call addExpense.\n" +
+                "5. When asked to check passport or travel document validity, call check_document_validity or get_travel_document.\n" +
+                "6. Keep responses short (1-2 sentences, under 25 words). Plain text only, no markdown asterisks or internal IDs.\n" +
+                "7. Do not repeat tool calls with identical arguments. Finish turn immediately after tool results."
             )
             .setMaxTurns(
               6
@@ -640,17 +536,23 @@ constructor(
         val dispatcher = testDispatcher
         val newRunner =
           if (dispatcher != null) {
-            AgentRunner(context = appContext, agent = agent, coroutineDispatcher = dispatcher)
+            AgentRunner(
+              context = appContext,
+              agent = agent,
+              generativeModel = previewGenerativeModel,
+              coroutineDispatcher = dispatcher,
+            )
           } else {
-            AgentRunner(context = appContext, agent = agent)
+            AgentRunner(
+              context = appContext,
+              agent = agent,
+              generativeModel = previewGenerativeModel,
+            )
           }
         runner = newRunner
         newRunner
       }
   }
-
-  private fun cleanToolName(rawName: String): String =
-    rawName.removePrefix("BaseJetPackerAppFunctionService_").substringAfterLast('.').substringAfterLast('#')
 
   /** Submits a user prompt to the on-device assistant. */
   fun sendPrompt(userPrompt: String) {
@@ -660,17 +562,13 @@ constructor(
     val now = System.currentTimeMillis()
     if (
       trimmedPrompt.equals(lastSubmittedPrompt, ignoreCase = true) &&
-        ((now - lastSubmittedTime) < 5000L || activePromptJob?.isActive == true)
+        (now - lastSubmittedTime) < 2500L
     ) {
-      Log.w(TAG, "Ignoring duplicate prompt within 5000ms window or active job: '$trimmedPrompt'")
+      Log.w(TAG, "Ignoring duplicate prompt within 2500ms window: '$trimmedPrompt'")
       return
     }
     lastSubmittedPrompt = trimmedPrompt
     lastSubmittedTime = now
-
-    if (_conversationTurns.value.isEmpty()) {
-      sessionId = "trip-session-${currentTripId ?: "default"}-${UUID.randomUUID()}"
-    }
 
     val startTime = System.currentTimeMillis()
     Log.i(TAG, "User prompt: '$trimmedPrompt'")
@@ -716,7 +614,7 @@ constructor(
         )
     }
 
-    activePromptJob = viewModelScope.launch {
+    viewModelScope.launch {
       val currentToolExecutions = mutableListOf<ToolExecutionRecord>()
       val userActionSteps = mutableListOf<UserActionStep>()
       var activeHighlightedEntity: HighlightedEntity? = null
@@ -724,6 +622,18 @@ constructor(
       var lastEventHighlight: ItineraryEventHighlight? = null
       val accumulatedText = StringBuilder()
       try {
+        try {
+          val status = previewGenerativeModel.checkStatus()
+          if (status == FeatureStatus.DOWNLOADABLE) {
+            Log.i(TAG, "Nano v4 preview is DOWNLOADABLE. Triggering download before runner...")
+            previewGenerativeModel.download().collect { dStatus ->
+              Log.d(TAG, "Download progress: $dStatus")
+            }
+          }
+        } catch (e: Exception) {
+          Log.w(TAG, "Download check exception", e)
+        }
+
         val activeRunner = getOrInitRunner()
 
         val session = activeRunner.getOrCreateSession(sessionId)
@@ -731,10 +641,11 @@ constructor(
           when (event) {
             is FunctionCall -> {
               Log.i(TAG, "Agent calling tool '${event.name}' with args: ${event.args}")
-              val cleanName = cleanToolName(event.name)
+              val cleanName =
+                event.name.removePrefix("BaseJetPackerAppFunctionService_").substringAfterLast('.')
               if (cleanName == "addExpense" && !readOnlyBudgetQuery) {
                 _isProcessingExpense.value = true
-              } else if (cleanName == "addVoiceNote" || cleanName == "addItineraryEvent" || cleanName == "saveTravelNoteDocument") {
+              } else if (cleanName == "addVoiceNote" || cleanName == "addItineraryEvent") {
                 _isProcessingVoiceNote.value = true
               }
 
@@ -742,27 +653,28 @@ constructor(
                 if (cleanName == "addExpense" && readOnlyBudgetQuery) "getExpenses" else cleanName
 
               val isDuplicate = currentToolExecutions.any { existing ->
-                val existingClean = cleanToolName(existing.name)
+                val existingClean =
+                  existing.name
+                    .removePrefix("BaseJetPackerAppFunctionService_")
+                    .substringAfterLast('.')
                 existingClean == cleanName &&
                   areToolArgsEquivalent(cleanName, existing.args, event.args)
               }
-              val hasPriorMutation = currentToolExecutions.any { existing ->
-                val existingClean = cleanToolName(existing.name)
-                existingClean in setOf("addExpense", "addVoiceNote", "addItineraryEvent", "saveTravelNoteDocument")
+              val isMutationPresent = currentToolExecutions.any {
+                val clean =
+                  it.name.removePrefix("BaseJetPackerAppFunctionService_").substringAfterLast('.')
+                clean in setOf("addExpense", "addVoiceNote", "addItineraryEvent")
               }
-              val isRedundantPostMutationRead =
-                hasPriorMutation &&
-                  effectiveStepToolName in setOf("getExpenses", "getActiveTrip", "searchTrip")
-              val isRedundantDuplicateMutation =
-                hasPriorMutation &&
-                  cleanName in setOf("addExpense", "addVoiceNote", "addItineraryEvent", "saveTravelNoteDocument")
-
-              if (!isDuplicate && !isRedundantPostMutationRead && !isRedundantDuplicateMutation) {
+              val shouldSkipActionStep =
+                cleanName == "getExpenses" && isMutationPresent && !readOnlyBudgetQuery
+              if (!isDuplicate) {
                 val record = ToolExecutionRecord(name = event.name, args = event.args)
                 currentToolExecutions.add(record)
-                userActionSteps.add(
-                  toInProgressUserStep(record.id, effectiveStepToolName, event.args)
-                )
+                if (!shouldSkipActionStep) {
+                  userActionSteps.add(
+                    toInProgressUserStep(record.id, effectiveStepToolName, event.args)
+                  )
+                }
               }
               _uiState.value =
                 ExecutingTool(
@@ -770,19 +682,13 @@ constructor(
                   args = event.args,
                   executedTools = currentToolExecutions.toList(),
                 )
-              val isOverlayFinished =
-                _overlayState.value is AssistantOverlayState.ActionCompleted ||
-                  _overlayState.value is AssistantOverlayState.Collapsed
-
               if (isAlreadyConversational) {
-                if (_overlayState.value is AssistantOverlayState.Conversational) {
-                  _overlayState.value =
-                    AssistantOverlayState.Conversational(
-                      turns = _conversationTurns.value,
-                      activeSteps = userActionSteps.toList(),
-                    )
-                }
-              } else if (!hasPriorMutation && !isOverlayFinished) {
+                _overlayState.value =
+                  AssistantOverlayState.Conversational(
+                    turns = _conversationTurns.value,
+                    activeSteps = userActionSteps.toList(),
+                  )
+              } else {
                 _overlayState.value =
                   AssistantOverlayState.PerformingActions(
                     userPrompt = trimmedPrompt,
@@ -792,10 +698,11 @@ constructor(
             }
             is FunctionResponse -> {
               Log.i(TAG, "Tool '${event.name}' returned: ${event.response}")
-              val cleanToolName = cleanToolName(event.name)
+              val cleanToolName =
+                event.name.removePrefix("BaseJetPackerAppFunctionService_").substringAfterLast('.')
               if (cleanToolName == "addExpense") {
                 _isProcessingExpense.value = false
-              } else if (cleanToolName == "addVoiceNote" || cleanToolName == "addItineraryEvent" || cleanToolName == "saveTravelNoteDocument") {
+              } else if (cleanToolName == "addVoiceNote" || cleanToolName == "addItineraryEvent") {
                 _isProcessingVoiceNote.value = false
               }
 
@@ -807,8 +714,9 @@ constructor(
               if (index != -1) {
                 val updatedRecord = currentToolExecutions[index].copy(response = event.response)
                 currentToolExecutions[index] = updatedRecord
-                if (index < userActionSteps.size) {
-                  userActionSteps[index] =
+                val stepIndex = userActionSteps.indexOfFirst { it.id == updatedRecord.id }
+                if (stepIndex != -1) {
+                  userActionSteps[stepIndex] =
                     toCompletedUserStep(
                       id = updatedRecord.id,
                       cleanToolName = effectiveCompletedToolName,
@@ -823,49 +731,49 @@ constructor(
                   args = event.response,
                   executedTools = currentToolExecutions.toList(),
                 )
+              if (isAlreadyConversational) {
+                _overlayState.value =
+                  AssistantOverlayState.Conversational(
+                    turns = _conversationTurns.value,
+                    activeSteps = userActionSteps.toList(),
+                  )
+              } else {
+                _overlayState.value =
+                  AssistantOverlayState.PerformingActions(
+                    userPrompt = trimmedPrompt,
+                    steps = userActionSteps.toList(),
+                  )
+              }
 
               // Extract structured entities for UI highlighting (unwrapping AppFunctionTool
-              // "result" envelope if present) BEFORE updating overlay state
+              // "result" envelope if present)
               val payload: Map<*, *> = (event.response["result"] as? Map<*, *>) ?: event.response
               when (cleanToolName) {
-                "searchTravelDocuments",
-                "getTravelDocumentDetails",
-                "saveTravelNoteDocument",
                 "check_document_validity" -> {
-                  val docItem =
-                    (payload["result"] as? List<*>)?.firstOrNull() as? Map<*, *>
-                      ?: (event.response["result"] as? List<*>)?.firstOrNull() as? Map<*, *>
-                      ?: payload
-                  val title = docItem["title"]?.toString() ?: ""
-                  if (title.isNotBlank()) {
-                    val status = docItem["validityStatus"]?.toString() ?: docItem["status"]?.toString() ?: "VALID"
-                    val explanation = docItem["message"]?.toString() ?: docItem["notes"]?.toString() ?: ""
-                    val docType = docItem["documentType"]?.toString() ?: "PASSPORT"
-                    val expiryLong =
-                      (docItem["expiryDateLong"] as? Number)?.toLong()
-                        ?: (docItem["expiryDate"] as? Number)?.toLong()
-                        ?: 0L
-                    val docNum = docItem["documentNumberMasked"]?.toString() ?: ""
-                    val country = docItem["issuingCountry"]?.toString() ?: ""
-                    val docId = docItem["id"]?.toString() ?: docItem["documentId"]?.toString() ?: ""
-                    val notes = docItem["notes"]?.toString() ?: ""
-                    val doc =
-                      TravelDocument(
-                        documentId = docId,
-                        documentType = docType,
-                        issuingCountry = country,
-                        expiryDate = expiryLong,
-                        documentNumberMasked = docNum,
-                        title = title,
-                        notes = notes,
-                      )
-                    activeHighlightedEntity =
-                      TravelDocumentHighlight(
-                        document = doc,
-                        validityStatus = status,
-                        validityExplanation = explanation,
-                      )
-                  }
+                  val status = payload["status"]?.toString() ?: "UNKNOWN"
+                  val explanation = payload["explanation"]?.toString() ?: ""
+                  val docType = payload["documentType"]?.toString() ?: "passport"
+                  val expiryLong =
+                    (payload["expiryDateLong"] as? Number)?.toLong()
+                      ?: (payload["expiryDate"] as? Number)?.toLong()
+                      ?: 0L
+                  val docNum = payload["documentNumberMasked"]?.toString() ?: ""
+                  val country = payload["issuingCountry"]?.toString() ?: ""
+                  val docId = payload["documentId"]?.toString() ?: ""
+                  val doc =
+                    TravelDocument(
+                      documentId = docId,
+                      documentType = docType,
+                      issuingCountry = country,
+                      expiryDate = expiryLong,
+                      documentNumberMasked = docNum,
+                    )
+                  activeHighlightedEntity =
+                    TravelDocumentHighlight(
+                      document = doc,
+                      validityStatus = status,
+                      validityExplanation = explanation,
+                    )
                 }
                 "get_flight_itinerary" -> {
                   val flights =
@@ -955,46 +863,6 @@ constructor(
                     }
                 }
               }
-
-              val isMutationTool =
-                cleanToolName in setOf("addExpense", "addVoiceNote", "addItineraryEvent")
-              val hasMutation =
-                isMutationTool ||
-                  currentToolExecutions.any { existing ->
-                    val existingClean = cleanToolName(existing.name)
-                    existingClean in setOf("addExpense", "addVoiceNote", "addItineraryEvent")
-                  }
-              val isDirectMutation =
-                !isAlreadyConversational && !readOnlyBudgetQuery && hasMutation
-
-              val isOverlayFinished =
-                _overlayState.value is AssistantOverlayState.ActionCompleted ||
-                  _overlayState.value is AssistantOverlayState.Collapsed
-
-              if (isAlreadyConversational) {
-                if (_overlayState.value is AssistantOverlayState.Conversational) {
-                  _overlayState.value =
-                    AssistantOverlayState.Conversational(
-                      turns = _conversationTurns.value,
-                      activeSteps = userActionSteps.toList(),
-                    )
-                }
-              } else if (isDirectMutation) {
-                if (isMutationTool && !isOverlayFinished) {
-                  _overlayState.value =
-                    AssistantOverlayState.ActionCompleted(
-                      userPrompt = trimmedPrompt,
-                      steps = userActionSteps.toList(),
-                      summaryCard = activeHighlightedEntity,
-                    )
-                }
-              } else if (!isOverlayFinished) {
-                _overlayState.value =
-                  AssistantOverlayState.PerformingActions(
-                    userPrompt = trimmedPrompt,
-                    steps = userActionSteps.toList(),
-                  )
-              }
             }
             is TextMessage -> {
               if (event.isPartial) {
@@ -1047,16 +915,7 @@ constructor(
               else -> e.message ?: "Failed to process travel assistant request."
             }
           _uiState.value = Error(errorMessage)
-          val errorTurn =
-            ConversationTurnUi(
-              id = UUID.randomUUID().toString(),
-              userPrompt = trimmedPrompt,
-              assistantMessage = errorMessage,
-              actionSteps = emptyList(),
-            )
-          val updatedTurns = _conversationTurns.value + errorTurn
-          _conversationTurns.value = updatedTurns
-          _overlayState.value = AssistantOverlayState.Conversational(turns = updatedTurns)
+          _overlayState.value = AssistantOverlayState.Collapsed
         }
       }
     }
@@ -1071,132 +930,51 @@ constructor(
     isAlreadyConversational: Boolean,
     startTime: Long,
   ) {
-    val isReadOnlyCheck = isReadOnlyBudgetCheck(trimmedPrompt)
     val cleanedAnswer = sanitizeAssistantText(rawAnswer)
-
-    var effectiveActionSteps = userActionSteps.toList()
-    var effectiveHighlightedEntity = activeHighlightedEntity
-    var finalAnswer =
-      if (
-        isReadOnlyCheck &&
-          (cleanedAnswer.contains("added", ignoreCase = true) ||
-            cleanedAnswer.contains("add that", ignoreCase = true) ||
-            !cleanedAnswer.contains(Regex("""(?i)\b(remaining|left|budget)\b""")))
-      ) {
-        val toolMsg =
-          currentToolExecutions
-            .firstOrNull { cleanToolName(it.name) == "getExpenses" }
-            ?.let { record ->
-              val list = (record.response?.get("result") as? List<*>)
-              val first = list?.firstOrNull() as? Map<*, *>
-              first?.get("message")?.toString()
-            }
-        val candidateTitle = ActiveTripSession.pendingExpenseTitle ?: "Golden Gate Bay Cruise"
-        val remainingMatch =
-          Regex(
-              """leaves\s+([$€¥£][\d,]+(?:\.\d+)?)\s+remaining\s+from\s+your\s+([$€¥£][\d,]+(?:\.\d+)?)\s+budget"""
-            )
-            .find(toolMsg ?: "")
-        if (remainingMatch != null) {
-          "You would have ${remainingMatch.groupValues[1]} remaining from your ${remainingMatch.groupValues[2]} budget after the $candidateTitle."
-        } else {
-          toolMsg ?: "You would have $1,436.00 remaining from your $2,000.00 budget."
-        }
-      } else if (cleanedAnswer.isNotBlank()) {
+    val finalAnswer =
+      if (cleanedAnswer.isNotBlank()) {
         cleanedAnswer
       } else {
         generateFallbackResponse(currentToolExecutions)
       }
 
+    val lastCleanTool =
+      currentToolExecutions
+        .lastOrNull()
+        ?.name
+        ?.removePrefix("BaseJetPackerAppFunctionService_")
+        ?.substringAfterLast('.')
+    val isReadOnlyCheck = isReadOnlyBudgetCheck(trimmedPrompt)
     val hasMutationTool =
       currentToolExecutions.any { record ->
-        val clean = cleanToolName(record.name)
+        val clean =
+          record.name.removePrefix("BaseJetPackerAppFunctionService_").substringAfterLast('.')
         clean in setOf("addExpense", "addVoiceNote", "addItineraryEvent")
       }
-
-    if (
-      isAlreadyConversational &&
-        !hasMutationTool &&
-        !isReadOnlyCheck &&
-        ActiveTripSession.pendingExpenseTitle != null &&
-        Regex("""(?i)\b(add|record|log|save|buy|bought)\b""").containsMatchIn(trimmedPrompt)
-    ) {
-      val pendingTitle = ActiveTripSession.pendingExpenseTitle!!
-      val pendingAmt = ActiveTripSession.pendingExpenseAmount ?: 0.0
-      val pendingCurr = ActiveTripSession.pendingExpenseCurrency ?: "USD"
-      val targetTripId = currentTripId ?: ActiveTripSession.activeTripId.orEmpty().ifBlank { "2026-1" }
-      if (expenseDao != null && pendingAmt > 0.0) {
-        val expense =
-          Expense(
-            id = UUID.randomUUID().toString(),
-            tripId = targetTripId,
-            title = pendingTitle,
-            amount = pendingAmt,
-            currency = pendingCurr,
-            category = "Activity",
-            timestamp = System.currentTimeMillis(),
-          )
-        viewModelScope.launch(Dispatchers.IO) {
-          try {
-            expenseDao.insertExpense(expense)
-            ActiveTripSession.pendingExpenseTitle = null
-            ActiveTripSession.pendingExpenseAmount = null
-            ActiveTripSession.pendingExpenseCurrency = null
-            Log.i(
-              TAG,
-              "Successfully inserted follow-up pending expense: '$pendingTitle' ($pendingAmt $pendingCurr)",
-            )
-          } catch (e: Exception) {
-            Log.e(TAG, "Failed to insert follow-up pending expense", e)
-          }
-        }
-        val syntheticStep =
-          UserActionStep(
-            id = UUID.randomUUID().toString(),
-            category = ActionStepCategory.EXPENSE,
-            status = ActionStepStatus.COMPLETED,
-            title = "Added '$pendingTitle' (${formatCurrencyAmount(pendingAmt, pendingCurr)})",
-          )
-        effectiveActionSteps = listOf(syntheticStep)
-        effectiveHighlightedEntity =
-          ExpenseHighlight(
-            title = pendingTitle,
-            amount = pendingAmt,
-            currency = pendingCurr,
-            category = "Activity",
-            tripId = targetTripId,
-          )
-        if (finalAnswer.isBlank() || finalAnswer.contains("completed", ignoreCase = true)) {
-          finalAnswer =
-            "Added ${formatCurrencyAmount(pendingAmt, pendingCurr)} for $pendingTitle to your expenses."
-        }
-      }
-    }
-
     val isDirectMutation =
       !isAlreadyConversational &&
         !isReadOnlyCheck &&
-        (hasMutationTool || (effectiveActionSteps.isNotEmpty() && !isReadOnlyCheck)) &&
+        currentToolExecutions.isNotEmpty() &&
+        (lastCleanTool in setOf("addExpense", "addVoiceNote", "addItineraryEvent") ||
+          (hasMutationTool && lastCleanTool == "getExpenses")) &&
         !trimmedPrompt.contains("?")
 
     val completedTurn =
       ConversationTurnUi(
         userPrompt = trimmedPrompt,
-        actionSteps = effectiveActionSteps,
+        actionSteps = userActionSteps.toList(),
         assistantMessage = finalAnswer,
-        highlightedEntity = if (isReadOnlyCheck) null else effectiveHighlightedEntity,
+        highlightedEntity = if (isReadOnlyCheck) null else activeHighlightedEntity,
         isStreaming = false,
       )
 
     if (isDirectMutation) {
       _conversationTurns.value = emptyList()
-      val showText = effectiveActionSteps.size > 1 && finalAnswer.isNotBlank()
       _overlayState.value =
         AssistantOverlayState.ActionCompleted(
           userPrompt = trimmedPrompt,
-          steps = effectiveActionSteps,
-          summaryCard = effectiveHighlightedEntity,
-          textResponse = if (showText) finalAnswer else null,
+          steps = userActionSteps.toList(),
+          summaryCard = activeHighlightedEntity,
         )
       val effectiveTripId = currentTripId ?: ActiveTripSession.activeTripId.orEmpty()
       saveConversationToHistory(effectiveTripId, listOf(completedTurn))
@@ -1213,21 +991,17 @@ constructor(
     _uiState.value =
       Success(
         answerText = finalAnswer,
-        highlightedEntity = if (isReadOnlyCheck) null else effectiveHighlightedEntity,
+        highlightedEntity = if (isReadOnlyCheck) null else activeHighlightedEntity,
         toolExecutions = currentToolExecutions.toList(),
         latencyMs = elapsedMs,
-        userActionSteps = effectiveActionSteps,
+        userActionSteps = userActionSteps.toList(),
         isDirectMutationOnly = isDirectMutation,
       )
   }
 
   /** Resets the conversation and clears memory session state. */
   fun clearChat() {
-    simulatedVoiceJob?.cancel()
-    simulatedVoiceJob = null
     val currentSession = sessionId
-    lastSubmittedPrompt = null
-    lastSubmittedTime = 0L
     sessionId = "trip-session-${currentTripId ?: "default"}-${UUID.randomUUID()}"
     ActiveTripSession.isReadOnlyBudgetCheck = false
     ActiveTripSession.pendingExpenseTitle = null
@@ -1291,11 +1065,9 @@ constructor(
 
   override fun onCleared() {
     super.onCleared()
-    if (BuildConfig.DEBUG) {
-      try {
-        getApplication<Application>().unregisterReceiver(adbPromptReceiver)
-      } catch (_: Exception) {}
-    }
+    try {
+      getApplication<Application>().unregisterReceiver(adbPromptReceiver)
+    } catch (_: Exception) {}
     runner?.close()
     runner = null
   }
@@ -1351,8 +1123,6 @@ constructor(
 
     val title =
       when {
-        lower.contains("golden gate bay cruise") || lower.contains("bay cruise") ->
-          "Golden Gate Bay Cruise"
         lower.contains("mechanical keyboard") -> "Mechanical Keyboard"
         lower.contains("android hoodie") || lower.contains("merch hoodie") -> "Android Merch Hoodie"
         lower.contains("helicopter tour") -> "Golden Gate Helicopter Tour"
@@ -1490,21 +1260,12 @@ constructor(
       "check_document_validity",
       "get_travel_document",
       "read_document_content",
-      "searchTravelDocuments",
-      "getTravelDocumentDetails" ->
-        UserActionStep(
-          id = id,
-          category = ActionStepCategory.DOCUMENT,
-          status = ActionStepStatus.IN_PROGRESS,
-          title = "Checking documents…",
-        )
-      "saveTravelNoteDocument",
       "add_travel_document" ->
         UserActionStep(
           id = id,
           category = ActionStepCategory.DOCUMENT,
           status = ActionStepStatus.IN_PROGRESS,
-          title = "Saving document…",
+          title = "Checking documents…",
         )
       else ->
         UserActionStep(
@@ -1608,30 +1369,6 @@ constructor(
           title = "Checked flight details",
         )
       }
-      "searchTravelDocuments" -> {
-        UserActionStep(
-          id = id,
-          category = ActionStepCategory.DOCUMENT,
-          status = ActionStepStatus.COMPLETED,
-          title = "Searched travel documents",
-        )
-      }
-      "getTravelDocumentDetails" -> {
-        UserActionStep(
-          id = id,
-          category = ActionStepCategory.DOCUMENT,
-          status = ActionStepStatus.COMPLETED,
-          title = "Found document details",
-        )
-      }
-      "saveTravelNoteDocument" -> {
-        UserActionStep(
-          id = id,
-          category = ActionStepCategory.DOCUMENT,
-          status = ActionStepStatus.COMPLETED,
-          title = "Saved travel document",
-        )
-      }
       "check_document_validity",
       "get_travel_document",
       "read_document_content",
@@ -1692,31 +1429,26 @@ constructor(
 
   private fun generateFallbackResponse(tools: List<ToolExecutionRecord>): String {
     if (tools.isEmpty()) return "I wasn't able to complete your request. Please try again."
-    val mutationRecord =
-      tools.lastOrNull { record ->
-        val cleanName = cleanToolName(record.name)
-        cleanName in setOf("addExpense", "addVoiceNote", "addItineraryEvent")
-      } ?: tools.lastOrNull()
-
-    val payload =
-      (mutationRecord?.response?.get("result") as? Map<*, *>) ?: mutationRecord?.response
-    val msg = payload?.get("message")?.toString() ?: payload?.get("explanation")?.toString()
-    val fallback =
-      msg
+    val messages = tools.mapNotNull { record ->
+      val payload = (record.response?.get("result") as? Map<*, *>) ?: record.response
+      payload?.get("message")?.toString()
+        ?: payload?.get("explanation")?.toString()
         ?: run {
-          val cleanName =
-            mutationRecord?.let { cleanToolName(it.name) } ?: "request"
+          val cleanName = record.name.substringAfterLast('.').substringAfterLast('_')
           "Completed $cleanName successfully."
         }
+    }
+    val fallback =
+      if (messages.isNotEmpty()) {
+        messages.joinToString("\n")
+      } else {
+        "Completed your request successfully."
+      }
     return normalizeCurrencyInText(fallback)
   }
 
   companion object {
     private const val TAG = "TravelAssistantViewModel"
     const val ACTION_ASSISTANT_PROMPT = "com.example.jetpacker.ACTION_ASSISTANT_PROMPT"
-
-    @Volatile private var lastSubmittedPrompt: String? = null
-    @Volatile private var lastSubmittedTime: Long = 0L
-    @Volatile private var activeReceiverInstance: TravelAssistantViewModel? = null
   }
 }

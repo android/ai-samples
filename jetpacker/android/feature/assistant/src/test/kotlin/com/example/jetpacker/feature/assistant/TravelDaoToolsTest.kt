@@ -430,7 +430,7 @@ private class FakeTravelDocumentDao : TravelDocumentDao {
     flowOf(documents.filter { it.eventId == eventId })
 
   override suspend fun getDocumentById(documentId: String): TravelDocument? = documents.find {
-    it.documentId == documentId || it.id == documentId
+    it.documentId == documentId
   }
 
   override suspend fun insertDocument(document: TravelDocument) {

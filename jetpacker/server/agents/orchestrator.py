@@ -66,7 +66,7 @@ class ItineraryOrchestratorAgent(BaseSimulationAgent):
     try:
       client = _get_genai_client()
       prompt = (
-          "You are a warm, helpful travel concierge in the JetSet app.\n"
+          "You are a warm, helpful travel concierge in the JetPacker app.\n"
           f"Trip: {trip_title}{loc_suffix}\n"
           f"Trip itinerary items: {json.dumps(itinerary)}\n"
           f"User message: {json.dumps(user_prompt)}\n"
