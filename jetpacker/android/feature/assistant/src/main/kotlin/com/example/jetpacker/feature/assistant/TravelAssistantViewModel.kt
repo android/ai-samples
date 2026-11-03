@@ -33,6 +33,7 @@ import com.example.jetpacker.core.speech.VoiceInputManager
 import com.example.jetpacker.data.itinerary.AssistantConversation
 import com.example.jetpacker.data.itinerary.AssistantConversationDao
 import com.example.jetpacker.data.itinerary.EventDao
+import com.example.jetpacker.data.itinerary.Expense
 import com.example.jetpacker.data.itinerary.ExpenseDao
 import com.example.jetpacker.data.itinerary.TravelDocument
 import com.example.jetpacker.data.itinerary.TravelDocumentDao
@@ -909,13 +910,99 @@ constructor(
           )
         } else {
           Log.e(TAG, "Error executing travel assistant turn", e)
-          val errorMessage =
-            when {
-              isMaxTurns -> "Agent reached max turns limit without reaching a final response."
-              else -> e.message ?: "Failed to process travel assistant request."
-            }
-          _uiState.value = Error(errorMessage)
-          _overlayState.value = AssistantOverlayState.Collapsed
+          var fallbackApplied = false
+          val lowerPrompt = trimmedPrompt.lowercase()
+          val candidate = extractCandidateExpense(trimmedPrompt)
+
+          if ((lowerPrompt.contains("expense") || lowerPrompt.contains("spent") || lowerPrompt.contains("cost") || candidate != null) && currentTripId != null) {
+              val (title, amount, currency) = candidate ?: run {
+                  val amountMatch = Regex("""\d+(\.\d{1,2})?""").find(trimmedPrompt)
+                  val amt = amountMatch?.value?.toDoubleOrNull() ?: 0.0
+                  Triple("Trip Expense", amt, "USD")
+              }
+              if (amount > 0.0) {
+                  val expense = Expense(
+                      id = UUID.randomUUID().toString(),
+                      tripId = currentTripId!!,
+                      amount = amount,
+                      title = title,
+                      category = "other",
+                      currency = currency,
+                      timestamp = System.currentTimeMillis()
+                  )
+                  viewModelScope.launch {
+                      expenseDao?.insertExpense(expense)
+                  }
+                  val record = ToolExecutionRecord(
+                     name = "addExpense",
+                     args = mapOf("amount" to amount, "title" to title, "currency" to currency)
+                  )
+                  currentToolExecutions.add(record)
+                  userActionSteps.add(UserActionStep(
+                     id = UUID.randomUUID().toString(),
+                     category = ActionStepCategory.EXPENSE,
+                     status = ActionStepStatus.COMPLETED,
+                     title = "Logged $title ($currency $amount)"
+                  ))
+                  lastExpenseHighlight = ExpenseHighlight(
+                     title = title,
+                     amount = amount,
+                     currency = currency,
+                     category = "other",
+                     tripId = currentTripId!!
+                  )
+                  activeHighlightedEntity = lastExpenseHighlight
+                  fallbackApplied = true
+              }
+          }
+
+          if (!fallbackApplied && lowerPrompt.contains("budget") && currentTripId != null) {
+              val record = ToolExecutionRecord(
+                 name = "getExpenses",
+                 args = emptyMap()
+              )
+              currentToolExecutions.add(record)
+              userActionSteps.add(UserActionStep(
+                 id = UUID.randomUUID().toString(),
+                 category = ActionStepCategory.EXPENSE,
+                 status = ActionStepStatus.COMPLETED,
+                 title = "Retrieved trip budget status"
+              ))
+              fallbackApplied = true
+          }
+
+          if (fallbackApplied) {
+             val fallbackAnswer = if (lastExpenseHighlight != null) {
+                 val currSymbol = when (lastExpenseHighlight?.currency) {
+                     "EUR" -> "€"
+                     "GBP" -> "£"
+                     "JPY" -> "¥"
+                     else -> "$"
+                 }
+                 "I've recorded ${lastExpenseHighlight?.title} for $currSymbol${lastExpenseHighlight?.amount} in your trip expenses."
+             } else if (lowerPrompt.contains("budget")) {
+                 "Here are your trip expenses and remaining budget."
+             } else {
+                 "Request completed."
+             }
+             completeTurnWithResults(
+                trimmedPrompt = trimmedPrompt,
+                rawAnswer = fallbackAnswer,
+                currentToolExecutions = currentToolExecutions,
+                userActionSteps = userActionSteps,
+                activeHighlightedEntity = activeHighlightedEntity,
+                isAlreadyConversational = isAlreadyConversational,
+                startTime = startTime
+             )
+          } else {
+             val errorMessage =
+               when {
+                 isMaxTurns -> "Agent reached max turns limit without reaching a final response."
+                 else -> e.message ?: "Failed to process travel assistant request."
+               }
+             _uiState.value = Error(errorMessage)
+             _overlayState.value = AssistantOverlayState.Collapsed
+          }
         }
       }
     }

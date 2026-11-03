@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -48,6 +49,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -72,6 +75,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -107,7 +111,9 @@ fun CreateTripPanelContent(
 
   var showStartDatePicker by remember { mutableStateOf(false) }
   var showEndDatePicker by remember { mutableStateOf(false) }
+  var showCurrencyDropdown by remember { mutableStateOf(false) }
   var participantName by remember { mutableStateOf("") }
+  val currencies = remember { listOf("USD", "EUR", "GBP", "JPY", "KRW", "CAD", "AUD") }
 
   val dateFormatter = remember { DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.getDefault()) }
 
@@ -321,6 +327,58 @@ fun CreateTripPanelContent(
                 ),
               modifier = Modifier.fillMaxWidth(),
             )
+          }
+        }
+
+        // Budget and Currency
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.spacedBy(8.dp),
+          verticalAlignment = Alignment.CenterVertically,
+        ) {
+          TextField(
+            value = uiState.budget,
+            onValueChange = viewModel::onBudgetChange,
+            placeholder = { Text("Budget") },
+            label = { Text("Budget") },
+            maxLines = 1,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            shape = CircleShape,
+            colors =
+              TextFieldDefaults.colors(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+              ),
+            modifier = Modifier.weight(1.3f),
+          )
+
+          Box(
+            modifier = Modifier.weight(0.7f),
+          ) {
+            Button(
+              onClick = { showCurrencyDropdown = true },
+              modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp),
+              shape = CircleShape,
+            ) {
+              Text(uiState.currency)
+            }
+            DropdownMenu(
+              expanded = showCurrencyDropdown,
+              onDismissRequest = { showCurrencyDropdown = false },
+            ) {
+              currencies.forEach { curr ->
+                DropdownMenuItem(
+                  text = { Text(curr) },
+                  onClick = {
+                    viewModel.onCurrencyChange(curr)
+                    showCurrencyDropdown = false
+                  },
+                )
+              }
+            }
           }
         }
 

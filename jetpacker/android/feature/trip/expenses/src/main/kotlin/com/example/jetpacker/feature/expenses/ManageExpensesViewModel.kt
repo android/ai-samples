@@ -22,6 +22,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetpacker.data.itinerary.Expense
 import com.example.jetpacker.data.itinerary.ExpenseDao
+import com.example.jetpacker.data.trips.Trip
+import com.example.jetpacker.data.trips.TripDao
+import kotlinx.coroutines.flow.first
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,6 +40,7 @@ constructor(
   private val savedStateHandle: SavedStateHandle,
   private val receiptParser: ReceiptParser,
   private val expenseDao: ExpenseDao,
+  private val tripDao: TripDao,
 ) : ViewModel() {
 
   private val _tripIdFlow = MutableStateFlow(savedStateHandle.get<String>("tripId") ?: "")
@@ -46,6 +50,24 @@ constructor(
   fun loadForTrip(id: String) {
     if (id.isNotEmpty() && id != _tripIdFlow.value) {
       _tripIdFlow.value = id
+    }
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  val trip: Flow<Trip?> = _tripIdFlow.flatMapLatest { id ->
+    tripDao.getTripById(id)
+  }
+
+  fun updateBudget(newBudget: Double, currency: String? = null) {
+    viewModelScope.launch {
+      val t = tripDao.getTripById(tripId).first()
+      if (t != null) {
+        val updatedTrip = t.copy(
+          budget = newBudget,
+          currency = currency ?: t.currency
+        )
+        tripDao.insertTrip(updatedTrip)
+      }
     }
   }
 
