@@ -41,9 +41,11 @@ import com.example.jetpacker.data.trips.Trip
 import com.example.jetpacker.data.trips.TripDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.BufferedReader
+import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -338,16 +340,33 @@ constructor(
     title: String,
     location: String,
     time: String,
+    date: String,
     extraFields: Map<String, String>,
   ) {
     viewModelScope.launch {
       val eventId = UUID.randomUUID().toString()
+      
+      val parsedTime = try {
+        if (date.isNotBlank() && time.isNotBlank()) {
+          val formatStr = "$date $time".trim()
+          val sdf = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.US)
+          sdf.parse(formatStr)?.time ?: System.currentTimeMillis()
+        } else if (date.isNotBlank()) {
+          val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
+          sdf.parse(date)?.time ?: System.currentTimeMillis()
+        } else {
+          System.currentTimeMillis()
+        }
+      } catch (e: Exception) {
+        System.currentTimeMillis()
+      }
+
       val newEvent =
         TimelineEvent(
           id = eventId,
           tripId = tripId,
           type = type,
-          timestamp = System.currentTimeMillis(), // Mock timestamp for now
+          timestamp = parsedTime,
           title = title.ifEmpty { "New Event" },
           location = location.ifEmpty { "Unknown Location" },
           description = null,
@@ -375,8 +394,8 @@ constructor(
                 eventId = eventId,
                 name = extraFields["hotelName"] ?: "",
                 address = location,
-                checkInTime = System.currentTimeMillis(),
-                checkOutTime = System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1),
+                checkInTime = parsedTime,
+                checkOutTime = parsedTime + TimeUnit.DAYS.toMillis(1),
               )
             eventDao.insertHotelDetail(detail)
           }
@@ -386,7 +405,7 @@ constructor(
                 eventId = eventId,
                 restaurantName = extraFields["restaurantName"] ?: "",
                 address = location,
-                reservationTime = System.currentTimeMillis(),
+                reservationTime = parsedTime,
                 partySize = DEFAULT_PARTY_SIZE,
               )
             eventDao.insertDiningDetail(detail)

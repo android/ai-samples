@@ -216,8 +216,8 @@ fun ItineraryScreen(
   if (uiState.showAddEventDialog) {
     AddEventDialog(
       onDismiss = { viewModel.hideAddEvent() },
-      onSave = { type, title, location, time, extraFields ->
-        viewModel.addEvent(type, title, location, time, extraFields)
+      onSave = { type, title, location, time, date, extraFields ->
+        viewModel.addEvent(type, title, location, time, date, extraFields)
       },
     )
   }

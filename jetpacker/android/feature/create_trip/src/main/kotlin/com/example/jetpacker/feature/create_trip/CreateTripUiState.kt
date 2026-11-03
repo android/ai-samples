@@ -29,4 +29,6 @@ data class CreateTripUiState(
   val isGenerating: Boolean = false,
   val isEditing: Boolean = false,
   val editingTripId: String? = null,
+  val budget: String = "2000",
+  val currency: String = "USD",
 )

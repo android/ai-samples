@@ -17,6 +17,7 @@
 package com.example.jetpacker.feature.home
 
 import android.annotation.SuppressLint
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetpacker.core.speech.VoiceInputManager
@@ -27,6 +28,7 @@ import com.example.jetpacker.data.trips.DummyData
 import com.example.jetpacker.data.trips.Trip
 import com.example.jetpacker.data.trips.TripDao
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -34,6 +36,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -54,6 +57,7 @@ constructor(
   private val tourDetailDao: TourDetailDao,
   private val expenseDao: ExpenseDao,
   private val voiceInputManager: VoiceInputManager,
+  @param:ApplicationContext private val context: Context? = null,
 ) : ViewModel() {
   private val _uiState = MutableStateFlow(HomeUiState())
   open val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -89,7 +93,10 @@ constructor(
           delay(1500L)
         }
         .collectLatest { trips ->
-          if (trips.isEmpty()) {
+          val prefs = context?.getSharedPreferences("jetpacker_prefs", Context.MODE_PRIVATE)
+          val hasSeeded = prefs?.getBoolean("has_seeded_trips", false) ?: false
+          if (trips.isEmpty() && !hasSeeded) {
+            prefs?.edit()?.putBoolean("has_seeded_trips", true)?.apply()
             prepopulateDatabase()
           } else {
             // Sort trips naturally by timestamp
@@ -116,8 +123,29 @@ constructor(
 
   open fun deleteTrip(trip: Trip) {
     viewModelScope.launch {
+      val prefs = context?.getSharedPreferences("jetpacker_prefs", Context.MODE_PRIVATE)
+      prefs?.edit()?.putBoolean("has_seeded_trips", true)?.apply()
       eventDao.deleteEventsForTrip(trip.id)
       tripDao.deleteTrip(trip)
+    }
+  }
+
+  open fun clearAllTrips() {
+    viewModelScope.launch {
+      val prefs = context?.getSharedPreferences("jetpacker_prefs", Context.MODE_PRIVATE)
+      prefs?.edit()?.putBoolean("has_seeded_trips", true)?.apply()
+      tripDao.getAllTrips().first().forEach { trip ->
+        eventDao.deleteEventsForTrip(trip.id)
+        tripDao.deleteTrip(trip)
+      }
+    }
+  }
+
+  open fun restoreDemoTrips() {
+    viewModelScope.launch {
+      val prefs = context?.getSharedPreferences("jetpacker_prefs", Context.MODE_PRIVATE)
+      prefs?.edit()?.putBoolean("has_seeded_trips", true)?.apply()
+      prepopulateDatabase()
     }
   }
 

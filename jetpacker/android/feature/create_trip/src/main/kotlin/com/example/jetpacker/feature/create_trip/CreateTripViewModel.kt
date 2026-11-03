@@ -52,6 +52,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -101,6 +102,8 @@ constructor(
               endDate = endStr,
               participants = trip.participants,
               imageUri = trip.imageUri,
+              budget = if (trip.budget > 0) trip.budget.toInt().toString() else "2000",
+              currency = trip.currency.ifBlank { "USD" },
             )
           }
         }
@@ -236,6 +239,14 @@ constructor(
     _uiState.update { it.copy(endDate = newDate) }
   }
 
+  open fun onBudgetChange(newBudget: String) {
+    _uiState.update { it.copy(budget = newBudget) }
+  }
+
+  open fun onCurrencyChange(newCurrency: String) {
+    _uiState.update { it.copy(currency = newCurrency) }
+  }
+
   open fun onAddParticipant(name: String) {
     if (name.isBlank()) return
     _uiState.update { current ->
@@ -282,6 +293,13 @@ constructor(
         }
         parsedTime
       }
+      val editingId = _uiState.value.editingTripId
+      val existingTrip = editingId?.let { id ->
+        runCatching { tripDao.getTripById(id).first() }.getOrNull()
+      }
+      val parsedBudget = _uiState.value.budget.toDoubleOrNull() ?: (existingTrip?.budget ?: 2000.0)
+      val selectedCurrency = _uiState.value.currency.ifBlank { existingTrip?.currency ?: "USD" }
+
       _uiState.update { current ->
         val startTs = parseDate(current.startDate)
         val endTs = parseDate(current.endDate)
@@ -293,8 +311,12 @@ constructor(
             location = current.location,
             startDate = startTs,
             endDate = endTs,
+            imageRes = existingTrip?.imageRes,
+            imageUri = current.imageUri ?: existingTrip?.imageUri,
             participants = current.participants,
-            imageUri = current.imageUri,
+            tripSummaryAndTips = existingTrip?.tripSummaryAndTips,
+            budget = parsedBudget,
+            currency = selectedCurrency,
           )
         tripDao.insertTrip(newTrip)
         current.copy(
@@ -307,6 +329,8 @@ constructor(
           endDate = "",
           participants = emptyList(),
           imageUri = null,
+          budget = "2000",
+          currency = "USD",
         )
       }
     }

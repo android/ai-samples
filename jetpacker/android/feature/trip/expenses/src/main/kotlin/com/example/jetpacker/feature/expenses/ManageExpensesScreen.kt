@@ -179,6 +179,7 @@ fun ManageExpensesScreen(
   val context = LocalContext.current
 
   val expenses by viewModel.expenses.collectAsStateWithLifecycle(initialValue = emptyList())
+  val currentTrip by viewModel.trip.collectAsStateWithLifecycle(initialValue = null)
 
   LaunchedEffect(tripId) {
     if (tripId.isNotEmpty()) {
@@ -186,7 +187,16 @@ fun ManageExpensesScreen(
     }
   }
 
-  var budget by remember { mutableStateOf(2000.00) }
+  val budget = currentTrip?.budget ?: 2000.00
+  val currency = currentTrip?.currency ?: "USD"
+  val currencySymbol =
+    when (currency.uppercase()) {
+      "EUR", "€" -> "€"
+      "GBP", "£" -> "£"
+      "JPY", "¥" -> "¥"
+      "KRW", "₩" -> "₩"
+      else -> "$"
+    }
   var isBudgetSheetVisible by remember { mutableStateOf(false) }
 
   var selectedExpense by remember { mutableStateOf<Expense?>(null) }
@@ -310,6 +320,7 @@ fun ManageExpensesScreen(
         TotalSpentDisplay(
           totalSpent = totalSpent,
           budget = budget,
+          currencySymbol = currencySymbol,
           isProcessing = isProcessing.value || isAssistantProcessingExpense,
           onBudgetClick = { isBudgetSheetVisible = true },
         )
@@ -414,8 +425,12 @@ fun ManageExpensesScreen(
     if (isBudgetSheetVisible) {
       BudgetEditSheet(
         initialBudget = budget,
+        currencySymbol = currencySymbol,
         onDismiss = { isBudgetSheetVisible = false },
-        onSave = { budget = it },
+        onSave = {
+          viewModel.updateBudget(it)
+          isBudgetSheetVisible = false
+        },
       )
     }
 
@@ -438,6 +453,7 @@ private fun TotalSpentDisplay(
   totalSpent: Double,
   budget: Double,
   onBudgetClick: () -> Unit,
+  currencySymbol: String = "$",
   modifier: Modifier = Modifier,
   isProcessing: Boolean = false,
 ) {
@@ -447,7 +463,7 @@ private fun TotalSpentDisplay(
       animationSpec = tween(durationMillis = 600),
       label = "total_spent_anim",
     )
-  val totalText = "$${"%.2f".format(animatedTotalSpent)}"
+  val totalText = "$currencySymbol${"%.2f".format(animatedTotalSpent)}"
 
   Column(
     modifier = modifier.fillMaxWidth().padding(vertical = 16.dp),
@@ -495,7 +511,7 @@ private fun TotalSpentDisplay(
         modifier = Modifier.clickable { onBudgetClick() },
       ) {
         Text(
-          text = "$${budget.toInt()}",
+          text = "$currencySymbol${budget.toInt()}",
           style = MaterialTheme.typography.titleMedium,
           fontWeight = FontWeight.Black,
           color = MaterialTheme.colorScheme.onPrimary,
@@ -875,7 +891,7 @@ fun ExpenseDetailSheet(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BudgetEditSheet(initialBudget: Double, onDismiss: () -> Unit, onSave: (Double) -> Unit) {
+fun BudgetEditSheet(initialBudget: Double, currencySymbol: String = "$", onDismiss: () -> Unit, onSave: (Double) -> Unit) {
   var text by remember { mutableStateOf(initialBudget.toInt().toString()) }
   val sheetState = rememberModalBottomSheetState()
 
@@ -894,7 +910,7 @@ fun BudgetEditSheet(initialBudget: Double, onDismiss: () -> Unit, onSave: (Doubl
         value = text,
         onValueChange = { text = it },
         label = { Text("Budget Amount") },
-        prefix = { Text("$") },
+        prefix = { Text(currencySymbol) },
         modifier = Modifier.fillMaxWidth(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         singleLine = true,

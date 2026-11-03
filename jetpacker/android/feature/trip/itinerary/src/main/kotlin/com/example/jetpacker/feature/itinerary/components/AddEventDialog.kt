@@ -50,6 +50,7 @@ fun AddEventDialog(
       title: String,
       location: String,
       time: String,
+      date: String,
       extraFields: Map<String, String>,
     ) -> Unit,
 ) {
@@ -57,6 +58,7 @@ fun AddEventDialog(
   var title by remember { mutableStateOf("") }
   var location by remember { mutableStateOf("") }
   var time by remember { mutableStateOf("") }
+  var date by remember { mutableStateOf("") }
 
   // Extra fields based on type
   var airline by remember { mutableStateOf("") }
@@ -98,6 +100,11 @@ fun AddEventDialog(
           value = location,
           onValueChange = { location = it },
           label = { Text("Location") },
+        )
+        OutlinedTextField(
+          value = date,
+          onValueChange = { date = it },
+          label = { Text("Date (e.g. Dec 15, 2026)") },
         )
         OutlinedTextField(
           value = time,
@@ -154,7 +161,7 @@ fun AddEventDialog(
             }
             else -> {}
           }
-          onSave(type, title, location, time, extraFields)
+          onSave(type, title, location, time, date, extraFields)
           onDismiss()
         }
       ) {

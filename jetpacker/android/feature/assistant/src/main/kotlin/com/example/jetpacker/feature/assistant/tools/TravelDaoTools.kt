@@ -16,7 +16,6 @@
 
 package com.example.jetpacker.feature.assistant.tools
 
-import android.graphics.BitmapFactory
 import android.util.Log
 import com.example.jetpacker.data.itinerary.EventDao
 import com.example.jetpacker.data.itinerary.EventType
@@ -39,26 +38,36 @@ import com.google.mlkit.genai.prompt.TextPart
 import com.google.mlkit.genai.prompt.generateContentRequest
 import com.google.mlkit.genai.schema.tools.FunctionSchema
 import com.google.mlkit.genai.schema.tools.FunctionType
-import java.io.File
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.UUID
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+
+/** Base class adapting local Room DAO tools. */
+abstract class TravelDaoAgentTool(val name: String, val description: String) {
+  open val parametersSchema: FunctionSchema = FunctionSchema(type = FunctionType.OBJECT)
+
+  abstract suspend fun execute(args: Map<String, Any>): Map<String, Any>
+}
 
 /** Tool to retrieve flight itinerary details from the Room database. */
 class GetFlightItineraryTool(
   private val eventDao: EventDao,
   private val tripDao: TripDao,
   private val activeTripIdProvider: () -> String? = { null },
-) {
-  val name = "get_flight_itinerary"
-  val description = "Retrieves flight itinerary details including flight number, airline, airports, departure and arrival times, terminal, gate, and status for a trip or flight number."
-  val parametersSchema =
+) :
+  TravelDaoAgentTool(
+    name = "get_flight_itinerary",
+    description =
+      "Retrieves flight itinerary details (flight number, airline, airports, times, terminal, gate) for a trip.",
+  ) {
+  override val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
       properties =
@@ -76,7 +85,7 @@ class GetFlightItineraryTool(
         ),
     )
 
-  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+  override suspend fun execute(args: Map<String, Any>): Map<String, Any> {
     val tripId = args["tripId"]?.toString()?.takeIf { it.isNotBlank() } ?: activeTripIdProvider()
     val targetFlightNumber = args["flightNumber"]?.toString()
 
@@ -140,10 +149,13 @@ class GetFlightItineraryTool(
 class GetTravelDocumentTool(
   private val travelDocumentDao: TravelDocumentDao,
   private val documentSemanticSearch: DocumentSemanticSearch? = null,
-) {
-  val name = "get_travel_document"
-  val description = "Retrieves stored travel documents, hotel welcome cards, Wi-Fi networks and passwords, flight vouchers, tickets, IDs, driver's licenses, baggage claim tags, parking signs, and travel notes. Call this whenever the user asks about Wi-Fi passwords, lodging details, reservations, tickets, or travel documents."
-  val parametersSchema =
+) :
+  TravelDaoAgentTool(
+    name = "get_travel_document",
+    description =
+      "Retrieves travel documents, hotel info, Wi-Fi details, tickets, or notes.",
+  ) {
+  override val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
       properties =
@@ -151,24 +163,22 @@ class GetTravelDocumentTool(
           "documentType" to
             FunctionSchema(
               type = FunctionType.STRING,
-              description =
-                "Optional document type filter: 'WIFI', 'HOTEL', 'PASSPORT', 'VISA', 'TICKET', 'DRIVER_LICENSE', 'BAGGAGE', 'PARKING', 'TRANSIT', 'MUSEUM', 'NOTE', or 'OTHER'.",
+              description = "Type: 'PASSPORT', 'VISA', 'HOTEL', 'WIFI', 'TICKET'.",
             ),
           "query" to
             FunctionSchema(
               type = FunctionType.STRING,
-              description =
-                "Natural language search query to locate relevant documents, Wi-Fi cards, hotel info, tickets, or notes (e.g. 'wifi password', 'hotel', 'passport', 'parking', 'baggage').",
+              description = "Search query (e.g. 'wifi', 'hotel', 'passport').",
             ),
           "documentId" to
             FunctionSchema(
               type = FunctionType.STRING,
-              description = "Optional unique identifier of a specific document.",
+              description = "Optional document ID.",
             ),
           "tripId" to
             FunctionSchema(
               type = FunctionType.STRING,
-              description = "Optional trip ID to filter documents for a specific trip.",
+              description = "Optional trip ID.",
             ),
           "eventId" to
             FunctionSchema(
@@ -179,7 +189,7 @@ class GetTravelDocumentTool(
         ),
     )
 
-  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+  override suspend fun execute(args: Map<String, Any>): Map<String, Any> {
     val documentId = args["documentId"]?.toString()
     val documentType = args["documentType"]?.toString()
     val query = args["query"]?.toString()
@@ -242,10 +252,13 @@ class GetTravelDocumentTool(
 class CheckDocumentValidityTool(
   private val travelDocumentDao: TravelDocumentDao,
   private val tripDao: TripDao,
-) {
-  val name = "check_document_validity"
-  val description = "Checks whether a travel document (e.g., passport or visa) is valid for travel relative to departure dates, enforcing the 6-month validity rule."
-  val parametersSchema =
+) :
+  TravelDaoAgentTool(
+    name = "check_document_validity",
+    description =
+      "Checks whether a travel document (e.g., passport or visa) is valid for travel relative to departure dates, enforcing the 6-month validity rule.",
+  ) {
+  override val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
       properties =
@@ -268,7 +281,7 @@ class CheckDocumentValidityTool(
         ),
     )
 
-  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+  override suspend fun execute(args: Map<String, Any>): Map<String, Any> {
     val docType = args["documentType"]?.toString()?.takeIf { it.isNotBlank() } ?: "passport"
     val travelDateStr = args["travelStartDate"]?.toString()
     val tripId = args["tripId"]?.toString()
@@ -396,10 +409,13 @@ class ReadDocumentContentTool(
   private val travelDocumentManager: TravelDocumentManager,
   private val travelDocumentDao: TravelDocumentDao,
   private val documentSemanticSearch: DocumentSemanticSearch? = null,
-) {
-  val name = "read_document_content"
-  val description = "Reads the full text, Wi-Fi details, or notes of a saved travel document, hotel welcome card, ticket, or voucher from the on-device document store."
-  val parametersSchema =
+) :
+  TravelDaoAgentTool(
+    name = "read_document_content",
+    description =
+      "Reads the full text, Wi-Fi details, or notes of a saved travel document, hotel welcome card, ticket, or voucher from the on-device document store.",
+  ) {
+  override val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
       properties =
@@ -423,7 +439,7 @@ class ReadDocumentContentTool(
         ),
     )
 
-  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+  override suspend fun execute(args: Map<String, Any>): Map<String, Any> {
     val docId = args["documentId"]?.toString()
     val query = args["query"]?.toString()
     val tripId = args["tripId"]?.toString()
@@ -459,16 +475,15 @@ class ReadDocumentContentTool(
       return mapOf("error" to "Document not found", "status" to "NOT_FOUND")
     }
 
-    val isImage =
-      targetDoc.filePath.isNotBlank() &&
-        targetDoc.filePath.substringAfterLast('.', "").lowercase() in
-          listOf("png", "jpg", "jpeg", "webp")
+    val isVisual = travelDocumentManager.isVisualDocument(targetDoc)
     val extractedText =
-      if (isImage && targetDoc.notes.isBlank()) {
-        val extracted = extractTextFromImage(targetDoc.filePath)
+      if (isVisual && targetDoc.notes.isBlank()) {
+        val extracted = extractTextFromVisualDocument(targetDoc)
         if (extracted != null) {
           try {
-            travelDocumentDao.insertDocument(targetDoc.copy(notes = extracted))
+            val updated = targetDoc.copy(notes = extracted)
+            travelDocumentDao.insertDocument(updated)
+            documentSemanticSearch?.indexDocument(updated)
           } catch (e: Exception) {
             Log.w("ReadDocContentTool", "Could not cache extracted text in document", e)
           }
@@ -481,7 +496,7 @@ class ReadDocumentContentTool(
     val content = travelDocumentManager.readDocumentContent(targetDoc)
     val finalContent =
       if (!extractedText.isNullOrBlank()) {
-        "$content\n\nExtracted Image Text:\n$extractedText"
+        "$content\n\nExtracted Visual Text:\n$extractedText"
       } else {
         content
       }
@@ -495,30 +510,34 @@ class ReadDocumentContentTool(
     )
   }
 
-  private suspend fun extractTextFromImage(filePath: String): String? =
+  private suspend fun extractTextFromVisualDocument(doc: TravelDocument): String? =
     withContext(Dispatchers.IO) {
       try {
-        val file = File(filePath)
-        if (!file.exists() || !file.isFile) return@withContext null
-        val bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return@withContext null
+        val bitmap = travelDocumentManager.loadDocumentBitmap(doc) ?: return@withContext null
         val generativeModel = Generation.getClient()
         val prompt =
-          "You are an on-device document extractor. Extract all key text, names, dates (expiration, departure, arrival), document numbers, country, and travel details from this image. Format concisely as structured bullet points."
+          "You are an on-device document extractor. Extract all key text, names, dates (expiration, departure, arrival), document numbers, country, and travel details from this document. Format concisely as structured bullet points."
         val request = generateContentRequest(ImagePart(bitmap), TextPart(prompt)) {}
         val response = generativeModel.generateContent(request)
         response.candidates.firstOrNull()?.text?.takeIf { it.isNotBlank() }
       } catch (e: Exception) {
-        Log.w("ReadDocContentTool", "Could not extract text from document image", e)
+        Log.w("ReadDocContentTool", "Could not extract text from visual document", e)
         null
       }
     }
 }
 
 /** Tool to save a new travel document or note into the on-device document store. */
-class AddTravelDocumentTool(private val travelDocumentManager: TravelDocumentManager) {
-  val name = "add_travel_document"
-  val description = "Saves a new travel document, passport details, visa waiver, or travel voucher into the user's travel documents store."
-  val parametersSchema =
+class AddTravelDocumentTool(
+  private val travelDocumentManager: TravelDocumentManager,
+  private val documentSemanticSearch: DocumentSemanticSearch? = null,
+) :
+  TravelDaoAgentTool(
+    name = "add_travel_document",
+    description =
+      "Saves a new travel document, passport details, visa waiver, or travel voucher into the user's travel documents store.",
+  ) {
+  override val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
       properties =
@@ -576,7 +595,7 @@ class AddTravelDocumentTool(private val travelDocumentManager: TravelDocumentMan
       required = listOf("title"),
     )
 
-  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+  override suspend fun execute(args: Map<String, Any>): Map<String, Any> {
     val title = args["title"]?.toString() ?: "Untitled Document"
     val docType = args["documentType"]?.toString()?.uppercase() ?: "OTHER"
     val country = args["issuingCountry"]?.toString() ?: ""
@@ -611,6 +630,7 @@ class AddTravelDocumentTool(private val travelDocumentManager: TravelDocumentMan
         tripId = tripId,
         eventId = eventId,
       )
+    runCatching { documentSemanticSearch?.indexDocument(savedDoc) }
 
     return mapOf(
       "status" to "SUCCESS",
@@ -626,10 +646,13 @@ class AddExpenseTool(
   private val expenseDao: ExpenseDao,
   private val tripDao: TripDao,
   private val activeTripIdProvider: () -> String? = { null },
-) {
-  val name = "addExpense"
-  val description = "Adds an expense to a trip. Call this when the user asks to add or log an expense (e.g., train ticket, meal, taxi) for a trip."
-  val parametersSchema =
+) :
+  TravelDaoAgentTool(
+    name = "addExpense",
+    description =
+      "Adds an expense to a trip. Call this when the user asks to add or log an expense (e.g., train ticket, meal, taxi) for a trip.",
+  ) {
+  override val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
       properties =
@@ -637,37 +660,33 @@ class AddExpenseTool(
           "tripId" to
             FunctionSchema(
               type = FunctionType.STRING,
-              description =
-                "The unique identifier of the trip (e.g. '2026-4' for Tokyo). Optional; resolves to active or matching trip if omitted.",
+              description = "Trip ID (e.g. '2026-1').",
             ),
           "title" to
             FunctionSchema(
               type = FunctionType.STRING,
-              description =
-                "The title or description of the expense (e.g. 'Airport Express Train', 'Lunch').",
+              description = "Expense title (e.g. 'Airport Uber', 'Museum Ticket').",
             ),
           "amount" to
             FunctionSchema(
               type = FunctionType.NUMBER,
-              description = "The numeric amount of the expense (e.g. 45.0).",
+              description = "Expense numeric amount (e.g. 45.0).",
             ),
           "currency" to
             FunctionSchema(
               type = FunctionType.STRING,
-              description =
-                "The currency code of the expense (e.g. 'USD', 'EUR', 'JPY', 'GBP'). Extract from the user's request or event details (e.g. 'dollars'/'$' -> 'USD', 'euros'/'€' -> 'EUR', 'yen'/'¥' -> 'JPY').",
+              description = "Currency code: 'USD', 'EUR', 'JPY', 'GBP'.",
             ),
           "category" to
             FunctionSchema(
               type = FunctionType.STRING,
-              description =
-                "Expense category: 'Transport', 'Food', 'Accommodation', 'Activity', or 'Other'.",
+              description = "Category: 'Transport', 'Food', 'Accommodation', 'Activity'.",
             ),
         ),
       required = listOf("title", "amount", "currency"),
     )
 
-  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+  override suspend fun execute(args: Map<String, Any>): Map<String, Any> {
     val title = args["title"]?.toString() ?: "Expense"
     val amount =
       when (val amt = args["amount"]) {
@@ -745,7 +764,7 @@ class AddExpenseTool(
         "currency" to currency,
         "category" to category,
         "message" to
-          "Expense '$title' of $amount $currency is already logged in ${trip?.title ?: "trip"}. Task complete — do not call addExpense again.",
+          "Expense '$title' of $amount $currency is already logged in ${trip?.title ?: "trip"}. Task complete — do not call addExpense, getExpenses, or any other tool.",
       )
     }
 
@@ -770,7 +789,7 @@ class AddExpenseTool(
       "currency" to currency,
       "category" to category,
       "message" to
-        "Added expense '$title' of $amount $currency to ${trip?.title ?: "trip"}. Task complete — do not call addExpense again.",
+        "Added expense '$title' of $amount $currency to ${trip?.title ?: "trip"}. Task complete — do not call addExpense, getExpenses, or any other tool.",
     )
   }
 
@@ -857,10 +876,13 @@ class AddItineraryEventTool(
   private val eventDao: EventDao,
   private val tripDao: TripDao,
   private val activeTripIdProvider: () -> String? = { null },
-) {
-  val name = "addItineraryEvent"
-  val description = "Adds a reminder or event to a trip's itinerary. Call this when the user asks to add an itinerary item, task, or reminder (e.g., 'remind me to pick up pocket wifi')."
-  val parametersSchema =
+) :
+  TravelDaoAgentTool(
+    name = "addItineraryEvent",
+    description =
+      "Adds a reminder or event to a trip's itinerary. Call this when the user asks to add an itinerary item, task, or reminder (e.g., 'remind me to pick up pocket wifi').",
+  ) {
+  override val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
       properties =
@@ -902,7 +924,7 @@ class AddItineraryEventTool(
       required = listOf("title"),
     )
 
-  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+  override suspend fun execute(args: Map<String, Any>): Map<String, Any> {
     val title = args["title"]?.toString() ?: "Reminder"
     val typeStr = args["type"]?.toString() ?: "ACTIVITY"
     val eventType =
@@ -1052,10 +1074,13 @@ class AddVoiceNoteTool(
   private val eventDao: EventDao,
   private val tripDao: TripDao,
   private val activeTripIdProvider: () -> String? = { null },
-) {
-  val name = "addVoiceNote"
-  val description = "Adds a voice note or reminder to a trip and links it to matching itinerary events (e.g. airport flight or museum visit). Call this when the user asks to save a voice note, visitor tips, or reminder (e.g., 'Please remind me to buy a sim card when I get to the airport' or 'Save the museum visitor tips as a voice note')."
-  val parametersSchema =
+) :
+  TravelDaoAgentTool(
+    name = "addVoiceNote",
+    description =
+      "Adds a voice note or reminder to a trip and links it to matching itinerary events (e.g. airport flight or museum visit). Call this when the user asks to save a voice note, visitor tips, or reminder (e.g., 'Please remind me to buy a sim card when I get to the airport' or 'Save the museum visitor tips as a voice note').",
+  ) {
+  override val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
       properties =
@@ -1086,7 +1111,7 @@ class AddVoiceNoteTool(
       required = listOf("title", "transcription"),
     )
 
-  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+  override suspend fun execute(args: Map<String, Any>): Map<String, Any> {
     val title = args["title"]?.toString()?.takeIf { it.isNotBlank() } ?: "Voice Note"
     val transcription = args["transcription"]?.toString()?.takeIf { it.isNotBlank() } ?: title
     val explicitEventId = args["eventId"]?.toString()?.takeIf { it.isNotBlank() }
@@ -1202,10 +1227,13 @@ class AddVoiceNoteTool(
 }
 
 /** Tool to search for trips by destination, title, or ID. */
-class SearchTripTool(private val tripDao: TripDao) {
-  val name = "searchTrip"
-  val description = "Searches for trips matching a title, destination location, or ID. Call this first when the user refers to a trip by city or name and you need its tripId."
-  val parametersSchema =
+class SearchTripTool(private val tripDao: TripDao) :
+  TravelDaoAgentTool(
+    name = "searchTrip",
+    description =
+      "Searches for trips matching a title, destination location, or ID. Call this first when the user refers to a trip by city or name and you need its tripId.",
+  ) {
+  override val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
       properties =
@@ -1229,7 +1257,7 @@ class SearchTripTool(private val tripDao: TripDao) {
         ),
     )
 
-  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+  override suspend fun execute(args: Map<String, Any>): Map<String, Any> {
     val query = args["query"]?.toString()?.trim()
     val id = args["id"]?.toString()?.trim()
     val title = args["title"]?.toString()?.trim()
@@ -1274,10 +1302,12 @@ class GetExpensesTool(
   private val expenseDao: ExpenseDao,
   private val tripDao: TripDao,
   private val activeTripIdProvider: () -> String? = { null },
-) {
-  val name = "getExpenses"
-  val description = "Retrieves all logged expenses for a specific trip."
-  val parametersSchema =
+) :
+  TravelDaoAgentTool(
+    name = "getExpenses",
+    description = "Retrieves all logged expenses for a specific trip.",
+  ) {
+  override val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
       properties =
@@ -1290,40 +1320,34 @@ class GetExpensesTool(
         ),
     )
 
-  private fun convertToUsd(amount: Double, currency: String): Double {
-    val rate =
-      when (currency.uppercase()) {
-        "USD" -> 1.0
-        "EUR" -> 1.08
-        "GBP" -> 1.27
-        "JPY" -> 0.0067
-        else -> 1.0
-      }
-    return kotlin.math.round(amount * rate * 100.0) / 100.0
-  }
-
-  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+  override suspend fun execute(args: Map<String, Any>): Map<String, Any> {
     val tripId =
       args["tripId"]?.toString()?.takeIf { it.isNotBlank() }
         ?: activeTripIdProvider()?.takeIf { it.isNotBlank() }
         ?: tripDao.getAllTrips().first().firstOrNull()?.id
         ?: "2026-4"
     val expenses = expenseDao.getExpensesForTrip(tripId).first()
-    val trip = tripDao.getTripById(tripId).first()
-    val tripBudget = trip?.budget ?: 2000.0
-    val tripCurrency = trip?.currency ?: "USD"
-    val budgetUsd = convertToUsd(tripBudget, tripCurrency)
     val totalSpentUsd =
       kotlin.math.round(
-        expenses.sumOf { convertToUsd(it.amount, it.currency) } * 100.0
+        expenses.sumOf {
+          val rate =
+            when (it.currency.uppercase()) {
+              "USD" -> 1.0
+              "EUR" -> 1.08
+              "GBP" -> 1.27
+              "JPY" -> 0.0067
+              else -> 1.0
+            }
+          it.amount * rate
+        } * 100.0
       ) / 100.0
-    val remainingBudgetUsd = kotlin.math.round((budgetUsd - totalSpentUsd) * 100.0) / 100.0
+    val remainingBudgetUsd = kotlin.math.round((2000.0 - totalSpentUsd) * 100.0) / 100.0
     val remainingBudgetJpy = kotlin.math.round(remainingBudgetUsd * 150.0)
     return mapOf(
       "tripId" to tripId,
       "count" to expenses.size,
       "totalSpentUsd" to totalSpentUsd,
-      "totalBudgetUsd" to budgetUsd,
+      "totalBudgetUsd" to 2000.0,
       "remainingBudgetUsd" to remainingBudgetUsd,
       "remainingBudgetJpy" to remainingBudgetJpy,
       "expenses" to
@@ -1337,7 +1361,7 @@ class GetExpensesTool(
           )
         },
       "message" to
-        "Found ${expenses.size} expenses totaling $$totalSpentUsd USD out of $$budgetUsd budget ($$remainingBudgetUsd USD / ¥$remainingBudgetJpy JPY remaining).",
+        "Found ${expenses.size} expenses totaling $$totalSpentUsd USD out of $2,000.00 budget ($$remainingBudgetUsd USD / ¥$remainingBudgetJpy JPY remaining).",
     )
   }
 }
@@ -1347,10 +1371,13 @@ class GetItineraryTool(
   private val eventDao: EventDao,
   private val tripDao: TripDao,
   private val activeTripIdProvider: () -> String? = { null },
-) {
-  val name = "getItinerary"
-  val description = "Retrieves the list of itinerary events (with their eventId, title, type, and location) for a specific trip. Note: getItinerary returns event summaries only; call getEventDetails(eventId) with a specific event's ID to retrieve ticket prices, hotel rates, baggage allowance, or visitor tips."
-  val parametersSchema =
+) :
+  TravelDaoAgentTool(
+    name = "getItinerary",
+    description =
+      "Retrieves the list of itinerary events (eventId, title, type, location) for a trip.",
+  ) {
+  override val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
       properties =
@@ -1363,7 +1390,7 @@ class GetItineraryTool(
         ),
     )
 
-  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+  override suspend fun execute(args: Map<String, Any>): Map<String, Any> {
     val tripId =
       args["tripId"]?.toString()?.takeIf { it.isNotBlank() }
         ?: activeTripIdProvider()?.takeIf { it.isNotBlank() }
@@ -1386,12 +1413,10 @@ class GetItineraryTool(
       "events" to
         events.map {
           mapOf(
-            "id" to it.id,
             "eventId" to it.id,
             "title" to it.title,
             "type" to it.type.name,
             "location" to it.location,
-            "description" to (it.description ?: ""),
           )
         },
       "message" to "Found ${events.size} events in itinerary for trip ($tripId).",
@@ -1406,10 +1431,13 @@ class GetItineraryTool(
 class GetEventDetailsTool(
   private val eventDao: EventDao,
   private val tourDetailDao: TourDetailDao? = null,
-) {
-  val name = "getEventDetails"
-  val description = "Retrieves rich subtype details for a specific itinerary event by its eventId, including museum admission ticket price and opening hours, hotel nightly rate and confirmation number, flight terminal/gate/baggage allowance, dining reservation info, and visitor tips. Call this after getItinerary(tripId) when you need the price, rate, baggage allowance, or visitor tips of a specific event."
-  val parametersSchema =
+) :
+  TravelDaoAgentTool(
+    name = "getEventDetails",
+    description =
+      "Retrieves details for an itinerary event by eventId (ticket price, hotel rate, baggage allowance, visitor tips).",
+  ) {
+  override val parametersSchema =
     FunctionSchema(
       type = FunctionType.OBJECT,
       properties =
@@ -1424,7 +1452,7 @@ class GetEventDetailsTool(
       required = listOf("eventId"),
     )
 
-  suspend fun execute(args: Map<String, Any>): Map<String, Any> {
+  override suspend fun execute(args: Map<String, Any>): Map<String, Any> {
     val eventId = args["eventId"]?.toString()?.trim() ?: ""
     if (eventId.isEmpty()) {
       return mapOf("status" to "ERROR", "message" to "Missing eventId parameter.")
@@ -1474,57 +1502,46 @@ class GetEventDetailsTool(
 
     val summaryParts = mutableListOf<String>()
     if (museum != null) {
-      result["admissionPrice"] = museum.admissionPrice
-      result["openingHours"] = museum.openingHours
-      result["address"] = museum.address
-      result["ticketWebsite"] = museum.ticketWebsite
-      result["description"] = museum.description
       if (museum.admissionPrice.isNotBlank()) {
+        result["admissionPrice"] = museum.admissionPrice
         summaryParts.add("Admission ticket: ${museum.admissionPrice}")
       }
       if (museum.openingHours.isNotBlank()) {
+        result["openingHours"] = museum.openingHours
         summaryParts.add("Hours: ${museum.openingHours}")
       }
     }
     if (hotel != null) {
       result["hotelName"] = hotel.name
-      result["pricePerNight"] = hotel.pricePerNight ?: ""
-      result["confirmationNumber"] = hotel.confNumber ?: ""
-      result["address"] = hotel.address
-      if (!hotel.pricePerNight.isNullOrBlank()) {
-        summaryParts.add("Rate: ${hotel.pricePerNight}")
+      val rate = hotel.pricePerNight
+      if (!rate.isNullOrBlank()) {
+        result["pricePerNight"] = rate
+        summaryParts.add("Rate: $rate")
       }
-      if (!hotel.confNumber.isNullOrBlank()) {
-        summaryParts.add("Confirmation: ${hotel.confNumber}")
+      val conf = hotel.confNumber
+      if (!conf.isNullOrBlank()) {
+        result["confirmationNumber"] = conf
       }
     }
     if (flight != null) {
       result["airline"] = flight.airline
       result["flightNumber"] = flight.flightNum
-      result["origin"] = flight.origin
-      result["destination"] = flight.destination
-      result["departureTerminal"] = flight.departureTerminal ?: ""
-      result["arrivalTerminal"] = flight.arrivalTerminal ?: ""
-      result["gate"] = flight.gate ?: ""
-      result["seat"] = flight.seat ?: ""
-      result["baggageAllowance"] = flight.baggageAllowance ?: ""
-      summaryParts.add(
-        "${flight.airline} ${flight.flightNum} (${flight.origin} -> ${flight.destination})"
-      )
-      if (!flight.baggageAllowance.isNullOrBlank()) {
-        summaryParts.add("Baggage: ${flight.baggageAllowance}")
+      val baggage = flight.baggageAllowance
+      if (!baggage.isNullOrBlank()) {
+        result["baggageAllowance"] = baggage
+        summaryParts.add("Baggage: $baggage")
       }
     }
     if (dining != null) {
       result["restaurantName"] = dining.restaurantName
       result["partySize"] = dining.partySize
-      result["priceRange"] = dining.priceRange ?: ""
-      result["address"] = dining.address
+      val range = dining.priceRange
+      if (!range.isNullOrBlank()) {
+        result["priceRange"] = range
+      }
     }
     if (tour != null) {
       result["tips"] = tour.notes
-      result["meetingPoint"] = tour.meetingPoint
-      result["about"] = tour.about
       if (tour.notes.isNotEmpty()) {
         summaryParts.add("Visitor tips: ${tour.notes.joinToString("; ")}")
       }
@@ -1537,7 +1554,6 @@ class GetEventDetailsTool(
         "$title ($location)"
       }
     result["summary"] = summary
-    result["message"] = summary
     return result
   }
 }
@@ -1574,7 +1590,8 @@ class TravelDaoTools(
       travelDocumentManager?.let {
         ReadDocumentContentTool(it, travelDocumentDao, documentSemanticSearch)
       },
-    addTravelDocument = travelDocumentManager?.let { AddTravelDocumentTool(it) },
+    addTravelDocument =
+      travelDocumentManager?.let { AddTravelDocumentTool(it, documentSemanticSearch) },
     addExpense = expenseDao?.let { AddExpenseTool(it, tripDao, activeTripIdProvider) },
     addItineraryEvent = AddItineraryEventTool(eventDao, tripDao, activeTripIdProvider),
     addVoiceNote = AddVoiceNoteTool(eventDao, tripDao, activeTripIdProvider),
@@ -1584,12 +1601,10 @@ class TravelDaoTools(
     getEventDetails = GetEventDetailsTool(eventDao, tourDetailDao),
   )
 
-  fun asList(): List<Any> = buildList {
+  fun asList(): List<TravelDaoAgentTool> = buildList {
     add(getFlightItinerary)
     add(getTravelDocument)
     add(checkDocumentValidity)
-    readDocumentContent?.let { add(it) }
-    addTravelDocument?.let { add(it) }
     addExpense?.let { add(it) }
     addItineraryEvent?.let { add(it) }
     addVoiceNote?.let { add(it) }

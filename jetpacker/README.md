@@ -130,49 +130,49 @@ We support side-by-side execution so you can run and test updates on a parallel 
 ##### Deploying to Parallel Staging (`jetpacker-server-v2`)
 1. **Build and submit the image**:
    ```bash
-   gcloud builds submit --tag gcr.io/android-devrel-ci/jetpacker-server:v2 \
-       --project=android-devrel-ci server/
+   gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/jetpacker-server:v2 \
+       --project=YOUR_PROJECT_ID server/
    ```
 2. **Deploy to Cloud Run**:
    ```bash
    gcloud run deploy jetpacker-server-v2 \
-       --image gcr.io/android-devrel-ci/jetpacker-server:v2 \
+       --image gcr.io/YOUR_PROJECT_ID/jetpacker-server:v2 \
        --region us-central1 \
-       --project android-devrel-ci \
-       --set-env-vars CLOUD_RUN_AUDIENCE=https://jetpacker-server-v2-254502043090.us-central1.run.app \
+       --project YOUR_PROJECT_ID \
+       --set-env-vars CLOUD_RUN_AUDIENCE=https://jetpacker-server-v2-YOUR_PROJECT_HASH.us-central1.run.app \
        --no-allow-unauthenticated
    ```
 
 ##### Deploying to Production (`jetpacker-server`)
 1. **Build and submit the image**:
    ```bash
-   gcloud builds submit --tag gcr.io/android-devrel-ci/jetpacker-server:latest \
-       --project=android-devrel-ci server/
+   gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/jetpacker-server:latest \
+       --project=YOUR_PROJECT_ID server/
    ```
 2. **Deploy to Cloud Run**:
    ```bash
    gcloud run deploy jetpacker-server \
-       --image gcr.io/android-devrel-ci/jetpacker-server:latest \
+       --image gcr.io/YOUR_PROJECT_ID/jetpacker-server:latest \
        --region us-central1 \
-       --project android-devrel-ci \
-       --set-env-vars CLOUD_RUN_AUDIENCE=https://jetpacker-server-254502043090.us-central1.run.app \
+       --project YOUR_PROJECT_ID \
+       --set-env-vars CLOUD_RUN_AUDIENCE=https://jetpacker-server-YOUR_PROJECT_HASH.us-central1.run.app \
        --no-allow-unauthenticated
    ```
 
 ##### Updating the API Gateway Config
 To update API Gateway routes using `server/openapi.yaml`:
 ```bash
-gcloud api-gateway api-configs create jetset-config-v<N> \
-    --api=jetset-api \
+gcloud api-gateway api-configs create jetpacker-config-v<N> \
+    --api=jetpacker-api \
     --openapi-spec=server/openapi.yaml \
-    --project=android-devrel-ci \
-    --backend-auth-service-account=api-gateway-invoker@android-devrel-ci.iam.gserviceaccount.com
+    --project=YOUR_PROJECT_ID \
+    --backend-auth-service-account=api-gateway-invoker@YOUR_PROJECT_ID.iam.gserviceaccount.com
 
-gcloud api-gateway gateways update jetset-gateway \
-    --api=jetset-api \
-    --api-config=jetset-config-v<N> \
+gcloud api-gateway gateways update jetpacker-gateway \
+    --api=jetpacker-api \
+    --api-config=jetpacker-config-v<N> \
     --location=us-central1 \
-    --project=android-devrel-ci
+    --project=YOUR_PROJECT_ID
 ```
 
 ##### Configuring the Android App Endpoint

@@ -20,6 +20,8 @@ import android.graphics.Bitmap
 import androidx.lifecycle.SavedStateHandle
 import com.example.jetpacker.data.itinerary.Expense
 import com.example.jetpacker.data.itinerary.ExpenseDao
+import com.example.jetpacker.data.trips.Trip
+import com.example.jetpacker.data.trips.TripDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -42,12 +44,14 @@ class ManageExpensesViewModelTest {
 
   private val testDispatcher = StandardTestDispatcher()
   private lateinit var fakeExpenseDao: FakeExpenseDao
+  private lateinit var fakeTripDao: FakeTripDao
   private lateinit var fakeReceiptParser: FakeReceiptParser
 
   @Before
   fun setup() {
     Dispatchers.setMain(testDispatcher)
     fakeExpenseDao = FakeExpenseDao()
+    fakeTripDao = FakeTripDao()
     fakeReceiptParser = FakeReceiptParser()
   }
 
@@ -65,7 +69,7 @@ class ManageExpensesViewModelTest {
     fakeExpenseDao.insertExpense(initialExpense)
 
     val savedStateHandle = SavedStateHandle(mapOf("tripId" to "trip-initial"))
-    val viewModel = ManageExpensesViewModel(savedStateHandle, fakeReceiptParser, fakeExpenseDao)
+    val viewModel = ManageExpensesViewModel(savedStateHandle, fakeReceiptParser, fakeExpenseDao, fakeTripDao)
 
     advanceUntilIdle()
 
@@ -99,7 +103,7 @@ class ManageExpensesViewModelTest {
     fakeExpenseDao.insertExpense(expenseTripB)
 
     val savedStateHandle = SavedStateHandle(mapOf("tripId" to "trip-a"))
-    val viewModel = ManageExpensesViewModel(savedStateHandle, fakeReceiptParser, fakeExpenseDao)
+    val viewModel = ManageExpensesViewModel(savedStateHandle, fakeReceiptParser, fakeExpenseDao, fakeTripDao)
 
     advanceUntilIdle()
     assertEquals("trip-a", viewModel.tripId)
@@ -115,7 +119,7 @@ class ManageExpensesViewModelTest {
   @Test
   fun addExpense_withEmptyTripId_assignsCurrentTripId() = runTest {
     val savedStateHandle = SavedStateHandle(mapOf("tripId" to "trip-active"))
-    val viewModel = ManageExpensesViewModel(savedStateHandle, fakeReceiptParser, fakeExpenseDao)
+    val viewModel = ManageExpensesViewModel(savedStateHandle, fakeReceiptParser, fakeExpenseDao, fakeTripDao)
 
     advanceUntilIdle()
 
@@ -140,7 +144,7 @@ class ManageExpensesViewModelTest {
   @Test
   fun addExpense_withExistingTripId_preservesTripId() = runTest {
     val savedStateHandle = SavedStateHandle(mapOf("tripId" to "trip-active"))
-    val viewModel = ManageExpensesViewModel(savedStateHandle, fakeReceiptParser, fakeExpenseDao)
+    val viewModel = ManageExpensesViewModel(savedStateHandle, fakeReceiptParser, fakeExpenseDao, fakeTripDao)
 
     advanceUntilIdle()
 
@@ -174,7 +178,7 @@ class ManageExpensesViewModelTest {
     fakeExpenseDao.insertExpense(expense)
 
     val savedStateHandle = SavedStateHandle(mapOf("tripId" to "trip-1"))
-    val viewModel = ManageExpensesViewModel(savedStateHandle, fakeReceiptParser, fakeExpenseDao)
+    val viewModel = ManageExpensesViewModel(savedStateHandle, fakeReceiptParser, fakeExpenseDao, fakeTripDao)
 
     advanceUntilIdle()
     assertEquals(1, fakeExpenseDao.expenses.size)
@@ -188,7 +192,7 @@ class ManageExpensesViewModelTest {
   @Test
   fun isSupported_delegatesToReceiptParser() = runTest {
     val savedStateHandle = SavedStateHandle(mapOf("tripId" to "trip-1"))
-    val viewModel = ManageExpensesViewModel(savedStateHandle, fakeReceiptParser, fakeExpenseDao)
+    val viewModel = ManageExpensesViewModel(savedStateHandle, fakeReceiptParser, fakeExpenseDao, fakeTripDao)
 
     fakeReceiptParser.supported = true
     assertTrue(viewModel.isSupported())
@@ -200,7 +204,7 @@ class ManageExpensesViewModelTest {
   @Test
   fun parseReceipt_delegatesToReceiptParser() = runTest {
     val savedStateHandle = SavedStateHandle(mapOf("tripId" to "trip-1"))
-    val viewModel = ManageExpensesViewModel(savedStateHandle, fakeReceiptParser, fakeExpenseDao)
+    val viewModel = ManageExpensesViewModel(savedStateHandle, fakeReceiptParser, fakeExpenseDao, fakeTripDao)
 
     val unsafeField = Unsafe::class.java.getDeclaredField("theUnsafe")
     unsafeField.isAccessible = true
@@ -214,7 +218,16 @@ class ManageExpensesViewModelTest {
     assertEquals(expectedJson, response)
   }
 
-  private class FakeExpenseDao : ExpenseDao {
+  private class FakeTripDao : TripDao {
+  override fun getAllTrips(): Flow<List<Trip>> = MutableStateFlow(emptyList())
+  override fun getTripById(tripId: String): Flow<Trip?> = MutableStateFlow(null)
+  override suspend fun insertTrip(trip: Trip) {}
+  override suspend fun insertTrips(trips: List<Trip>) {}
+  override suspend fun deleteTrip(trip: Trip) {}
+  override suspend fun deleteAllTrips() {}
+}
+
+class FakeExpenseDao : ExpenseDao {
     val expenses = mutableListOf<Expense>()
     private val _expensesFlow = MutableStateFlow<List<Expense>>(emptyList())
 
